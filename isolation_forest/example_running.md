@@ -31,7 +31,7 @@ python3 -m src.monitor \
   --process-existing
 ```
 
-## Generate plots
+## Generate plots manually
 
 ```bash
 # Reference model statistics (3 plots)
@@ -45,3 +45,32 @@ python3 -m src.plot log
 ```
 
 All figures are saved to `plots/` by default. Use `--out-dir` to change the output directory.
+
+## Monitor with automatic alert plots
+
+Auto-generate diagnostic plots for every file that crosses the alert threshold,
+and refresh the log summary plots every 50 processed files:
+
+```bash
+python3 -m src.monitor \
+  --watch-dir /eos/experiment/milliqan/run3/slab/live/ \
+  --plot-alerts \
+  --refresh-log-plots-every 50
+```
+
+Alert plots are saved to `plots/alerts/<stem>/`, one subdirectory per flagged file:
+
+```
+plots/
+  alerts/
+    Digitizer_run2068_subrun1/
+      zscore_heatmap.png
+      max_zscore.png
+      if_scores.png
+      geometry.png
+    Digitizer_run2071_subrun3/
+      ...
+  log_anomaly_rate.png
+  log_channel_frequency.png
+  log_feature_frequency.png
+```

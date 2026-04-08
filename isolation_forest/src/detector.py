@@ -101,6 +101,12 @@ class AnomalyDetector:
           if_score           — Isolation Forest anomaly score (lower = more anomalous)
         """
         features = extract_features(filepath)
+        if features.empty:
+            import warnings
+            warnings.warn(f"No events found in {filepath} — returning empty results.")
+            return pd.DataFrame(columns=["anomalous", "method", "triggered_features",
+                                         "max_z", "if_score"])
+
         z_df = self.reference.z_score(features)
 
         rows = []

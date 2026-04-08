@@ -1,0 +1,19 @@
+# Bad run list — for reference and future validation use.
+# These files are NOT used during training. They can be used to evaluate
+# detector performance or to inspect known failure modes.
+# Each non-empty, non-comment line is a glob pattern.
+
+# ── run1637: bad subruns 357–359 (broken-base onset) ────────────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun35[7-9].csv
+
+# ── run1640: all subruns bad (broken base during incident) ──────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1640_subrun*.csv
+
+# ── run1642: all subruns bad (broken base, just before fix) ─────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1642_subrun*.csv
+
+# ── run2068: all subruns bad (noisy LVDS channel) ───────────────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run2068_subrun*.csv
+
+# ── run2071: all subruns bad (noisy LVDS channel) ───────────────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run2071_subrun*.csv

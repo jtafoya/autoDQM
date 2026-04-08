@@ -1,0 +1,27 @@
+# Good run list — used to build the reference model and train the Isolation Forest.
+# Each non-empty, non-comment line is a glob pattern resolved from the
+# isolation_forest/ directory (i.e. relative to where you run train.py).
+# This file lives in data/ but patterns are relative to isolation_forest/ (where train.py runs).
+# Wildcards * and ** are supported. Character-class ranges [0-9] are also supported.
+
+# ── run1637: good subruns 1–356 (incident starts at 357) ────────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun[1-9].csv
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun[1-9][0-9].csv
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun1[0-9][0-9].csv
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun2[0-9][0-9].csv
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun3[0-4][0-9].csv
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1637_subrun35[0-6].csv
+
+# ── run1644: all subruns good (after broken-base fix) ───────────────────────
+/eos/user/t/tafoyava/autoDAQ/data/Digitizer_run1644_subrun*.csv
+
+# ── run2082: all subruns good (after noisy-channel fix) ─────────────────────
+# Not yet in EOS — using local copy
+../data/noisy_channel__AfterFix/Digitizer_run2082_subrun*.csv
+
+# ── UNCLASSIFIED ─────────────────────────────────────────────────────────────
+# The following runs (934, 964, 971, 1723, 1732, 1734, 1735, 1736, 1737, 1738,
+# 1740, 1744, 1748, 1749, 1752, 1753, 1754, 1756, 1758, 1770, 1977, 2129) have
+# unusual subrun numbers matching other run numbers (1637, 1640, 1642, 1644,
+# 2068, 2071). Their origin and quality are unclear — add them here once
+# their status is confirmed.

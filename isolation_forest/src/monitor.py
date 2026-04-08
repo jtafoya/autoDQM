@@ -7,6 +7,9 @@ Each new Digitizer_*.csv file found is processed once; results are appended to a
 Usage:
     python -m src.monitor --watch-dir /eos/.../live --log-file logs/anomalies.csv
 
+    # Auto-generate diagnostic plots for every alerted file:
+    python -m src.monitor --watch-dir /eos/.../live --plot-alerts
+
 Log columns:
     timestamp          UTC ISO-8601
     filename           base name of the processed file
@@ -44,32 +47,46 @@ def process_file(
     detector: AnomalyDetector,
     log_path: str,
     file_alert_threshold: float = 0.20,
-) -> None:
+    plot_alerts: bool = False,
+    plots_dir: str = "plots",
+) -> bool:
     """
     Analyze one file and append per-channel results to the log.
+
+    Returns True if the file crossed the alert threshold, False otherwise.
 
     file_alert_threshold : fraction of channels that must be anomalous before
         the file is printed as [ALERT]. Individual channel anomalies are always
         logged, but low counts (likely spurious) are printed as [WARN] instead.
         Set to 0.0 to alert on any single anomalous channel.
+    plot_alerts : if True and the file crosses the threshold, generate diagnostic
+        plots saved to plots_dir/alerts/<stem>/.
+    plots_dir : root directory for plot output.
     """
     filename = Path(filepath).name
+    stem     = Path(filepath).stem
     timestamp = _utc_now()
+    alerted = False
 
     try:
         results = detector.analyze_file(filepath)
     except Exception as exc:
         print(f"[ERROR] {filename}: {exc}", file=sys.stderr)
-        return
+        return False
+
+    if results.empty:
+        print(f"[SKIP]  {timestamp}  {filename}  —  no events in file")
+        return False
 
     anomalies = results[results["anomalous"]]
-    n_total = len(results)
-    n_bad = len(anomalies)
-    frac_bad = n_bad / n_total if n_total > 0 else 0.0
+    n_total   = len(results)
+    n_bad     = len(anomalies)
+    frac_bad  = n_bad / n_total if n_total > 0 else 0.0
 
     if n_bad == 0:
         print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
     elif frac_bad >= file_alert_threshold:
+        alerted = True
         bad_channels = sorted(anomalies.index.tolist())
         print(
             f"[ALERT] {timestamp}  {filename}  —  "
@@ -86,8 +103,8 @@ def process_file(
         bad_channels = sorted(anomalies.index.tolist())
         print(
             f"[WARN]  {timestamp}  {filename}  —  "
-            f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels (below alert threshold): "
-            f"{bad_channels}"
+            f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels "
+            f"(below alert threshold): {bad_channels}"
         )
 
     # Append to log
@@ -111,6 +128,19 @@ def process_file(
                 }
             )
 
+    # Auto-plot if alerted
+    if alerted and plot_alerts:
+        from .plot import plot_file as _plot_file
+        out = Path(plots_dir) / "alerts" / stem
+        out.mkdir(parents=True, exist_ok=True)
+        print(f"         Generating plots → {out}/")
+        try:
+            _plot_file(filepath, detector, out)
+        except Exception as exc:
+            print(f"[ERROR] Plotting failed for {filename}: {exc}", file=sys.stderr)
+
+    return alerted
+
 
 def watch_directory(
     watch_dir: str,
@@ -119,29 +149,56 @@ def watch_directory(
     poll_interval: float = 5.0,
     process_existing: bool = False,
     file_alert_threshold: float = 0.20,
+    plot_alerts: bool = False,
+    plots_dir: str = "plots",
+    refresh_log_plots_every: int = 0,
 ) -> None:
     """
     Poll watch_dir for new Digitizer_*.csv files and process each one.
 
     Files already present when the monitor starts are skipped unless
     --process-existing is passed.
+
+    refresh_log_plots_every : if > 0, regenerate log summary plots every N
+        processed files. 0 disables automatic log plot refresh.
     """
     watch_path = Path(watch_dir)
     seen: set = set()
+    n_processed = 0
 
     if not process_existing:
-        # Mark all pre-existing files as seen so we only act on new arrivals
         seen = {f for f in watch_path.glob("Digitizer_*.csv")}
         print(f"  Skipping {len(seen)} pre-existing file(s). Watching for new ones...")
 
-    print(f"Watching {watch_dir}  (poll every {poll_interval}s)  —  log: {log_path}\n")
+    print(f"Watching {watch_dir}  (poll every {poll_interval}s)  —  log: {log_path}")
+    if plot_alerts:
+        print(f"  Alert plots → {plots_dir}/alerts/<stem>/")
+    if refresh_log_plots_every > 0:
+        print(f"  Log summary plots refresh every {refresh_log_plots_every} file(s) → {plots_dir}/")
+    print()
 
     try:
         while True:
             for f in sorted(watch_path.glob("Digitizer_*.csv")):
                 if f not in seen:
                     seen.add(f)
-                    process_file(str(f), detector, log_path, file_alert_threshold)
+                    process_file(
+                        str(f), detector, log_path,
+                        file_alert_threshold=file_alert_threshold,
+                        plot_alerts=plot_alerts,
+                        plots_dir=plots_dir,
+                    )
+                    n_processed += 1
+
+                    if refresh_log_plots_every > 0 and n_processed % refresh_log_plots_every == 0:
+                        if Path(log_path).exists():
+                            from .plot import plot_log as _plot_log
+                            print(f"  [log plots] Refreshing after {n_processed} files...")
+                            try:
+                                _plot_log(log_path, Path(plots_dir))
+                            except Exception as exc:
+                                print(f"[ERROR] Log plot refresh failed: {exc}", file=sys.stderr)
+
             time.sleep(poll_interval)
     except KeyboardInterrupt:
         print("\nMonitor stopped.")
@@ -172,16 +229,34 @@ def main() -> None:
         help="Fraction of anomalous channels required to print [ALERT] (default: 0.20). "
              "Channels are always logged individually regardless of this setting.",
     )
+    parser.add_argument(
+        "--plot-alerts",
+        action="store_true",
+        help="Auto-generate diagnostic plots for every alerted file, "
+             "saved to plots-dir/alerts/<stem>/",
+    )
+    parser.add_argument(
+        "--plots-dir",
+        default="plots",
+        help="Root directory for plot output (default: plots/)",
+    )
+    parser.add_argument(
+        "--refresh-log-plots-every",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Regenerate log summary plots every N processed files (0 = disabled)",
+    )
     args = parser.parse_args()
 
     models_dir = Path(args.models_dir)
-    ref_path = models_dir / "reference.npz"
-    det_path = models_dir / "detector.pkl"
+    ref_path   = models_dir / "reference.npz"
+    det_path   = models_dir / "detector.pkl"
 
     if not ref_path.exists() or not det_path.exists():
         print(
             f"ERROR: Models not found in {args.models_dir}.\n"
-            "Run  python -m src.train --good-dir <good-data-dir>  first.",
+            "Run  python -m src.train --good-list <run-list>  first.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -189,7 +264,7 @@ def main() -> None:
     Path(args.log_file).parent.mkdir(parents=True, exist_ok=True)
 
     print("Loading models...")
-    ref = ReferenceModel.load(str(ref_path))
+    ref      = ReferenceModel.load(str(ref_path))
     detector = AnomalyDetector.load(str(det_path), ref)
     print(f"  Reference: {len(ref.known_channels())} channels known")
     print(f"  Z-threshold: {detector.z_threshold}σ")
@@ -202,6 +277,9 @@ def main() -> None:
         poll_interval=args.poll_interval,
         process_existing=args.process_existing,
         file_alert_threshold=args.file_alert_threshold,
+        plot_alerts=args.plot_alerts,
+        plots_dir=args.plots_dir,
+        refresh_log_plots_every=args.refresh_log_plots_every,
     )
 
 
