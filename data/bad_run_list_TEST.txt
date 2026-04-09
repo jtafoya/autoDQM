@@ -1,0 +1,2 @@
+/afs/cern.ch/user/t/tafoyava/autoDQM/data/broken_base
+/afs/cern.ch/user/t/tafoyava/autoDQM/data/noisy_channel

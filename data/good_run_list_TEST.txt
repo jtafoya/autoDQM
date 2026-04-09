@@ -1,0 +1,3 @@
+/afs/cern.ch/user/t/tafoyava/autoDQM/data/broken_base_AfterFix/
+/afs/cern.ch/user/t/tafoyava/autoDQM/data/broken_base_BeforeIncident/
+/afs/cern.ch/user/t/tafoyava/autoDQM/data/noisy_channel__AfterFix/
