@@ -4,17 +4,24 @@ All commands are run from `isolation_forest/`.
 
 ## Full pipeline — single command (recommended)
 
-```bash
-# End-to-end test (50 training files, 20 apply files)
-python3 -m src.pipeline \
-    --good-list  ../data/good_run_list_EOS.txt \
-    --apply-list ../data/all_run_list_EOS.txt \
-    --test-train 50 --test-apply 20
+Both `--good-list` and `--apply-list` default to the standard EOS run lists,
+so the minimal invocations are:
 
-# Full production run
-python3 -m src.pipeline \
-    --good-list  ../data/good_run_list_EOS.txt \
-    --apply-list ../data/all_run_list_EOS.txt
+```bash
+# Quick end-to-end test (50 random training files, 50 random apply files)
+python3 -m src.pipeline --test-train --test-apply
+
+# Custom sample sizes
+python3 -m src.pipeline --test-train 100 --test-apply 50
+
+# Full production run (all files)
+python3 -m src.pipeline
+
+# Digitizer-only mode (no TriggerBoard features)
+python3 -m src.pipeline --test-train --test-apply --no-trigger
+
+# Disable LVDS pin count features
+python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
 ```
 
 Runs all four steps in order: train → apply → report → plots.  
@@ -31,42 +38,26 @@ bash setup.sh
 ### 2. Train
 
 ```bash
-python3 -m src.train --good-list ../data/good_run_list_EOS.txt
+# Quick test (50 random files, default)
+python3 -m src.train --test
+
+# Custom sample size
+python3 -m src.train --test 100
+
+# Full training (all files in the default good run list)
+python3 -m src.train
+
+# Digitizer-only mode (exclude TriggerBoard features)
+python3 -m src.train --no-trigger
+
+# Disable LVDS pin count features
+python3 -m src.train --no-trigger-LVDS
 ```
 
 ### 3. Monitor a live directory
 
 ```bash
 python3 -m src.monitor --watch-dir /eos/experiment/milliqan/run3/slab/live/
-```
-
-## Quick test training on a random subset of files
-
-To verify the pipeline works without waiting for a full training run:
-
-```bash
-python3 -m src.train --good-list ../data/good_run_list_EOS.txt --test 50
-```
-
-This randomly samples 50 files from the resolved run list and trains on those only.
-Useful for checking that dependencies are installed, file paths resolve correctly,
-and the models directory is writable before committing to a full run.
-If the run list has fewer than 50 files, all of them are used.
-
-## Incremental update (after collecting more good runs)
-
-```bash
-# Add new glob patterns to ../data/good_run_list_EOS.txt, then:
-python3 -m src.train --good-list ../data/good_run_list_EOS.txt --update
-```
-
-## Process files already in a directory (e.g. for testing)
-
-```bash
-python3 -m src.monitor \
-  --watch-dir ../data/noisy_channel \
-  --log-file logs/anomalies.csv \
-  --process-existing
 ```
 
 ## Quick test of model application
@@ -84,6 +75,22 @@ python3 -m src.monitor \
     --test 20
 ```
 
+## Incremental update (after collecting more good runs)
+
+```bash
+# Add new glob patterns to ../data/good_run_list_EOS.txt, then:
+python3 -m src.train --update
+```
+
+## Process files already in a directory (e.g. for testing)
+
+```bash
+python3 -m src.monitor \
+  --watch-dir ../data/noisy_channel \
+  --log-file logs/anomalies.csv \
+  --process-existing
+```
+
 ## Classify run quality from the anomaly log
 
 After the monitor has processed files, generate good/partial run lists:
@@ -95,7 +102,12 @@ python3 -m src.report
 Output in `reports/`:
 - `good_runs.txt` — runs where every subrun passed
 - `partial_good_runs.txt` — runs with a clean good→bad transition, with the last good and first bad subrun numbers
-- `run_summary.csv` — full table covering all runs
+- `persistent_fault_runs.txt` — runs where one or more channels are anomalous in every subrun (e.g. a dead or missing channel), even if no individual subrun crossed the per-file threshold
+- `run_summary.csv` — full table covering all runs, including `persistent_channels` column
+
+> **Note on `persistent_fault`:** a run is only upgraded to `persistent_fault` if it has
+> at least **2 subruns** in the log. A single-subrun sample trivially satisfies "anomalous
+> in every subrun" (1/1), which would produce false positives in test mode with sparse sampling.
 
 ## Generate plots manually
 
@@ -106,11 +118,53 @@ python3 -m src.plot reference
 # Anomaly analysis of a single file (4 plots)
 python3 -m src.plot file /eos/user/t/tafoyava/autoDQM/data/Digitizer_run2068_subrun1.csv
 
-# Summary of the anomaly log (3 plots)
+# Summary of the anomaly log (4 plots, sorted by run/subrun)
 python3 -m src.plot log
 ```
 
 All figures are saved to `plots/` by default. Use `--out-dir` to change the output directory.
+
+## Validate against separate good / bad run lists
+
+After training, run the model against the known-good and known-bad lists separately
+and generate plots for each to assess false positive and detection rates.
+All four commands can run in parallel:
+
+```bash
+# Apply to good runs (no trigger)
+python3 -m src.monitor \
+  --run-list ../data/good_run_list_EOS.txt \
+  --log-file logs/check_good_notrigger.csv \
+  --test 50 &
+
+# Apply to bad runs (no trigger)
+python3 -m src.monitor \
+  --run-list ../data/bad_run_list_EOS.txt \
+  --log-file logs/check_bad_notrigger.csv \
+  --test 50 &
+
+wait
+```
+
+Classify and plot for each log:
+
+```bash
+python3 -m src.report \
+  --log-file logs/check_good_notrigger.csv \
+  --out-dir  reports/check_good_notrigger
+
+python3 -m src.report \
+  --log-file logs/check_bad_notrigger.csv \
+  --out-dir  reports/check_bad_notrigger
+
+python3 -m src.plot --out-dir plots/check_good_notrigger \
+  log --log-file logs/check_good_notrigger.csv
+
+python3 -m src.plot --out-dir plots/check_bad_notrigger \
+  log --log-file logs/check_bad_notrigger.csv
+```
+
+Repeat with the trigger-enabled model (`--log-file logs/check_good_trigger.csv`, etc.).
 
 ## Monitor with automatic alert plots
 
@@ -139,4 +193,5 @@ plots/
   log_anomaly_rate.png
   log_channel_frequency.png
   log_feature_frequency.png
+  log_run_summary.png
 ```

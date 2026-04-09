@@ -1,11 +1,19 @@
 """
 Build or update the reference model and Isolation Forest from good data.
 
-Usage — first time:
-    python -m src.train --good-list good_run_list.txt
+Default: good-list = ../data/good_run_list_EOS.txt
 
-Usage — after collecting more good runs:
-    python -m src.train --good-list good_run_list.txt --update
+Usage — quick test (50 random files):
+    python -m src.train --test
+
+Usage — custom sample size:
+    python -m src.train --test 100
+
+Usage — full training (all files):
+    python -m src.train
+
+Usage — incremental update after collecting more good runs:
+    python -m src.train --update
     (adds only files not yet seen; the Isolation Forest is always fully retrained)
 
 Models are saved to --models-dir (default: models/).
@@ -27,14 +35,27 @@ def main() -> None:
     )
     parser.add_argument(
         "--good-list",
-        required=True,
-        help="Path to a text file listing good Digitizer CSV files (glob patterns supported)",
+        default="../data/good_run_list_EOS.txt",
+        help="Path to a text file listing good Digitizer CSV files "
+             "(default: ../data/good_run_list_EOS.txt)",
     )
     parser.add_argument("--models-dir", default="models", help="Directory to save models")
     parser.add_argument(
         "--update",
         action="store_true",
         help="Incremental mode: add new files to an existing reference without reprocessing old ones",
+    )
+    parser.add_argument(
+        "--no-trigger",
+        action="store_true",
+        help="Exclude TriggerBoard features (use Digitizer-only features)",
+    )
+    parser.add_argument(
+        "--no-trigger-LVDS",
+        action="store_true",
+        dest="no_trigger_lvds",
+        help="Exclude LVDS pin count features from TriggerBoardSlab_run<N>_LVDSCounts.csv "
+             "(enabled by default; use this flag to disable)",
     )
     parser.add_argument("--z-threshold", type=float, default=5.0, help="Z-score alert threshold")
     parser.add_argument(
@@ -46,11 +67,15 @@ def main() -> None:
     parser.add_argument(
         "--test",
         type=int,
-        default=0,
+        nargs="?",
+        const=50,
+        default=None,
         metavar="N",
-        help="Test mode: randomly sample N files from the run list instead of using all of them",
+        help="Test mode: randomly sample N files (default N=50 when flag is given, omit for full run)",
     )
     args = parser.parse_args()
+    use_trigger = not args.no_trigger
+    use_lvds    = not args.no_trigger_lvds
 
     models_dir = Path(args.models_dir)
     models_dir.mkdir(parents=True, exist_ok=True)
@@ -68,7 +93,7 @@ def main() -> None:
     print(f"  {len(all_csv)} file(s) found.")
 
     # ---- Test mode: subsample ----
-    if args.test > 0:
+    if args.test:
         import random
         n = min(args.test, len(all_csv))
         all_csv = random.sample(all_csv, n)
@@ -87,13 +112,13 @@ def main() -> None:
             from .features import extract_features
             for f in new_files:
                 print(f"  [{Path(f).name}] adding to reference...")
-                ref.update(extract_features(str(f)))
+                ref.update(extract_features(str(f), use_trigger=ref._use_trigger, use_lvds=ref._use_lvds))
                 seen.add(Path(f).name)
             print(f"  Added {len(new_files)} file(s). "
                   f"Reference now covers {len(ref.known_channels())} channels.")
     else:
         print("Building reference from scratch...")
-        ref = build_reference(all_csv)
+        ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds)
         seen = {Path(f).name for f in all_csv}
 
     ref.save(str(ref_path))
@@ -107,7 +132,10 @@ def main() -> None:
         z_threshold=args.z_threshold,
         if_contamination=args.if_contamination,
     )
-    detector.train_isolation_forest(all_csv)
+    # Pass the cached features to avoid re-reading every file from disk.
+    # In incremental mode there is no cache, so fall back to re-reading.
+    cache = features_cache if not (args.update and ref_path.exists()) else None
+    detector.train_isolation_forest(all_csv, features_cache=cache)
     detector.save(str(det_path))
     print(f"  Detector saved to {det_path}")
 

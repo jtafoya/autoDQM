@@ -1,13 +1,13 @@
 """
 Per-channel feature extraction from a Digitizer CSV file, optionally enriched
-with trigger rate information from the matching TriggerBoard CSV.
+with trigger rate and LVDS count information from matching TriggerBoard CSVs.
 
 A Digitizer file is in long format: each row is one (event, channel) pair.
 This module aggregates all events into one feature vector per channel.
 
-TriggerBoard features are file-level constants (one value per subrun), appended
-as additional columns to every channel row so the existing reference model and
-detector can handle them without any architectural changes.
+TriggerBoard and LVDS features are file-level constants (one value per subrun),
+appended as additional columns to every channel row so the existing reference
+model and detector can handle them without any architectural changes.
 
 Scalability: reads one file at a time, no global state.
 """
@@ -40,36 +40,54 @@ TRIGGER_COLS = [f"triggerRate_bit{i}" for i in range(1, 14)] + [
     "triggerCounts_tot",
 ]
 
+# ── LVDS features ─────────────────────────────────────────────────────────────
+
+# 50 per-pin counts + the total column (renamed to LVDStotal to avoid ambiguity)
+LVDS_COLS = [f"LVDSpin{i}" for i in range(50)] + ["LVDStotal"]
+
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
-def feature_columns() -> list:
+def feature_columns(use_trigger: bool = True, use_lvds: bool = True) -> list:
     """Ordered list of all feature column names produced by extract_features()."""
     cols  = [f"{m}_{s}" for m in METRIC_COLS for s in AGG_FUNCS]
     cols += ["occupancy", "frac_dead"]
-    cols += TRIGGER_COLS
+    if use_trigger:
+        cols += TRIGGER_COLS
+    if use_lvds:
+        cols += LVDS_COLS
     return cols
 
 
-def extract_features(filepath: str) -> pd.DataFrame:
+def extract_features(
+    filepath: str,
+    use_trigger: bool = True,
+    use_lvds: bool = True,
+) -> pd.DataFrame:
     """
     Read a Digitizer CSV and return a per-channel feature DataFrame.
 
-    Columns:
+    Columns (always present):
       {metric}_{mean|std|median}  — aggregated Digitizer metrics (33 features)
       occupancy                   — fraction of events where this channel fired
       frac_dead                   — fraction of appearances with nPulses == 0
+
+    Columns (only when use_trigger=True):
       triggerRate_bit{1-13}       — per-bit trigger rate in Hz (from TriggerBoard)
       triggerRate_tot             — total trigger rate in Hz
       triggerCounts_tot           — total trigger count for this subrun
 
-    TriggerBoard features are NaN if the matching TriggerBoard file is not found
+    Columns (only when use_lvds=True):
+      LVDSpin{0-49}               — per-pin LVDS counts (from TriggerBoardSlab LVDSCounts)
+      LVDStotal                   — sum of all LVDS pin counts for this subrun
+
+    TriggerBoard / LVDS features are NaN if the matching file is not found
     or the subrun entry is missing.
     """
     df = pd.read_csv(filepath)
 
     if df.empty:
-        return pd.DataFrame(columns=feature_columns())
+        return pd.DataFrame(columns=feature_columns(use_trigger=use_trigger, use_lvds=use_lvds))
 
     n_events = df["event_id"].nunique()
 
@@ -90,11 +108,18 @@ def extract_features(filepath: str) -> pd.DataFrame:
     agg = agg.fillna(0.0)
 
     # ── TriggerBoard features ─────────────────────────────────────────────────
-    tb_row = _load_triggerboard_row(filepath)   # dict or None
-    for col in TRIGGER_COLS:
-        agg[col] = tb_row[col] if tb_row is not None else np.nan
+    if use_trigger:
+        tb_row = _load_triggerboard_row(filepath)   # dict or None
+        for col in TRIGGER_COLS:
+            agg[col] = tb_row[col] if tb_row is not None else np.nan
 
-    return agg[feature_columns()]
+    # ── LVDS features ─────────────────────────────────────────────────────────
+    if use_lvds:
+        lvds_row = _load_lvds_row(filepath)         # dict or None
+        for col in LVDS_COLS:
+            agg[col] = lvds_row[col] if lvds_row is not None else np.nan
+
+    return agg[feature_columns(use_trigger=use_trigger, use_lvds=use_lvds)]
 
 
 # ── TriggerBoard helpers ─────────────────────────────────────────────────────
@@ -167,4 +192,55 @@ def _load_triggerboard_row(digitizer_path: str) -> Optional[dict]:
     result = {}
     for col in TRIGGER_COLS:
         result[col] = float(row.iloc[0][col]) if col in row.columns else np.nan
+    return result
+
+
+# ── LVDS helpers ─────────────────────────────────────────────────────────────
+
+def _find_lvds(digitizer_path: str) -> Optional[Path]:
+    """
+    Locate the LVDS counts CSV that corresponds to a Digitizer file.
+
+    Naming convention:
+      Digitizer_run2068_subrun1.csv  →  TriggerBoardSlab_run2068_LVDSCounts.csv
+    in the same directory.
+    """
+    m = _DIGI_RE.search(Path(digitizer_path).name)
+    if m is None:
+        return None
+    run = m.group(1)
+    candidate = Path(digitizer_path).parent / f"TriggerBoardSlab_run{run}_LVDSCounts.csv"
+    return candidate if candidate.exists() else None
+
+
+def _load_lvds_row(digitizer_path: str) -> Optional[dict]:
+    """
+    Return a dict of LVDS_COLS values for the subrun matching the given
+    Digitizer file. Returns None if the LVDSCounts file is absent or the
+    subrun entry is missing.
+
+    The CSV column 'total' is exposed as 'LVDStotal' to avoid ambiguity.
+    """
+    m = _DIGI_RE.search(Path(digitizer_path).name)
+    if m is None:
+        return None
+
+    subrun = int(m.group(2))
+    lvds_path = _find_lvds(digitizer_path)
+    if lvds_path is None:
+        return None
+
+    # The LVDSCounts file shares the same repeated-header format as TriggerBoard
+    lvds = _read_triggerboard(lvds_path)
+    if lvds.empty or "subrunnum" not in lvds.columns:
+        return None
+
+    row = lvds[lvds["subrunnum"] == subrun]
+    if row.empty:
+        return None
+
+    result = {}
+    for col in LVDS_COLS:
+        csv_col = "total" if col == "LVDStotal" else col
+        result[col] = float(row.iloc[0][csv_col]) if csv_col in row.columns else np.nan
     return result

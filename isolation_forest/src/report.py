@@ -3,19 +3,22 @@ Classify runs from the anomaly log into quality categories.
 
 Reads logs/anomalies.csv (produced by monitor.py) and writes three files:
 
-  good_runs.txt          — runs where every subrun is nominal
-  partial_good_runs.txt  — runs that start nominal then transition to anomalous
-  run_summary.csv        — full per-run breakdown (all categories)
+  good_runs.txt               — runs where every subrun is nominal
+  partial_good_runs.txt       — runs that start nominal then transition to anomalous
+  persistent_fault_runs.txt   — runs with a channel anomalous in every subrun (below per-file threshold)
+  run_summary.csv             — full per-run breakdown (all categories)
 
 A subrun is "bad" if the fraction of anomalous channels meets or exceeds
 --file-alert-threshold (same default as monitor.py: 0.20).
 
 A run is classified as:
-  good    — all subruns good
-  partial — at least one good subrun and at least one bad subrun, and the first
-            bad subrun comes strictly after the last good subrun (clean transition)
-  bad     — all subruns bad
-  mixed   — good and bad subruns interleaved (no clean transition)
+  good              — all subruns good, no persistent channel faults
+  partial           — at least one good subrun and at least one bad subrun, and the first
+                      bad subrun comes strictly after the last good subrun (clean transition)
+  bad               — all subruns bad
+  mixed             — good and bad subruns interleaved (no clean transition)
+  persistent_fault  — all subruns appear "good" by per-file threshold, but one or more
+                      channels are anomalous in every subrun (e.g. a dead or missing channel)
 
 Usage:
     python3 -m src.report
@@ -104,14 +107,36 @@ def classify_runs(log_path: str, file_alert_threshold: float = 0.20) -> dict:
             # Good and bad subruns interleaved
             classification = "mixed"
 
+        # Persistent channel check: a channel anomalous in every subrun of this run
+        # is a systematic fault (e.g. dead/missing channel) that may not push any
+        # individual subrun above the per-file threshold.
+        run_df = df[df["run"] == run]
+        n_subruns = len(subruns)
+        channel_flags = (
+            run_df.groupby(["channel", "subrun"])["anomalous"]
+                  .any()
+                  .groupby("channel")
+                  .sum()
+        )
+        persistent_channels = sorted(
+            int(ch) for ch in channel_flags[channel_flags >= n_subruns].index
+        )
+
+        # Upgrade classification if persistent channels detected but per-file
+        # threshold never triggered (run otherwise looks "good").
+        # Require at least 2 subruns to avoid trivial 1/1 matches from sampling noise.
+        if persistent_channels and classification == "good" and n_subruns >= 2:
+            classification = "persistent_fault"
+
         runs[int(run)] = {
-            "subruns":           subruns,
-            "subrun_status":     subrun_status,
-            "classification":    classification,
-            "last_good_subrun":  last_good,
-            "first_bad_subrun":  first_bad,
-            "n_good":            len(good_subruns),
-            "n_bad":             len(bad_subruns),
+            "subruns":              subruns,
+            "subrun_status":        subrun_status,
+            "classification":       classification,
+            "last_good_subrun":     last_good,
+            "first_bad_subrun":     first_bad,
+            "n_good":               len(good_subruns),
+            "n_bad":                len(bad_subruns),
+            "persistent_channels":  persistent_channels,
         }
 
     return runs
@@ -123,10 +148,11 @@ def write_report(runs: dict, out_dir: Path) -> None:
     """Write good_runs.txt, partial_good_runs.txt, and run_summary.csv."""
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    good    = sorted(r for r, v in runs.items() if v["classification"] == "good")
-    partial = sorted(r for r, v in runs.items() if v["classification"] == "partial")
-    bad     = sorted(r for r, v in runs.items() if v["classification"] == "bad")
-    mixed   = sorted(r for r, v in runs.items() if v["classification"] == "mixed")
+    good       = sorted(r for r, v in runs.items() if v["classification"] == "good")
+    partial    = sorted(r for r, v in runs.items() if v["classification"] == "partial")
+    bad        = sorted(r for r, v in runs.items() if v["classification"] == "bad")
+    mixed      = sorted(r for r, v in runs.items() if v["classification"] == "mixed")
+    persistent = sorted(r for r, v in runs.items() if v["classification"] == "persistent_fault")
 
     # good_runs.txt
     good_path = out_dir / "good_runs.txt"
@@ -153,6 +179,21 @@ def write_report(runs: dict, out_dir: Path) -> None:
             )
     print(f"  {partial_path.name}  →  {len(partial)} run(s): {partial}")
 
+    # persistent_fault_runs.txt
+    persistent_path = out_dir / "persistent_fault_runs.txt"
+    with open(persistent_path, "w") as fh:
+        fh.write("# Runs where one or more channels are anomalous in every subrun\n")
+        fh.write("# (systematic fault — e.g. dead/missing channel — below per-file threshold)\n")
+        fh.write("# Columns: run  n_subruns  persistent_channels\n")
+        for r in persistent:
+            v = runs[r]
+            fh.write(
+                f"run{r}  "
+                f"n_subruns={v['n_good']}  "
+                f"persistent_channels={v['persistent_channels']}\n"
+            )
+    print(f"  {persistent_path.name}  →  {len(persistent)} run(s): {persistent}")
+
     if bad:
         print(f"  bad runs   ({len(bad)}): {bad}   [not written to file]")
     if mixed:
@@ -162,12 +203,13 @@ def write_report(runs: dict, out_dir: Path) -> None:
     summary_path = out_dir / "run_summary.csv"
     rows = [
         {
-            "run":              r,
-            "classification":   v["classification"],
-            "n_good_subruns":   v["n_good"],
-            "n_bad_subruns":    v["n_bad"],
-            "last_good_subrun": v["last_good_subrun"],
-            "first_bad_subrun": v["first_bad_subrun"],
+            "run":                 r,
+            "classification":      v["classification"],
+            "n_good_subruns":      v["n_good"],
+            "n_bad_subruns":       v["n_bad"],
+            "last_good_subrun":    v["last_good_subrun"],
+            "first_bad_subrun":    v["first_bad_subrun"],
+            "persistent_channels": ";".join(str(c) for c in v["persistent_channels"]),
         }
         for r, v in sorted(runs.items())
     ]

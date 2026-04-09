@@ -218,7 +218,8 @@ def watch_directory(
                             from .plot import plot_log as _plot_log
                             print(f"  [log plots] Refreshing after {n_processed} files...")
                             try:
-                                _plot_log(log_path, Path(plots_dir))
+                                _plot_log(log_path, Path(plots_dir),
+                                          file_alert_threshold=file_alert_threshold)
                             except Exception as exc:
                                 print(f"[ERROR] Log plot refresh failed: {exc}", file=sys.stderr)
 
@@ -310,6 +311,7 @@ def main() -> None:
     detector = AnomalyDetector.load(str(det_path), ref)
     print(f"  Reference: {len(ref.known_channels())} channels known")
     print(f"  Z-threshold: {detector.z_threshold}σ")
+    print(f"  Trigger features: {'enabled' if detector._use_trigger else 'disabled'}")
     print()
 
     # ── Run-list test mode ────────────────────────────────────────────────────

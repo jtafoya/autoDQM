@@ -39,17 +39,27 @@ class AnomalyDetector:
         self.z_threshold = z_threshold
         self.if_contamination = if_contamination
         self._if_model: Optional[IsolationForest] = None
-        self._feat_cols: list = feature_columns()
+        self._use_trigger: bool = getattr(reference, "_use_trigger", True)
+        self._use_lvds: bool    = getattr(reference, "_use_lvds",    False)
+        self._feat_cols: list = feature_columns(use_trigger=self._use_trigger, use_lvds=self._use_lvds)
 
     # ------------------------------------------------------------------
     # Training
     # ------------------------------------------------------------------
 
-    def train_isolation_forest(self, csv_files: list, max_samples: int = 50_000) -> None:
+    def train_isolation_forest(
+        self,
+        csv_files: list,
+        max_samples: int = 50_000,
+        features_cache: list = None,
+    ) -> None:
         """
         Train an Isolation Forest on z-scored channel feature vectors from good data.
 
-        csv_files : explicit list of good Digitizer CSV file paths.
+        csv_files      : explicit list of good Digitizer CSV file paths.
+        features_cache : optional list of pre-computed feature DataFrames (one per
+                         file, same order as csv_files) returned by build_reference().
+                         When provided, files are not re-read from disk — halves I/O.
 
         Using z-scores (not raw values) makes the IF scale-invariant — channels
         with different baseline values are comparable, and the IF learns what
@@ -60,10 +70,16 @@ class AnomalyDetector:
         keeping training fast while maintaining representativeness.
         """
         z_vectors: list = []
-        for f in csv_files:
-            features = extract_features(str(f))
-            z_df = self.reference.z_score(features).dropna()
-            z_vectors.append(z_df.values)
+        source = features_cache if features_cache is not None else None
+        for i, f in enumerate(csv_files):
+            features = source[i] if source is not None else extract_features(str(f), use_trigger=self._use_trigger, use_lvds=self._use_lvds)
+            z_df = self.reference.z_score(features)
+            # Drop rows that are entirely NaN (channels not in the reference).
+            # Fill any remaining NaN with 0 (= nominal z-score) so that channels
+            # with missing optional features (e.g. no TriggerBoard file) are kept.
+            z_df = z_df.dropna(how="all").fillna(0.0)
+            if not z_df.empty:
+                z_vectors.append(z_df.values)
 
         if not z_vectors:
             raise ValueError("No valid feature vectors found — csv_files list may be empty.")
@@ -95,12 +111,15 @@ class AnomalyDetector:
         Returns a DataFrame indexed by channel with columns:
           anomalous          — bool, True if flagged by either layer
           method             — which layer(s) triggered: "statistical", "isolation_forest",
-                               "statistical+IF", "new_channel", or "" (nominal)
+                               "statistical+IF", "new_channel", "missing_channel", or "" (nominal)
           triggered_features — semicolon-separated feature names with |z| > threshold
           max_z              — largest absolute z-score across all features
           if_score           — Isolation Forest anomaly score (lower = more anomalous)
+
+        Channels present in the reference but absent from this file are flagged as
+        "missing_channel" — they fired in training data but produced zero hits here.
         """
-        features = extract_features(filepath)
+        features = extract_features(filepath, use_trigger=self._use_trigger, use_lvds=self._use_lvds)
         if features.empty:
             import warnings
             warnings.warn(f"No events found in {filepath} — returning empty results.")
@@ -110,6 +129,21 @@ class AnomalyDetector:
         z_df = self.reference.z_score(features)
 
         rows = []
+        # Channels in the reference but absent from this file — completely silent
+        present = set(features.index)
+        for channel in self.reference.known_channels():
+            if channel not in present:
+                rows.append({
+                    "channel": channel,
+                    "stat_flag": True,
+                    "if_flag": False,
+                    "triggered_features": "missing_channel",
+                    "max_z": np.nan,
+                    "if_score": np.nan,
+                    "anomalous": True,
+                    "method": "missing_channel",
+                })
+
         for channel in features.index:
             row: dict = {"channel": channel}
 

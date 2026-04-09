@@ -6,16 +6,17 @@ Run the full autoDQM pipeline in a single command:
   3. Report — classify runs into good / partial / bad
   4. Plots  — reference statistics, log summary, per-file diagnostics for ALERTs
 
-Usage — full run:
-    python3 -m src.pipeline \\
-        --good-list  ../data/good_run_list_EOS.txt \\
-        --apply-list ../data/all_run_list_EOS.txt
+Defaults: good-list = ../data/good_run_list_EOS.txt
+          apply-list = ../data/all_run_list_EOS.txt
 
-Usage — quick end-to-end test:
-    python3 -m src.pipeline \\
-        --good-list  ../data/good_run_list_EOS.txt \\
-        --apply-list ../data/all_run_list_EOS.txt \\
-        --test-train 50 --test-apply 20
+Usage — quick end-to-end test (50 files each, default):
+    python3 -m src.pipeline --test-train --test-apply
+
+Usage — full run (all files):
+    python3 -m src.pipeline
+
+Usage — custom sample size:
+    python3 -m src.pipeline --test-train 100 --test-apply 50
 
 Any step can be skipped with --skip-train / --skip-apply / --skip-report / --skip-plots.
 """
@@ -44,6 +45,8 @@ def step_train(
     z_threshold: float,
     if_contamination: float,
     test_n: int,
+    use_trigger: bool = True,
+    use_lvds: bool = False,
 ) -> None:
     from .run_list import resolve_run_list
     from .reference import build_reference
@@ -56,13 +59,15 @@ def step_train(
         print("ERROR: good run list resolved to zero files.", file=sys.stderr)
         sys.exit(1)
     print(f"  {len(all_csv)} good file(s) found.")
+    print(f"  Trigger features: {'enabled' if use_trigger else 'disabled'}")
+    print(f"  LVDS features:    {'enabled' if use_lvds else 'disabled'}")
 
-    if test_n > 0:
+    if test_n:
         n = min(test_n, len(all_csv))
         all_csv = random.sample(all_csv, n)
         print(f"  [TEST MODE] Using {n} randomly sampled file(s).")
 
-    ref = build_reference(all_csv)
+    ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds)
     ref.save(str(models_dir / "reference.npz"))
 
     import json
@@ -72,7 +77,7 @@ def step_train(
 
     print("Training Isolation Forest...")
     detector = AnomalyDetector(ref, z_threshold=z_threshold, if_contamination=if_contamination)
-    detector.train_isolation_forest(all_csv)
+    detector.train_isolation_forest(all_csv, features_cache=features_cache)
     detector.save(str(models_dir / "detector.pkl"))
     print(f"  Detector saved  → {models_dir}/detector.pkl")
 
@@ -101,7 +106,7 @@ def step_apply(
         sys.exit(1)
     print(f"  {len(all_files)} file(s) found in apply list.")
 
-    if test_n > 0:
+    if test_n:
         n = min(test_n, len(all_files))
         all_files = random.sample(all_files, n)
         print(f"  [TEST MODE] Using {n} randomly sampled file(s).\n")
@@ -151,7 +156,7 @@ def step_plots(
     plot_reference(ref, plots_dir)
 
     print("Log summary plots...")
-    plot_log(str(log_file), plots_dir)
+    plot_log(str(log_file), plots_dir, file_alert_threshold=file_alert_threshold)
 
     print("Per-file plots for ALERT files...")
     df = pd.read_csv(str(log_file))
@@ -202,16 +207,25 @@ def main() -> None:
     )
 
     # ── Input ──
-    parser.add_argument("--good-list",  required=True,
-                        help="Run list of good files for training")
-    parser.add_argument("--apply-list", required=True,
-                        help="Run list of files to apply the trained model to")
+    parser.add_argument("--good-list",  default="../data/good_run_list_EOS.txt",
+                        help="Run list of good files for training "
+                             "(default: ../data/good_run_list_EOS.txt)")
+    parser.add_argument("--apply-list", default="../data/all_run_list_EOS.txt",
+                        help="Run list of files to apply the trained model to "
+                             "(default: ../data/all_run_list_EOS.txt)")
 
     # ── Test mode ──
-    parser.add_argument("--test-train", type=int, default=0, metavar="N",
-                        help="Randomly sample N files for training (0 = use all)")
-    parser.add_argument("--test-apply", type=int, default=0, metavar="N",
-                        help="Randomly sample N files for application (0 = use all)")
+    parser.add_argument("--test-train", type=int, nargs="?", const=50, default=None, metavar="N",
+                        help="Test mode: sample N training files (default N=50 when flag is given)")
+    parser.add_argument("--test-apply", type=int, nargs="?", const=50, default=None, metavar="N",
+                        help="Test mode: sample N apply files (default N=50 when flag is given)")
+
+    # ── Feature set ──
+    parser.add_argument("--no-trigger", action="store_true",
+                        help="Exclude TriggerBoard features (Digitizer-only mode)")
+    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
+                        help="Exclude LVDS pin count features from TriggerBoardSlab LVDSCounts CSV "
+                             "(enabled by default; use this flag to disable)")
 
     # ── Thresholds ──
     parser.add_argument("--z-threshold",       type=float, default=5.0)
@@ -240,12 +254,17 @@ def main() -> None:
 
     models_dir.mkdir(parents=True, exist_ok=True)
 
+    use_trigger = not args.no_trigger
+    use_lvds    = not args.no_trigger_lvds
+
     # ── Step 1: Train ──────────────────────────────────────────────────────
     if not args.skip_train:
         step_train(
             args.good_list, models_dir,
             args.z_threshold, args.if_contamination,
             args.test_train,
+            use_trigger=use_trigger,
+            use_lvds=use_lvds,
         )
     else:
         print("[SKIP] Training")
@@ -259,7 +278,7 @@ def main() -> None:
         # Write a path cache alongside the log so step_plots can find full paths
         from .run_list import resolve_run_list
         all_apply = resolve_run_list(args.apply_list)
-        if args.test_apply > 0:
+        if args.test_apply:
             all_apply = random.sample(all_apply, min(args.test_apply, len(all_apply)))
 
         path_cache = log_file.parent / (log_file.stem + "_paths.txt")
@@ -276,7 +295,7 @@ def main() -> None:
         detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
         print(f"  Reference: {len(ref.known_channels())} channels  |  Z-threshold: {detector.z_threshold}σ")
         print(f"  {len(all_apply)} file(s) to process.")
-        if args.test_apply > 0:
+        if args.test_apply:
             print(f"  [TEST MODE] {len(all_apply)} randomly sampled file(s).\n")
 
         log_file.unlink(missing_ok=True)

@@ -28,9 +28,11 @@ class ReferenceModel:
     std is derived from M2 on demand: sqrt(M2 / count).
     """
 
-    def __init__(self) -> None:
+    def __init__(self, use_trigger: bool = True, use_lvds: bool = True) -> None:
+        self._use_trigger: bool = use_trigger
+        self._use_lvds: bool = use_lvds
         self._state: dict = {}           # channel (int) -> {"count", "mean", "M2"}
-        self._feat_cols: list = feature_columns()
+        self._feat_cols: list = feature_columns(use_trigger=use_trigger, use_lvds=use_lvds)
         self._n_feats: int = len(self._feat_cols)
 
     # ------------------------------------------------------------------
@@ -49,9 +51,13 @@ class ReferenceModel:
                 }
             s = self._state[channel]
             s["count"] += 1
-            delta = x - s["mean"]
+            # Mask NaN features (e.g. trigger info absent for some subruns) so
+            # they do not corrupt the running mean — treat them as no-update (delta=0).
+            valid = ~np.isnan(x)
+            delta = np.where(valid, x - s["mean"], 0.0)
             s["mean"] += delta / s["count"]
-            s["M2"] += delta * (x - s["mean"])   # Welford step
+            delta2 = np.where(valid, x - s["mean"], 0.0)
+            s["M2"] += delta * delta2               # Welford step
 
     # ------------------------------------------------------------------
     # Query
@@ -119,12 +125,16 @@ class ReferenceModel:
             means=np.array([self._state[c]["mean"] for c in channels]),
             M2s=np.array([self._state[c]["M2"] for c in channels]),
             feat_cols=np.array(self._feat_cols),
+            use_trigger=np.array([self._use_trigger]),
+            use_lvds=np.array([self._use_lvds]),
         )
 
     @classmethod
     def load(cls, path: str) -> "ReferenceModel":
         data = np.load(path, allow_pickle=True)
-        model = cls()
+        use_trigger = bool(data["use_trigger"][0]) if "use_trigger" in data else True
+        use_lvds    = bool(data["use_lvds"][0])    if "use_lvds"    in data else False
+        model = cls(use_trigger=use_trigger, use_lvds=use_lvds)
         for i, ch in enumerate(data["channels"]):
             model._state[int(ch)] = {
                 "count": int(data["counts"][i]),
@@ -138,17 +148,31 @@ class ReferenceModel:
 # Convenience builder
 # ------------------------------------------------------------------
 
-def build_reference(csv_files: list) -> ReferenceModel:
+def build_reference(
+    csv_files: list,
+    use_trigger: bool = True,
+    use_lvds: bool = True,
+) -> tuple:
     """
     Build a fresh ReferenceModel from an explicit list of CSV file paths.
 
-    csv_files : list of str or Path
+    csv_files   : list of str or Path
+    use_trigger : include TriggerBoard rate features (default True)
+    use_lvds    : include LVDS pin count features (default False; requires --with-trigger-LVDS)
+
+    Returns
+    -------
+    (model, features_cache) where features_cache is a list of DataFrames
+    (one per file) so callers can reuse them without re-reading from disk.
     """
-    model = ReferenceModel()
+    model = ReferenceModel(use_trigger=use_trigger, use_lvds=use_lvds)
     if not csv_files:
         raise ValueError("csv_files list is empty — nothing to build a reference from.")
+    features_cache = []
     for f in csv_files:
         print(f"  [{Path(f).name}] extracting features...")
-        model.update(extract_features(str(f)))
+        feats = extract_features(str(f), use_trigger=use_trigger, use_lvds=use_lvds)
+        model.update(feats)
+        features_cache.append(feats)
     print(f"  Reference built: {len(csv_files)} file(s), {len(model.known_channels())} channels.")
-    return model
+    return model, features_cache
