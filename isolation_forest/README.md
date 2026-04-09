@@ -1,7 +1,7 @@
 # isolation_forest
 
 Automated per-channel anomaly detection for MilliQan slab Digitizer data.  
-Part of the [autoDAQ](https://arxiv.org/pdf/2501.13789) framework.
+Part of the [autoDQM](https://arxiv.org/pdf/2501.13789) framework.
 
 ---
 
@@ -68,7 +68,7 @@ python3 -c "import pandas, sklearn, numpy, scipy, watchdog; print('OK')"
 All commands must be run from the **`isolation_forest/`** directory:
 
 ```bash
-cd autoDAQ/isolation_forest/
+cd autoDQM/isolation_forest/
 ```
 
 ### 1. Edit the run lists
@@ -109,6 +109,7 @@ Options:
 | `--z-threshold` | `5.0` | σ threshold for the statistical layer |
 | `--if-contamination` | `0.05` | Expected anomaly fraction for Isolation Forest |
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
+| `--test N` | off | Test mode: randomly sample N files from the run list instead of using all of them |
 
 ### 3. Monitor
 

@@ -43,6 +43,13 @@ def main() -> None:
         default=0.05,
         help="Expected fraction of anomalies in training data (Isolation Forest)",
     )
+    parser.add_argument(
+        "--test",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Test mode: randomly sample N files from the run list instead of using all of them",
+    )
     args = parser.parse_args()
 
     models_dir = Path(args.models_dir)
@@ -59,6 +66,13 @@ def main() -> None:
               file=sys.stderr)
         sys.exit(1)
     print(f"  {len(all_csv)} file(s) found.")
+
+    # ---- Test mode: subsample ----
+    if args.test > 0:
+        import random
+        n = min(args.test, len(all_csv))
+        all_csv = random.sample(all_csv, n)
+        print(f"  [TEST MODE] Randomly selected {n} file(s) for training.")
 
     # ---- Build or update reference ----
     if args.update and ref_path.exists():

@@ -15,6 +15,19 @@ python3 -m src.train --good-list ../data/good_run_list.txt
 python3 -m src.monitor --watch-dir /eos/experiment/milliqan/run3/slab/live/
 ```
 
+## Quick test training on a random subset of files
+
+To verify the pipeline works without waiting for a full training run:
+
+```bash
+python3 -m src.train --good-list ../data/good_run_list.txt --test 50
+```
+
+This randomly samples 50 files from the resolved run list and trains on those only.
+Useful for checking that dependencies are installed, file paths resolve correctly,
+and the models directory is writable before committing to a full run.
+If the run list has fewer than 50 files, all of them are used.
+
 ## Incremental update (after collecting more good runs)
 
 ```bash
