@@ -1,0 +1,7 @@
+run,classification,n_good_subruns,n_bad_subruns,last_good_subrun,first_bad_subrun,persistent_channels
+1606,good,8,0,367,,
+1607,mixed,7,1,422,84.0,
+1608,good,7,0,309,,
+1609,mixed,8,1,500,497.0,
+1610,good,2,0,218,,
+1611,mixed,8,1,379,212.0,
