@@ -34,13 +34,17 @@ isolation_forest/
     run_list.py      — run list file parser (glob expansion)
     train.py         — CLI: build/update reference and train Isolation Forest
     monitor.py       — CLI: watch a directory for new files and log anomalies
+    report.py        — CLI: classify runs from the anomaly log (good / partial / bad)
     plot.py          — CLI: generate diagnostic plots for training and detection output
+    pipeline.py      — CLI: run the full pipeline (train → apply → report → plots) in one command
   models/            — saved reference stats and trained Isolation Forest (created by train.py)
-  logs/              — anomaly log CSV files (created by monitor.py)
-  plots/             — diagnostic figures (created by plot.py)
+  logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
+  reports/           — run quality lists and summary table (created by report.py / pipeline.py)
+  plots/             — diagnostic figures (created by plot.py / pipeline.py)
   ../data/
-    good_run_list.txt  — list of known-good files used for training
-    bad_run_list.txt   — list of known-bad files (for reference and validation)
+    good_run_list.txt     — known-good files used for training
+    bad_run_list.txt      — known-bad files (for reference and validation)
+    all_run_list_EOS.txt  — all classified runs combined (good + bad); used for validation
   requirements.txt   — Python dependencies
   setup.sh           — install dependencies
 ```
@@ -71,18 +75,43 @@ All commands must be run from the **`isolation_forest/`** directory:
 cd autoDQM/isolation_forest/
 ```
 
+### 0. Full pipeline (recommended)
+
+Run all steps — train, apply, report, and plots — with a single command:
+
+```bash
+# Full production run
+python3 -m src.pipeline \
+    --good-list  ../data/good_run_list_EOS.txt \
+    --apply-list ../data/all_run_list_EOS.txt
+
+# Quick end-to-end test (randomly sample files from each list)
+python3 -m src.pipeline \
+    --good-list  ../data/good_run_list_EOS.txt \
+    --apply-list ../data/all_run_list_EOS.txt \
+    --test-train 50 --test-apply 20
+```
+
+See [Pipeline](#pipeline) for the full options table. The steps below describe how to run
+each stage individually when finer control is needed.
+
 ### 1. Edit the run lists
 
-`../data/good_run_list.txt` lists the files used to build the reference model.  
-`../data/bad_run_list.txt` lists known-bad files (for validation only — not used in training).
+Three run list files live in `../data/`:
+
+| File | Purpose |
+|---|---|
+| `good_run_list_EOS.txt` | Known-good files used to build the reference model and train the IF |
+| `bad_run_list_EOS.txt` | Known-bad files (validation only — never used in training) |
+| `all_run_list_EOS.txt` | Good + bad combined; used as the apply list for end-to-end validation |
 
 Each non-empty, non-comment line is a **glob pattern** resolved from the `isolation_forest/` directory:
 
 ```
-# ../data/good_run_list.txt
-../data/broken_base_BeforeIncident/Digitizer_*.csv
-../data/broken_base_AfterFix/Digitizer_run1644_subrun*.csv
-../data/noisy_channel__AfterFix/Digitizer_*.csv
+# ../data/good_run_list_EOS.txt
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1644_subrun*.csv
+../data/noisy_channel__AfterFix/Digitizer_run2082_subrun*.csv
 ```
 
 Lines starting with `#` and blank lines are ignored.
@@ -92,7 +121,7 @@ Lines starting with `#` and blank lines are ignored.
 Build the reference model and train the Isolation Forest:
 
 ```bash
-python3 -m src.train --good-list ../data/good_run_list.txt
+python3 -m src.train --good-list ../data/good_run_list_EOS.txt
 ```
 
 This creates:
@@ -128,11 +157,20 @@ python3 -m src.monitor \
   --refresh-log-plots-every 50
 ```
 
+To apply the model to a run list instead of a live directory (test mode only):
+
+```bash
+python3 -m src.monitor \
+  --run-list ../data/all_run_list_EOS.txt \
+  --test 20
+```
+
 Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--watch-dir` | (required) | Directory to watch for new CSV files |
+| `--watch-dir` | (one of these required) | Directory to watch for new CSV files |
+| `--run-list` | (one of these required) | Run list file; requires `--test N`; processes N random files then exits |
 | `--models-dir` | `models/` | Directory with saved models |
 | `--log-file` | `logs/anomalies.csv` | Output log path |
 | `--poll-interval` | `5.0` | Seconds between directory scans |
@@ -141,6 +179,7 @@ Options:
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
 | `--plots-dir` | `plots/` | Root directory for all plot output |
 | `--refresh-log-plots-every` | `0` | Regenerate log summary plots every N processed files (0 = disabled) |
+| `--test N` | off | Test mode: randomly sample N files from the source (watch-dir or run-list), process them, then exit (no polling loop) |
 
 Terminal output:
 ```
@@ -151,7 +190,40 @@ Terminal output:
          ch  3  method=statistical           max_z=2000000   if_score=-0.65   features=[sideband_mean_median;...]
 ```
 
-### 4. Plot
+### 4. Classify runs
+
+After processing files with the monitor, summarise run quality from the anomaly log:
+
+```bash
+python3 -m src.report
+```
+
+This reads `logs/anomalies.csv` and writes:
+
+| File | Description |
+|---|---|
+| `reports/good_runs.txt` | Runs where every subrun is nominal |
+| `reports/partial_good_runs.txt` | Runs that start nominal then transition to anomalous, with the last good and first bad subrun noted |
+| `reports/run_summary.csv` | Full per-run breakdown (all categories) |
+
+Runs are classified as:
+
+| Classification | Meaning |
+|---|---|
+| `good` | All subruns below the alert threshold |
+| `partial` | At least one good subrun followed by at least one bad subrun (clean transition) |
+| `bad` | All subruns above the alert threshold |
+| `mixed` | Good and bad subruns interleaved with no clean transition |
+
+Options:
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--log-file` | `logs/anomalies.csv` | Anomaly log to read |
+| `--out-dir` | `reports/` | Directory to write output files |
+| `--file-alert-threshold` | `0.20` | Fraction of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
+
+### 5. Plot
 
 Generate diagnostic figures after training or after processing files:
 
@@ -166,7 +238,13 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 python3 -m src.plot log
 ```
 
-Figures are saved to `plots/`. See the [Plots](#plots) section for descriptions of each figure.
+Figures are saved to `plots/` by default. Use `--out-dir` and `--models-dir` **before** the subcommand to override:
+
+```bash
+python3 -m src.plot --out-dir /tmp/myplots --models-dir models/ reference
+```
+
+See the [Plots](#plots) section for descriptions of each figure.
 
 ---
 
@@ -310,11 +388,11 @@ a random subsample is drawn. This keeps training fast regardless of corpus size.
 
 ## Scaling to > 10^6 files
 
-When the corpus of good runs grows, add the new patterns to `../data/good_run_list.txt`
+When the corpus of good runs grows, add the new patterns to `../data/good_run_list_EOS.txt`
 and run training in incremental mode:
 
 ```bash
-python3 -m src.train --good-list ../data/good_run_list.txt --update
+python3 -m src.train --good-list ../data/good_run_list_EOS.txt --update
 ```
 
 `--update` reads `models/seen_files.json`, skips files already in the reference,
@@ -329,6 +407,47 @@ As the reference improves with more files:
 
 There is no hard limit on the number of files the reference can absorb — memory usage
 is fixed at O(channels × features) regardless of how many files have been processed.
+
+---
+
+## Pipeline
+
+`src/pipeline.py` runs all four steps — train, apply, report, plots — in sequence with a single command.
+
+```bash
+# Full production run
+python3 -m src.pipeline \
+    --good-list  ../data/good_run_list_EOS.txt \
+    --apply-list ../data/all_run_list_EOS.txt
+
+# Quick end-to-end test
+python3 -m src.pipeline \
+    --good-list  ../data/good_run_list_EOS.txt \
+    --apply-list ../data/all_run_list_EOS.txt \
+    --test-train 50 --test-apply 20
+```
+
+Options:
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--good-list` | (required) | Run list of good files for training |
+| `--apply-list` | (required) | Run list of files to apply the trained model to |
+| `--test-train N` | `0` (all) | Randomly sample N files for training |
+| `--test-apply N` | `0` (all) | Randomly sample N files for application |
+| `--z-threshold` | `5.0` | σ threshold for the statistical layer (passed to train) |
+| `--if-contamination` | `0.05` | Expected anomaly fraction for Isolation Forest (passed to train) |
+| `--file-alert-threshold` | `0.20` | Fraction of anomalous channels to trigger a file-level ALERT (used in apply, report, and plots) |
+| `--models-dir` | `models/` | Saved models directory |
+| `--log-file` | `logs/anomalies.csv` | Output anomaly log |
+| `--reports-dir` | `reports/` | Run quality report output |
+| `--plots-dir` | `plots/` | Plot output directory |
+| `--skip-train` | off | Skip training (requires existing models) |
+| `--skip-apply` | off | Skip application (requires existing log) |
+| `--skip-report` | off | Skip report generation |
+| `--skip-plots` | off | Skip plot generation |
+
+The pipeline also writes a path cache (`<log-stem>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
 
 ---
 

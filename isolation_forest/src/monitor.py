@@ -152,6 +152,7 @@ def watch_directory(
     plot_alerts: bool = False,
     plots_dir: str = "plots",
     refresh_log_plots_every: int = 0,
+    test_n: int = 0,
 ) -> None:
     """
     Poll watch_dir for new Digitizer_*.csv files and process each one.
@@ -159,12 +160,34 @@ def watch_directory(
     Files already present when the monitor starts are skipped unless
     --process-existing is passed.
 
+    test_n : if > 0, randomly sample this many files from watch_dir, process
+        them, then exit immediately (no polling loop). Useful for quick checks
+        that the pipeline is working end-to-end.
+
     refresh_log_plots_every : if > 0, regenerate log summary plots every N
         processed files. 0 disables automatic log plot refresh.
     """
+    import random
     watch_path = Path(watch_dir)
-    seen: set = set()
     n_processed = 0
+
+    # ── Test mode: sample N files and exit ───────────────────────────────────
+    if test_n > 0:
+        all_files = sorted(watch_path.glob("Digitizer_*.csv"))
+        sample = random.sample(all_files, min(test_n, len(all_files)))
+        print(f"[TEST MODE] Randomly selected {len(sample)} file(s) from {watch_dir}\n")
+        for f in sample:
+            process_file(
+                str(f), detector, log_path,
+                file_alert_threshold=file_alert_threshold,
+                plot_alerts=plot_alerts,
+                plots_dir=plots_dir,
+            )
+        print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
+        return
+
+    # ── Normal mode: poll for new files ──────────────────────────────────────
+    seen: set = set()
 
     if not process_existing:
         seen = {f for f in watch_path.glob("Digitizer_*.csv")}
@@ -208,7 +231,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Monitor a directory for anomalous Digitizer files."
     )
-    parser.add_argument("--watch-dir", required=True, help="Directory to watch for new CSVs")
+    parser.add_argument("--watch-dir", help="Directory to watch for new CSVs")
+    parser.add_argument(
+        "--run-list",
+        help="Path to a run list file (glob patterns). When combined with --test N, "
+             "randomly samples N files from the list and processes them, then exits. "
+             "Alternative to --watch-dir for batch and test use.",
+    )
     parser.add_argument("--models-dir", default="models", help="Directory containing saved models")
     parser.add_argument("--log-file", default="logs/anomalies.csv", help="Output log file")
     parser.add_argument(
@@ -247,7 +276,20 @@ def main() -> None:
         metavar="N",
         help="Regenerate log summary plots every N processed files (0 = disabled)",
     )
+    parser.add_argument(
+        "--test",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Test mode: randomly sample N files from watch-dir, process them, then exit "
+             "(no polling loop). Useful for quick end-to-end checks.",
+    )
     args = parser.parse_args()
+
+    if not args.watch_dir and not args.run_list:
+        parser.error("one of --watch-dir or --run-list is required")
+    if args.run_list and not args.test:
+        parser.error("--run-list requires --test N (batch processing without a watch loop)")
 
     models_dir = Path(args.models_dir)
     ref_path   = models_dir / "reference.npz"
@@ -270,6 +312,24 @@ def main() -> None:
     print(f"  Z-threshold: {detector.z_threshold}σ")
     print()
 
+    # ── Run-list test mode ────────────────────────────────────────────────────
+    if args.run_list:
+        import random
+        from .run_list import resolve_run_list
+        all_files = resolve_run_list(args.run_list)
+        sample = random.sample(all_files, min(args.test, len(all_files)))
+        print(f"[TEST MODE] {len(sample)} file(s) sampled from {args.run_list}\n")
+        for f in sample:
+            process_file(
+                f, detector, args.log_file,
+                file_alert_threshold=args.file_alert_threshold,
+                plot_alerts=args.plot_alerts,
+                plots_dir=args.plots_dir,
+            )
+        print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
+        return
+
+    # ── Directory watch mode ──────────────────────────────────────────────────
     watch_directory(
         args.watch_dir,
         detector,
@@ -280,6 +340,7 @@ def main() -> None:
         plot_alerts=args.plot_alerts,
         plots_dir=args.plots_dir,
         refresh_log_plots_every=args.refresh_log_plots_every,
+        test_n=args.test,
     )
 
 

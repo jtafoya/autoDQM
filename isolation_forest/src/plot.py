@@ -202,8 +202,8 @@ def plot_file(filepath: str, detector: AnomalyDetector, out_dir: Path) -> None:
     geom["anomalous"] = geom["channel"].map(results["anomalous"].to_dict())
 
     layers = sorted(geom["layer"].unique())
-    ncols  = min(len(layers), 3)
-    nrows  = int(np.ceil(len(layers) / ncols))
+    ncols  = len(layers)
+    nrows  = 1
     fig, axes = plt.subplots(nrows, ncols,
                              figsize=(5 * ncols, 4 * nrows + 0.5),
                              squeeze=False)
