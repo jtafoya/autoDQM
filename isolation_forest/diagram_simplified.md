@@ -83,11 +83,11 @@ flowchart TD
 
 Each Digitizer CSV is compressed from ~8 000 events to **one row per channel** by applying three aggregations to each of the 11 pulse metrics:
 
-$$\bar{v}_c = \frac{1}{N_c}\sum_{i=1}^{N_c} v_i \qquad \sigma_{v,c} = \sqrt{\frac{1}{N_c}\sum_{i=1}^{N_c}(v_i - \bar{v}_c)^2} \qquad \tilde{v}_c = \operatorname{median}(\{v_i\})$$
+$$\bar{v}_c = \frac{1}{N_c}\sum_{i=1}^{N_c} v_i \qquad \sigma_{v,c} = \sqrt{\frac{1}{N_c}\sum_{i=1}^{N_c}(v_i - \bar{v}_c)^2} \qquad \tilde{v}_c = \text{median}(\{v_i\})$$
 
 plus two occupancy features:
 
-$$\text{occupancy}_c = \frac{|\text{events where channel } c \text{ fired}|}{|\text{total events}|} \qquad \text{frac\_dead}_c = \frac{|\text{appearances with nPulses}=0|}{|\text{appearances of } c|}$$
+$$\text{occupancy}_{c} = \frac{|\text{events where channel } c \text{ fired}|}{|\text{total events}|} \qquad \text{frac\\_dead}_{c} = \frac{|\text{appearances with nPulses}=0|}{|\text{appearances of } c|}$$
 
 giving a feature vector $\mathbf{x}_c \in \mathbb{R}^d$ per channel per file, with $d \in \{35, 50, 86, 101\}$ depending on which companion files are enabled.
 
@@ -117,9 +117,9 @@ For each feature $j$ of channel $c$ in the incoming file:
 
 $$z_j = \frac{|x_j - \hat{\mu}_j|}{\hat{\sigma}_j}$$
 
-$$\text{max\_z} = \max_j\, z_j$$
+$$\text{max\\_z} = \max_j\, z_j$$
 
-The channel is flagged if $\text{max\_z} > z_{\text{thresh}} = 5$.
+The channel is flagged if $\text{max\\_z} > z_{\text{thresh}} = 5$.
 
 ---
 
@@ -144,7 +144,7 @@ A channel is flagged when `predict(z) = −1`, corresponding to $s > 0.5$.
 
 ### File-Level Alert
 
-$$f_{\text{bad}} = \frac{n_{\text{anomalous channels}}}{n_{\text{total channels}}}$$
+$$f_{\text{bad}} = \frac{n_{\text{anomalous}}}{n_{\text{channels}}}$$
 
 | $f_{\text{bad}}$ | Status |
 |---|---|
