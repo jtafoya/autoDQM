@@ -2,6 +2,22 @@
 
 All commands are run from `isolation_forest/`.
 
+## HTCondor — all 4 feature variants in parallel (production)
+
+Before submitting, verify `env.sh` has the correct paths for your account, then:
+
+```bash
+bash setup.sh                    # install deps on lxplus (once)
+condor_submit condor/submit.sub  # submit 4 jobs
+condor_q <cluster_id>            # check status
+```
+
+Each job runs the full pipeline for one variant. Output goes to
+`models/condor_<variant>/`, `logs/condor_<variant>.csv`, `reports/condor_<variant>/`,
+`plots/condor_<variant>/`. You receive an email on completion.
+
+---
+
 ## Full pipeline — single command (recommended)
 
 Both `--good-list` and `--apply-list` default to the standard EOS run lists,

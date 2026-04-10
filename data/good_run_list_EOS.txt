@@ -4,20 +4,27 @@
 # This file lives in data/ but patterns are relative to isolation_forest/ (where train.py runs).
 # Wildcards * and ** are supported. Character-class ranges [0-9] are also supported.
 
+# -- Standard GOOD runs -----------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1606_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1607_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1608_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1609_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1610_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1611_subrun*.csv
+
 # ── run1637: good subruns 1–356 (incident starts at 357) ────────────────────
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9].csv
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9][0-9].csv
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun1[0-9][0-9].csv
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun2[0-9][0-9].csv
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun3[0-4][0-9].csv
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun35[0-6].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9][0-9].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun1[0-9][0-9].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun2[0-9][0-9].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun3[0-4][0-9].csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun35[0-6].csv
 
 # ── run1644: all subruns good (after broken-base fix) ───────────────────────
-/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1644_subrun*.csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1644_subrun*.csv
 
 # ── run2082: all subruns good (after noisy-channel fix) ─────────────────────
-# Not yet in EOS — using local copy
-../data/noisy_channel__AfterFix/Digitizer_run2082_subrun*.csv
+#/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2082_subrun*.csv
 
 # ── UNCLASSIFIED ─────────────────────────────────────────────────────────────
 # The following runs (934, 964, 971, 1723, 1732, 1734, 1735, 1736, 1737, 1738,

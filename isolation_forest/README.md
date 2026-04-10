@@ -37,21 +37,46 @@ isolation_forest/
     report.py        — CLI: classify runs from the anomaly log (good / partial / bad)
     plot.py          — CLI: generate diagnostic plots for training and detection output
     pipeline.py      — CLI: run the full pipeline (train → apply → report → plots) in one command
+  condor/
+    submit.sub       — HTCondor job description (4 feature-variant jobs)
+    run_pipeline.sh  — worker-node entry point (sources env.sh, calls pipeline.py)
+    logs/            — per-job stdout/stderr and shared job event log
   models/            — saved reference stats and trained Isolation Forest (created by train.py)
   logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
   reports/           — run quality lists and summary table (created by report.py / pipeline.py)
   plots/             — diagnostic figures (created by plot.py / pipeline.py)
+  env.sh             — central path configuration (all absolute paths; sourced by every script)
+  setup.sh           — install Python dependencies (sources env.sh)
+  diagram.md         — Mermaid architecture diagram of the full framework
   ../data/
     good_run_list_EOS.txt  — known-good files used for training (default --good-list)
     bad_run_list_EOS.txt   — known-bad files (for reference and validation)
     all_run_list_EOS.txt   — all classified runs combined (good + bad); default --apply-list
   requirements.txt   — Python dependencies
-  setup.sh           — install dependencies
 ```
 
 ---
 
 ## Setup
+
+### 1. Configure paths
+
+`env.sh` is the single source of truth for all filesystem paths. It is sourced automatically
+by `setup.sh` and `condor/run_pipeline.sh`. If you move the installation or run on a different
+account, edit the variables at the top of `env.sh` before doing anything else:
+
+```bash
+# env.sh (excerpt)
+export INSTALLATION_PATH="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest"
+export DATA_PATH="/afs/cern.ch/user/t/tafoyava/autoDQM/data"
+```
+
+All other paths (`MODELS_DIR`, `LOGS_DIR`, `REPORTS_DIR`, `PLOTS_DIR`, `GOOD_RUN_LIST`,
+`ALL_RUN_LIST`) are derived from those two variables. Using absolute paths prevents the
+`PermissionError: 'models'` class of failures that occur when Condor worker nodes start
+in a different working directory.
+
+### 2. Install Python dependencies
 
 ```bash
 bash setup.sh
@@ -522,6 +547,62 @@ Options:
 | `--skip-plots` | off | Skip plot generation |
 
 The pipeline also writes a path cache (`<log-stem>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
+
+---
+
+## HTCondor
+
+The full pipeline can be submitted to the CERN HTCondor batch system to run all four
+feature variants in parallel. Each job runs the complete train → apply → report → plots
+sequence for one variant.
+
+### Prerequisites
+
+1. `env.sh` is configured with correct absolute paths (see [Setup](#setup))
+2. Dependencies are installed: `bash setup.sh`
+3. Both run list files exist at the paths in `env.sh`
+
+### Submit
+
+```bash
+# From isolation_forest/
+condor_submit condor/submit.sub
+```
+
+This submits 4 jobs, one per feature variant:
+
+| Job | Variant | Flags | Features |
+|---|---|---|---|
+| `.0` | `trigger_lvds` | *(none)* | 101 |
+| `.1` | `trigger_nolvds` | `--no-trigger-LVDS` | 50 |
+| `.2` | `notrigger_lvds` | `--no-trigger` | 86 |
+| `.3` | `notrigger_nolvds` | `--no-trigger --no-trigger-LVDS` | 35 |
+
+Each job requests 4 CPUs, 4 GB RAM, and the `longlunch` flavour (2-hour wall time).
+AFS and EOS are mounted on lxplus Condor nodes — no file transfer is needed.
+You will receive an email at `j.tafoya.vargas@cern.ch` when all jobs complete.
+
+### Monitor
+
+```bash
+condor_q <cluster_id>
+condor_history <cluster_id>   # after jobs finish
+```
+
+### Output
+
+Each variant writes to its own subdirectory to avoid conflicts:
+
+```
+models/condor_trigger_lvds/       logs/condor_trigger_lvds.csv
+models/condor_trigger_nolvds/     logs/condor_trigger_nolvds.csv
+models/condor_notrigger_lvds/     logs/condor_notrigger_lvds.csv
+models/condor_notrigger_nolvds/   logs/condor_notrigger_nolvds.csv
+reports/condor_*/
+plots/condor_*/
+```
+
+Condor stdout/stderr and the shared job event log are in `condor/logs/`.
 
 ---
 

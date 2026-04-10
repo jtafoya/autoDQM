@@ -15,9 +15,11 @@ set -euo pipefail
 
 VARIANT=${1:?Usage: run_pipeline.sh <variant>}
 
-# Ensure we're in isolation_forest/ regardless of where condor lands us
+# Load central path configuration (absolute paths — safe on Condor worker nodes)
 SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
-cd "${SCRIPT_DIR}/.."
+source "${SCRIPT_DIR}/../env.sh"
+
+cd "${INSTALLATION_PATH}"
 
 echo "============================================================"
 echo "  autoDQM pipeline — variant: $VARIANT"
@@ -30,7 +32,7 @@ echo "============================================================"
 PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 export PYTHONUSERBASE="${HOME}/.local"
 export PATH="${HOME}/.local/bin:${PATH}"
-export PYTHONPATH="${HOME}/.local/lib/python${PYVER}/site-packages:/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest:${PYTHONPATH:-}"
+export PYTHONPATH="${HOME}/.local/lib/python${PYVER}/site-packages:${INSTALLATION_PATH}:${PYTHONPATH:-}"
 
 echo "  Python : $(python3 --version)  ($(which python3))"
 echo "  PYTHONPATH prefix: ${HOME}/.local/lib/python${PYVER}/site-packages"
@@ -68,12 +70,12 @@ echo "  Flags: ${FLAGS[*]:-'(none — full feature set)'}"
 echo ""
 
 python3 -m src.pipeline \
-    --good-list   ../data/good_run_list_EOS.txt \
-    --apply-list  ../data/all_run_list_EOS.txt  \
-    --models-dir  models/condor_${VARIANT}      \
-    --log-file    logs/condor_${VARIANT}.csv    \
-    --reports-dir reports/condor_${VARIANT}     \
-    --plots-dir   plots/condor_${VARIANT}       \
+    --good-list   "${GOOD_RUN_LIST}"                        \
+    --apply-list  "${ALL_RUN_LIST}"                         \
+    --models-dir  "${MODELS_DIR}/condor_${VARIANT}"         \
+    --log-file    "${LOGS_DIR}/condor_${VARIANT}.csv"       \
+    --reports-dir "${REPORTS_DIR}/condor_${VARIANT}"        \
+    --plots-dir   "${PLOTS_DIR}/condor_${VARIANT}"          \
     "${FLAGS[@]}"
 
 echo ""
