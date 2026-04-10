@@ -1,0 +1,11 @@
+============================================================
+  autoDQM pipeline — variant: notrigger_nolvds
+  Host : b9p17p1611.cern.ch
+  Start: Thu Apr  9 08:34:23 PM UTC 2026
+============================================================
+  Python : Python 3.9.25  (/usr/bin/python3)
+  PYTHONPATH prefix: /afs/cern.ch/user/t/tafoyava/.local/lib/python3.9/site-packages
+  Dependencies: OK
+
+  Flags: --no-trigger --no-trigger-LVDS
+

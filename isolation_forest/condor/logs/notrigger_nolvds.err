@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/usr/lib64/python3.9/pathlib.py", line 1251, in mkdir
+    self._accessor.mkdir(self, mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'models/condor_notrigger_nolvds'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib64/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib64/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/src/pipeline.py", line 332, in <module>
+    main()
+  File "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/src/pipeline.py", line 255, in main
+    models_dir.mkdir(parents=True, exist_ok=True)
+  File "/usr/lib64/python3.9/pathlib.py", line 1255, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+  File "/usr/lib64/python3.9/pathlib.py", line 1251, in mkdir
+    self._accessor.mkdir(self, mode)
+PermissionError: [Errno 13] Permission denied: 'models'
