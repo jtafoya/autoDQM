@@ -23,7 +23,7 @@
     "_comment_thresholds": "z_threshold: number of standard deviations above which a channel feature is flagged. if_contamination: expected fraction of anomalies in training data passed to IsolationForest. file_alert_threshold: fraction of anomalous channels required to classify a file as ALERT (vs WARN).",
     "z_threshold":          6.0,
     "if_contamination":     0.01,
-    "file_alert_threshold": 0.001,
+    "file_alert_threshold": 0.01,
 
     "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling.",
     "poll_interval":        5.0,
