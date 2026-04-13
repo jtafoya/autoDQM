@@ -1,5 +1,5 @@
 data/*/*.root
-isolation_forest/logs
-isolation_forest/models
-isolation_forest/reports
-isolation_forest/plots
+isolation_forest/logs/*
+isolation_forest/models/*
+isolation_forest/reports/*
+isolation_forest/plots/*

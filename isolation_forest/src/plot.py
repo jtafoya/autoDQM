@@ -39,18 +39,43 @@ CMAP_BIPOLAR = "RdBu_r"
 CMAP_SEQ     = "viridis"
 
 
+def _fmt(v: float) -> str:
+    """Compact cell annotation: scientific for very large/small, fixed decimals otherwise."""
+    if np.isnan(v):
+        return ""
+    if v == 0.0:
+        return "0"
+    a = abs(v)
+    if a >= 1e4 or a < 1e-2:
+        return f"{v:.1e}"
+    if a >= 100:
+        return f"{v:.1f}"
+    if a >= 10:
+        return f"{v:.2f}"
+    return f"{v:.3g}"
+
+
+def _channel_order(index, pseudo_trigger, pseudo_lvds):
+    """Return channels sorted: integers numerically, then trigger_rate, then trigger_lvds_total."""
+    real = sorted([c for c in index if isinstance(c, int)])
+    pseudo = [c for c in [pseudo_trigger, pseudo_lvds] if c in index]
+    return real + pseudo
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 1.  REFERENCE PLOTS
 # ══════════════════════════════════════════════════════════════════════════════
 
 def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     """Three figures summarising the trained reference model."""
-    channels  = sorted(ref.known_channels(), key=str)
+    from .features import PSEUDO_TRIGGER, PSEUDO_LVDS
+    channels  = _channel_order(ref.known_channels(), PSEUDO_TRIGGER, PSEUDO_LVDS)
     feat_cols = ref._feat_cols
 
-    means = np.array([ref.get_stats(c)[0] for c in channels])   # (n_ch, n_feat)
-    stds  = np.array([ref.get_stats(c)[1] for c in channels])
+    means  = np.array([ref.get_stats(c)[0] for c in channels])   # (n_ch, n_feat)
+    stds   = np.array([ref.get_stats(c)[1] for c in channels])
     counts = np.array([ref.n_files(c) for c in channels])
+    ch_labels = [f"ch{c}" if isinstance(c, int) else c for c in channels]
 
     # ── 1a. Reference mean heatmap ───────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(18, 6))
@@ -61,7 +86,7 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     ax.set_xlabel("Channel")
     ax.set_ylabel("Feature")
     ax.set_xticks(range(len(channels)))
-    ax.set_xticklabels(channels, fontsize=6, rotation=90)
+    ax.set_xticklabels(ch_labels, fontsize=6, rotation=90)
     ax.set_yticks(range(len(feat_cols)))
     ax.set_yticklabels(feat_cols, fontsize=7)
     ax.set_title("Reference means (column-normalised z-score)")
@@ -77,7 +102,7 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     ax.set_xlabel("Channel")
     ax.set_ylabel("Feature")
     ax.set_xticks(range(len(channels)))
-    ax.set_xticklabels(channels, fontsize=6, rotation=90)
+    ax.set_xticklabels(ch_labels, fontsize=6, rotation=90)
     ax.set_yticks(range(len(feat_cols)))
     ax.set_yticklabels(feat_cols, fontsize=7)
     ax.set_title("Reference uncertainty — log(1 + σ / median_σ per feature)")
@@ -91,7 +116,7 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     ax.set_xlabel("Channel")
     ax.set_ylabel("Training files")
     ax.set_xticks(range(len(channels)))
-    ax.set_xticklabels(channels, fontsize=6, rotation=90)
+    ax.set_xticklabels(ch_labels, fontsize=6, rotation=90)
     ax.set_title("Training coverage — number of good files each channel appeared in")
     ax.axhline(np.mean(counts), color="tomato", linestyle="--", linewidth=1,
                label=f"mean = {np.mean(counts):.1f}")
@@ -114,13 +139,9 @@ def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
     """
     from .features import PSEUDO_TRIGGER, PSEUDO_LVDS
 
-    all_channels = sorted(ref.known_channels(), key=str)
-    # Real channels first, then trigger_rate, then trigger_lvds_total at the very bottom
-    real_channels = sorted([c for c in all_channels if isinstance(c, int)])
-    trigger_row   = [PSEUDO_TRIGGER] if PSEUDO_TRIGGER in all_channels else []
-    lvds_row      = [PSEUDO_LVDS]    if PSEUDO_LVDS    in all_channels else []
-    pseudo_channels = trigger_row + lvds_row
-    channels  = real_channels + pseudo_channels
+    channels = _channel_order(ref.known_channels(), PSEUDO_TRIGGER, PSEUDO_LVDS)
+    real_channels   = [c for c in channels if isinstance(c, int)]
+    pseudo_channels = [c for c in channels if not isinstance(c, int)]
     feat_cols = ref._feat_cols
 
     n_ch   = len(channels)
@@ -155,20 +176,6 @@ def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
                    interpolation="nearest")
 
     # Annotate every cell with the raw mean value
-    def _fmt(v: float) -> str:
-        if np.isnan(v):
-            return ""
-        if v == 0.0:
-            return "0"
-        a = abs(v)
-        if a >= 1e4 or a < 1e-2:
-            return f"{v:.1e}"
-        if a >= 100:
-            return f"{v:.1f}"
-        if a >= 10:
-            return f"{v:.2f}"
-        return f"{v:.3g}"
-
     for i in range(n_ch):
         for j in range(n_feat):
             txt = _fmt(means[i, j])
@@ -214,8 +221,10 @@ def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
 
 def plot_file(filepath: str, detector: AnomalyDetector, out_dir: Path) -> None:
     """Four figures for the anomaly analysis of one Digitizer CSV file."""
-    stem     = Path(filepath).stem
-    ref      = detector.reference
+    from .features import PSEUDO_TRIGGER, PSEUDO_LVDS
+
+    stem      = Path(filepath).stem
+    ref       = detector.reference
     feat_cols = ref._feat_cols
 
     results  = detector.analyze_file(filepath)
@@ -228,55 +237,76 @@ def plot_file(filepath: str, detector: AnomalyDetector, out_dir: Path) -> None:
                .first()
                .reset_index())
 
-    channels = sorted(results.index.tolist(), key=str)
+    # Channel ordering: integers numerically, then pseudo-channels in canonical order
+    channels        = _channel_order(results.index, PSEUDO_TRIGGER, PSEUDO_LVDS)
+    real_channels   = [c for c in channels if isinstance(c, int)]
+    pseudo_channels = [c for c in channels if not isinstance(c, int)]
+    n_ch            = len(channels)
+    n_feat          = len(feat_cols)
+    ch_idx          = {ch: i for i, ch in enumerate(channels)}
+    ch_labels       = [f"ch{c}" if isinstance(c, int) else c for c in channels]
 
     # ── 2a. Z-score heatmap ──────────────────────────────────────────────────
-    z_matrix = np.full((len(channels), len(feat_cols)), np.nan)
-    ch_idx   = {ch: i for i, ch in enumerate(channels)}
+    z_matrix = np.full((n_ch, n_feat), np.nan)
     for ch in channels:
         if ch in z_df.index and not z_df.loc[ch].isna().all():
             z_matrix[ch_idx[ch]] = np.clip(z_df.loc[ch].abs().values, 0, 50)
 
-    fig, ax = plt.subplots(figsize=(18, max(4, len(channels) * 0.18)))
-    im = ax.imshow(z_matrix, aspect="auto", cmap=CMAP_ZSCORE, vmin=0, vmax=10)
-    # Overlay red border on anomalous channels
+    cell_w = 0.50
+    cell_h = 0.22
+    fig_w  = max(16, n_feat * cell_w + 4.0)
+    fig_h  = max( 8, n_ch   * cell_h + 2.5)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+
+    cmap = plt.get_cmap(CMAP_ZSCORE).copy()
+    cmap.set_bad(color="#f0f0f0")
+    im = ax.imshow(z_matrix, aspect="auto", cmap=cmap, vmin=0, vmax=10,
+                   interpolation="nearest")
+
+    # Cell text (actual |z| value)
+    for i in range(n_ch):
+        for j in range(n_feat):
+            v = z_matrix[i, j]
+            if np.isnan(v):
+                continue
+            norm_val = min(v / 10.0, 1.0)
+            text_color = "white" if norm_val > 0.65 else "black"
+            ax.text(j, i, _fmt(v), ha="center", va="center",
+                    fontsize=5, color=text_color, clip_on=True)
+
+    # Highlight anomalous rows
     for ch in channels:
         if results.loc[ch, "anomalous"]:
-            i = ch_idx[ch]
-            ax.axhspan(i - 0.5, i + 0.5, color="none",
-                       linewidth=0, alpha=0)   # placeholder
-            for spine in ["left", "right", "top", "bottom"]:
-                pass  # drawn per-cell below
-    # Highlight anomalous rows with a left margin bar
-    for ch in channels:
-        if results.loc[ch, "anomalous"]:
-            i = ch_idx[ch]
-            ax.barh(i, len(feat_cols), left=0, height=0.95,
+            ax.barh(ch_idx[ch], n_feat, left=0, height=0.95,
                     color="tomato", alpha=0.08, zorder=0)
-    ax.set_xlabel("Feature")
-    ax.set_ylabel("Channel")
-    ax.set_xticks(range(len(feat_cols)))
-    ax.set_xticklabels(feat_cols, fontsize=6.5, rotation=45, ha="right")
-    ax.set_yticks(range(len(channels)))
-    ax.set_yticklabels(channels, fontsize=6)
+
+    # Separator between real and pseudo-channels
+    if pseudo_channels:
+        ax.axhline(len(real_channels) - 0.5, color="steelblue", linewidth=1.5, linestyle="--")
+
+    ax.set_xticks(range(n_feat))
+    ax.set_xticklabels(feat_cols, fontsize=6, rotation=45, ha="right")
+    ax.set_yticks(range(n_ch))
+    ax.set_yticklabels(ch_labels, fontsize=6)
+    ax.set_xlabel("Feature", fontsize=8)
+    ax.set_ylabel("Digitiser", fontsize=8)
     ax.set_title(f"Z-score heatmap — {stem}\n"
                  f"(clamped at 50σ; red shading = flagged channel)")
-    fig.colorbar(im, ax=ax, label="|z-score|")
+    fig.colorbar(im, ax=ax, label="|z-score|", shrink=0.4, pad=0.01)
     fig.tight_layout()
     _save(fig, out_dir / f"{stem}_zscore_heatmap.png")
 
     # ── 2b. Max |z| per channel ──────────────────────────────────────────────
-    max_z   = results["max_z"].fillna(0).values
-    colors  = ["tomato" if a else "steelblue"
-               for a in results.loc[channels, "anomalous"]]
+    max_z  = results.loc[channels, "max_z"].fillna(0).values
+    colors = ["tomato" if results.loc[ch, "anomalous"] else "steelblue" for ch in channels]
     fig, ax = plt.subplots(figsize=(14, 4))
-    ax.bar(range(len(channels)), max_z, color=colors, width=0.8)
+    ax.bar(range(n_ch), max_z, color=colors, width=0.8)
     ax.axhline(detector.z_threshold, color="black", linestyle="--", linewidth=1,
                label=f"threshold = {detector.z_threshold}σ")
     ax.set_xlabel("Channel")
     ax.set_ylabel("Max |z-score|")
-    ax.set_xticks(range(len(channels)))
-    ax.set_xticklabels(channels, fontsize=6, rotation=90)
+    ax.set_xticks(range(n_ch))
+    ax.set_xticklabels(ch_labels, fontsize=6, rotation=90)
     ax.set_title(f"Max |z-score| per channel — {stem}\n"
                  f"(red = flagged, blue = nominal)")
     ax.set_yscale("symlog", linthresh=10)
@@ -285,19 +315,14 @@ def plot_file(filepath: str, detector: AnomalyDetector, out_dir: Path) -> None:
     _save(fig, out_dir / f"{stem}_max_zscore.png")
 
     # ── 2c. Isolation Forest score per channel ───────────────────────────────
-    if_scores = results["if_score"].values
+    if_scores = results.loc[channels, "if_score"].values
     if not np.all(np.isnan(if_scores)):
-        if_colors = ["tomato" if f else "steelblue"
-                     for f in results.loc[channels, "if_flag"]
-                     if "if_flag" in results.columns] if "if_flag" in results.columns \
-                    else ["steelblue"] * len(channels)
-
         fig, ax = plt.subplots(figsize=(14, 4))
-        ax.bar(range(len(channels)), if_scores, color="steelblue", width=0.8)
+        ax.bar(range(n_ch), if_scores, color="steelblue", width=0.8)
         ax.set_xlabel("Channel")
         ax.set_ylabel("IF anomaly score")
-        ax.set_xticks(range(len(channels)))
-        ax.set_xticklabels(channels, fontsize=6, rotation=90)
+        ax.set_xticks(range(n_ch))
+        ax.set_xticklabels(ch_labels, fontsize=6, rotation=90)
         ax.set_title(f"Isolation Forest anomaly score per channel — {stem}\n"
                      f"(more negative = more anomalous)")
         fig.tight_layout()

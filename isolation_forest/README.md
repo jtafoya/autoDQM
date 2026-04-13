@@ -379,9 +379,9 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 
 | File | Description |
 |---|---|
-| `<stem>_zscore_heatmap.png` | Full channels × features z-score matrix, clamped at 50σ. Red shading highlights flagged channels. When trigger features are enabled, the rightmost columns show trigger rates — a vertical stripe there indicates a file-wide trigger condition change. |
-| `<stem>_max_zscore.png` | Bar chart of the maximum absolute z-score per channel (log scale). The dashed line marks the alert threshold. Red bars are flagged channels, blue are nominal. |
-| `<stem>_if_scores.png` | Isolation Forest anomaly score per channel. More negative = more anomalous. Complements the z-score plot by capturing multivariate anomalies not visible in any single feature. |
+| `<stem>_zscore_heatmap.png` | Full channels × features z-score matrix, clamped at 50σ. Same layout as `reference_mean_table.png`: digitiser channels (`ch0`–`ch95`) ordered numerically top to bottom, pseudo-channels (`trigger_rate`, `trigger_lvds_total`) below a dashed separator, cell text showing the actual \|z\| value, grey cells for features not applicable to that row. Red shading highlights flagged channels. |
+| `<stem>_max_zscore.png` | Bar chart of the maximum absolute z-score per channel (log scale), channels ordered numerically with pseudo-channels at the right. The dashed line marks the alert threshold. Red bars are flagged channels, blue are nominal. |
+| `<stem>_if_scores.png` | Isolation Forest anomaly score per channel, same channel ordering. More negative = more anomalous. Complements the z-score plot by capturing multivariate anomalies not visible in any single feature. |
 | `<stem>_geometry.png` | Detector layout plot: one panel per layer (all 4 layers in a single row), channels placed at their (row, column) position and coloured by max \|z\|. Red rings mark flagged channels. Useful for spotting spatially localised problems (e.g. a dead row or noisy column). |
 
 ### Log summary plots
@@ -531,11 +531,10 @@ python3 -m src.train --update
 and folds in only the new ones. The Isolation Forest is always fully retrained
 (it cannot be updated incrementally), but this is fast since training data is capped.
 
-As the reference improves with more files:
-- Per-channel mean and std estimates become tighter
-- Isolation Forest has a larger, more representative training set
-- The false positive rate drops; consider lowering `--file-alert-threshold` from 0.001 toward 0.0005
-- Consider also lowering `--if-contamination` from 0.05 toward 0.01
+As the reference improves with more files, per-channel mean and std estimates become
+tighter and the Isolation Forest has a larger, more representative training set — the
+false positive rate drops automatically. See [Performance tuning](#performance-tuning)
+for guidance on threshold selection.
 
 There is no hard limit on the number of files the reference can absorb — memory usage
 is fixed at O(channels × features) regardless of how many files have been processed.
@@ -651,11 +650,75 @@ Condor stdout/stderr are written to `condor/logs/<cluster>.<process>.<variant>.{
 
 ---
 
+## Performance tuning
+
+If known-good data keeps raising warnings or alerts, the cause is usually one of the
+following. The log plots (`python3 -m src.plot log`) are the primary diagnostic tool.
+
+### Diagnosing false positives
+
+Run the pipeline against a known-good list and inspect the three frequency plots:
+
+| Plot | What to look for |
+|---|---|
+| `log_channel_frequency.png` | Same channels flagged repeatedly → systematic issue with those channels or their reference stats. Random channels each time → threshold or IF noise. |
+| `log_feature_frequency.png` | One or two features dominate → those features have high run-to-run variance; add them to `ignore_features` or raise `z_threshold`. |
+| `log_anomaly_rate.png` | Every file just barely above the alert threshold → threshold is the problem. Some files much worse than others → those runs are genuinely different. |
+
+### Common causes and fixes
+
+**Isolation Forest contamination too high (`if_contamination`)**
+
+The IF uses `if_contamination` to set its internal score threshold: it will always flag
+the top `if_contamination` fraction of points in any new data. At `0.05`, 5% of good
+data will be flagged by the IF regardless of how representative the training set is.
+Lower this first:
+
+```json
+"if_contamination": 0.01
+```
+
+**File alert threshold too low for detector size (`file_alert_threshold`)**
+
+At `0.001` (0.1%), a single anomalous channel out of ~98 gives a fraction of ~1%,
+which already exceeds the threshold — so any single flagged channel raises an ALERT.
+A more meaningful threshold for a 96-channel detector requires several channels to agree:
+
+```json
+"file_alert_threshold": 0.05
+```
+
+This requires ~5 channels to be flagged before raising an ALERT.
+
+**Noisy reference statistics from a small training set**
+
+The per-channel mean and std are estimated from the training files. With a small set,
+the std can be underestimated — making the z-score denominator too tight and inflating
+z-scores for perfectly normal variation. Train on more files; the false positive rate
+drops as the reference statistics converge.
+
+**Run-to-run variation not captured in training**
+
+Some features (occupancy, trigger rates) shift legitimately between runs depending on
+beam conditions or run length. If those conditions are not well-represented in the
+training set, new good runs in a slightly different regime will appear anomalous. Fix
+by broadening the training set, or by adding the unstable features to `ignore_features`.
+
+### Suggested starting point for a detector of this size
+
+```json
+"z_threshold":          6.0,
+"if_contamination":     0.01,
+"file_alert_threshold": 0.05
+```
+
+Retrain and reapply to the known-good list after each change, using the frequency plots
+to verify the false positive rate is dropping rather than just masking real anomalies.
+
+---
+
 ## Known limitations
 
-- **Small training set**: with fewer than ~20 good files, the Isolation Forest produces
-  some false positives at the channel level. The 0.1% file-alert threshold compensates.
-  This improves automatically as good data grows.
 - **Single directory watch**: the monitor watches one directory. For multiple live paths,
   run a separate `monitor.py` instance per directory with a shared `--log-file`.
 - **Polling**: the monitor uses polling rather than inotify, for compatibility with AFS
