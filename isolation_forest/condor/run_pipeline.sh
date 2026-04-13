@@ -15,7 +15,7 @@ set -euo pipefail
 
 VARIANT=${1:?Usage: run_pipeline.sh <variant>}
 
-# Load central path configuration (absolute paths — safe on Condor worker nodes)
+# Load INSTALLATION_PATH (pipeline configuration lives in config.json)
 SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
 source "${SCRIPT_DIR}/../env.sh"
 
@@ -70,12 +70,7 @@ echo "  Flags: ${FLAGS[*]:-'(none — full feature set)'}"
 echo ""
 
 python3 -m src.pipeline \
-    --good-list   "${GOOD_RUN_LIST}"                        \
-    --apply-list  "${ALL_RUN_LIST}"                         \
-    --models-dir  "${MODELS_DIR}/condor_${VARIANT}"         \
-    --log-file    "${LOGS_DIR}/condor_${VARIANT}.csv"       \
-    --reports-dir "${REPORTS_DIR}/condor_${VARIANT}"        \
-    --plots-dir   "${PLOTS_DIR}/condor_${VARIANT}"          \
+    --model-tag "condor" \
     "${FLAGS[@]}"
 
 echo ""

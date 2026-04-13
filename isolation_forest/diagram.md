@@ -29,19 +29,23 @@ flowchart TD
         direction TB
         FE["extract_features()
         groupby channel → mean · std · median"]
-        F35["35 Digitizer features
+        F35["35 Digitizer features per channel
         sideband · nPulses · pulseHeight/Area/Duration
         TDC · occupancy · frac_dead"]
-        F15["＋15 TriggerBoard features
+        FLVDSP["＋LVDSpin per channel
+        pin = channel // 2
+        (disabled with --no-trigger-LVDS)"]
+        F15["＋'trigger_board' pseudo-channel
         triggerRate_bit1–13 · tot · counts
         (disabled with --no-trigger)"]
-        F51["＋51 LVDS features
-        LVDSpin0–49 · LVDStotal
+        F51["＋'lvds_total' pseudo-channel
+        LVDStotal (run-level sum)
         (disabled with --no-trigger-LVDS)"]
-        FV["Feature vector per channel per file
-        35 / 50 / 86 / 101 features
-        depending on variant"]
+        FV["Shared feature space  (52 / 50 / 37 / 35 columns)
+        real channels + pseudo-channels
+        inapplicable columns = NaN"]
         FE --> F35 --> FV
+        FE --> FLVDSP --> FV
         FE --> F15 --> FV
         FE --> F51 --> FV
     end
@@ -91,15 +95,15 @@ flowchart TD
         WATCH["Watch directory  (poll 5 s)
         or batch via run list"]
         THRESH{"frac_anomalous
-        channels ≥ 20%?"}
+        channels ≥ 0.1%?"}
         OK["🟢 OK  — all nominal"]
         WARN["🟡 WARN  — below threshold"]
         ALT["🔴 ALERT  — above threshold
         → auto-plot if enabled"]
         WATCH --> THRESH
         THRESH -->|"= 0%"| OK
-        THRESH -->|"> 0, < 20%"| WARN
-        THRESH -->|"≥ 20%"| ALT
+        THRESH -->|"> 0, < 0.1%"| WARN
+        THRESH -->|"≥ 0.1%"| ALT
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────
@@ -153,11 +157,11 @@ flowchart TD
     subgraph CONDOR["☁️  HTCondor  —  submit.sub + run_pipeline.sh"]
         direction TB
         V1["trigger_lvds
-        101 features  (full)"]
+        52 features  (full)"]
         V2["trigger_nolvds
         50 features"]
         V3["notrigger_lvds
-        86 features"]
+        37 features"]
         V4["notrigger_nolvds
         35 features  (Digitizer only)"]
         PIPE["pipeline.py

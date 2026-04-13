@@ -19,7 +19,7 @@ Detection uses two complementary layers:
 | 2 | Isolation Forest | Multivariate anomalies: combinations of features that break nominal correlation structure, including novel failure modes not seen in training |
 
 A channel is flagged if **either** layer triggers.  
-A file is printed as `[ALERT]` if **≥ 20%** of its channels are flagged (configurable).
+A file is printed as `[ALERT]` if **≥ 0.1%** of its channels are flagged (configurable).
 
 ---
 
@@ -28,6 +28,7 @@ A file is printed as `[ALERT]` if **≥ 20%** of its channels are flagged (confi
 ```
 isolation_forest/
   src/
+    config.py        — central config loader (load_config, DEFAULTS)
     features.py      — per-channel feature extraction from Digitizer + TriggerBoard CSVs
     reference.py     — Welford online reference model (incremental, scalable)
     detector.py      — two-layer anomaly detector (z-score + Isolation Forest)
@@ -45,7 +46,8 @@ isolation_forest/
   logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
   reports/           — run quality lists and summary table (created by report.py / pipeline.py)
   plots/             — diagnostic figures (created by plot.py / pipeline.py)
-  env.sh             — central path configuration (all absolute paths; sourced by every script)
+  config.json        — central pipeline configuration (paths, thresholds, feature flags)
+  env.sh             — exports INSTALLATION_PATH for condor/run_pipeline.sh (all other config is in config.json)
   setup.sh           — install Python dependencies (sources env.sh)
   diagram.md         — Mermaid architecture diagram of the full framework
   ../data/
@@ -59,22 +61,27 @@ isolation_forest/
 
 ## Setup
 
-### 1. Configure paths
+### 1. Configure
 
-`env.sh` is the single source of truth for all filesystem paths. It is sourced automatically
-by `setup.sh` and `condor/run_pipeline.sh`. If you move the installation or run on a different
-account, edit the variables at the top of `env.sh` before doing anything else:
+`config.json` is the single source of truth for all pipeline settings. Edit it
+before running anything else:
 
-```bash
-# env.sh (excerpt)
-export INSTALLATION_PATH="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest"
-export DATA_PATH="/afs/cern.ch/user/t/tafoyava/autoDQM/data"
+```json
+{
+    "data_path":   "/afs/.../data",
+    "good_list":   "/afs/.../data/good_run_list_EOS.txt",
+    "apply_list":  "/afs/.../data/all_run_list_EOS.txt",
+    "models_dir":  "/afs/.../isolation_forest/models",
+    ...
+}
 ```
 
-All other paths (`MODELS_DIR`, `LOGS_DIR`, `REPORTS_DIR`, `PLOTS_DIR`, `GOOD_RUN_LIST`,
-`ALL_RUN_LIST`) are derived from those two variables. Using absolute paths prevents the
-`PermissionError: 'models'` class of failures that occur when Condor worker nodes start
-in a different working directory.
+All paths must be **absolute** so the pipeline works from Condor worker nodes, cron jobs,
+or any working directory. CLI arguments always override config.json values.
+
+`env.sh` now only exports `INSTALLATION_PATH`, used by `condor/run_pipeline.sh`
+for `cd` and `PYTHONPATH` setup. If you move the installation, update
+`INSTALLATION_PATH` in `env.sh` and all paths in `config.json`.
 
 ### 2. Install Python dependencies
 
@@ -178,14 +185,16 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--good-list` | `../data/good_run_list_EOS.txt` | Path to the good run list file |
-| `--models-dir` | `models/` | Where to save the trained models |
-| `--z-threshold` | `5.0` | σ threshold for the statistical layer |
-| `--if-contamination` | `0.05` | Expected anomaly fraction for Isolation Forest |
-| `--no-trigger` | off | Exclude TriggerBoard features; use the 35 Digitizer-only features |
-| `--no-trigger-LVDS` | off | Exclude LVDS pin count features (on by default: `LVDSpin0`–`LVDSpin49` + `LVDStotal`) |
+| `--config` | `config.json` | Path to JSON configuration file |
+| `--good-list` | from config.json | Path to the good run list file |
+| `--models-dir` | from config.json | Where to save the trained models |
+| `--z-threshold` | from config.json | σ threshold for the statistical layer |
+| `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
+| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.json) |
+| `--no-trigger-LVDS` | off | Exclude LVDS features: drops `LVDSpin` and the `"trigger_lvds_total"` pseudo-channel (overrides `use_lvds`) |
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
 | `--test [N]` | off | Test mode: randomly sample N files (default N=50 when flag is given) |
+| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
 
 ### 3. Monitor
 
@@ -217,17 +226,19 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
+| `--config` | `config.json` | Path to JSON configuration file |
 | `--watch-dir` | (one of these required) | Directory to watch for new CSV files |
 | `--run-list` | (one of these required) | Run list file; requires `--test N`; processes N random files then exits |
-| `--models-dir` | `models/` | Directory with saved models |
-| `--log-file` | `logs/anomalies.csv` | Output log path |
-| `--poll-interval` | `5.0` | Seconds between directory scans |
-| `--file-alert-threshold` | `0.20` | Fraction of anomalous channels needed to print `[ALERT]` |
+| `--models-dir` | from config.json | Directory with saved models |
+| `--log-file` | from config.json | Output log path |
+| `--poll-interval` | from config.json | Seconds between directory scans |
+| `--file-alert-threshold` | from config.json | Fraction of anomalous channels needed to print `[ALERT]` |
 | `--process-existing` | off | Also process files already in the directory at startup |
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
-| `--plots-dir` | `plots/` | Root directory for all plot output |
+| `--plots-dir` | from config.json | Root directory for all plot output |
 | `--refresh-log-plots-every` | `0` | Regenerate log summary plots every N processed files (0 = disabled) |
 | `--test [N]` | off | Test mode: randomly sample N files from the source (watch-dir or run-list), process them, then exit |
+| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
 
 Terminal output:
 ```
@@ -246,14 +257,14 @@ After processing files with the monitor, summarise run quality from the anomaly 
 python3 -m src.report
 ```
 
-This reads `logs/anomalies.csv` and writes:
+Reads the log for the active `model_tag` (from `config.json`) and writes into the corresponding reports directory:
 
 | File | Description |
 |---|---|
-| `reports/good_runs.txt` | Runs where every subrun is nominal |
-| `reports/partial_good_runs.txt` | Runs that start nominal then transition to anomalous, with the last good and first bad subrun noted |
-| `reports/persistent_fault_runs.txt` | Runs with one or more channels anomalous in every subrun (systematic fault below the per-file threshold) |
-| `reports/run_summary.csv` | Full per-run breakdown (all categories), including a `persistent_channels` column |
+| `good_runs.txt` | Runs where every subrun is nominal |
+| `partial_good_runs.txt` | Runs that start nominal then transition to anomalous, with the last good and first bad subrun noted |
+| `persistent_fault_runs.txt` | Runs with one or more channels anomalous in every subrun (systematic fault below the per-file threshold) |
+| `run_summary.csv` | Full per-run breakdown (all categories), including a `persistent_channels` column |
 
 Runs are classified as:
 
@@ -263,7 +274,7 @@ Runs are classified as:
 | `partial` | At least one good subrun followed by at least one bad subrun (clean transition) |
 | `bad` | All subruns above the alert threshold |
 | `mixed` | Good and bad subruns interleaved with no clean transition |
-| `persistent_fault` | All subruns appear nominal by the per-file threshold, but one or more channels are anomalous in every subrun — e.g. a dead or missing channel that never triggers enough to cross 20% on its own |
+| `persistent_fault` | All subruns appear nominal by the per-file threshold, but one or more channels are anomalous in every subrun — e.g. a dead or missing channel that never triggers enough to cross 0.1% on its own |
 
 > **`persistent_fault` guard:** requires at least **2 subruns** in the log for the run.
 > A run with only 1 subrun trivially satisfies "anomalous in every subrun" (1/1),
@@ -273,9 +284,10 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--log-file` | `logs/anomalies.csv` | Anomaly log to read |
-| `--out-dir` | `reports/` | Directory to write output files |
-| `--file-alert-threshold` | `0.20` | Fraction of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
+| `--config` | `config.json` | Path to JSON configuration file |
+| `--log-file` | from config.json (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
+| `--out-dir` | from config.json (`<reports_dir>/<tag>`) | Directory to write output files |
+| `--file-alert-threshold` | from config.json | Fraction of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
 
 ### 5. Plot
 
@@ -292,10 +304,11 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 python3 -m src.plot log
 ```
 
-Figures are saved to `plots/` by default. Use `--out-dir` and `--models-dir` **before** the subcommand to override:
+Defaults for `--out-dir`, `--models-dir`, and `--log-file` are all derived from `config.json` (using `<base_dir>/<model_tag>`). Pass `--config` to switch configs, or override individual paths explicitly — both flags must appear **before** the subcommand:
 
 ```bash
-python3 -m src.plot --out-dir /tmp/myplots --models-dir models/ reference
+python3 -m src.plot --config config_bad.json reference
+python3 -m src.plot --out-dir /tmp/myplots --models-dir models/myrun reference
 ```
 
 See the [Plots](#plots) section for descriptions of each figure.
@@ -310,7 +323,7 @@ See the [Plots](#plots) section for descriptions of each figure.
 |---|---|
 | `timestamp` | UTC time the file was processed (ISO-8601) |
 | `filename` | Base name of the Digitizer CSV |
-| `channel` | Channel ID |
+| `channel` | Integer channel ID for digitizer channels, or `"trigger_rate"` / `"trigger_lvds_total"` for pseudo-channels |
 | `anomalous` | `True` / `False` |
 | `method` | `statistical`, `isolation_forest`, `statistical+IF`, `new_channel`, `missing_channel`, or `""` |
 | `triggered_features` | Semicolon-separated feature names with \|z\| > threshold |
@@ -321,8 +334,7 @@ See the [Plots](#plots) section for descriptions of each figure.
 
 ## Plots
 
-Figures are generated by `src/plot.py` and saved to `plots/` (created automatically).  
-All subcommands accept `--models-dir` and `--out-dir` to override defaults.
+Figures are generated by `src/plot.py`. Default output directory, models directory, and log file are all read from `config.json`. All subcommands accept `--config`, `--models-dir`, and `--out-dir` to override defaults.
 
 When running the monitor with `--plot-alerts`, diagnostic plots for alerted files are saved
 automatically into subdirectories, one per file:
@@ -357,6 +369,7 @@ python3 -m src.plot reference
 | `reference_means.png` | Heatmap of per-channel reference means, column-normalised to z-scores so all features share a common colour scale. Shows the nominal state of each channel across all features, including trigger rates at the bottom (when trigger features are enabled). |
 | `reference_stds.png` | Heatmap of reference uncertainties (log-normalised σ). Bright cells indicate features with high run-to-run variability; these contribute less to anomaly detection. |
 | `reference_coverage.png` | Bar chart of how many training files each channel appeared in. Channels with low coverage have less reliable reference statistics. |
+| `reference_mean_table.png` | Full channels × features table of raw mean values. Colour is per-column min→max so each feature's variation across channels is visible regardless of scale. Cell text shows the actual mean value. Pseudo-channels (`trigger_rate`, `trigger_lvds_total`) appear at the bottom separated by a dashed line; cells that are not applicable to a row (e.g. trigger columns for digitiser channels) are shown in grey. **Generated automatically after every training run** and saved alongside the model files in `models/<tag>/`. |
 
 ### Single-file analysis plots
 
@@ -386,7 +399,7 @@ Files are ordered by **run number then subrun number** in all log plots.
 | `log_feature_frequency.png` | Bar chart of the 20 most frequently triggered features. Identifies which metrics are driving alerts — useful for diagnosing systematic hardware problems (e.g. TDC drift, occupancy loss, trigger rate shifts). |
 | `log_run_summary.png` | Bar chart with one bar per run showing what fraction of its subruns are good data (0–100%). Blue = all subruns good, orange = partial, red = all bad. Each bar is annotated with the raw count (good/total subruns). |
 
-The `log` subcommand accepts `--file-alert-threshold` (default `0.20`) to match the threshold
+The `log` subcommand accepts `--file-alert-threshold` (default `0.001`) to match the threshold
 used during monitoring.
 
 ---
@@ -406,43 +419,70 @@ frac_dead                        →  fraction of appearances with nPulses == 0
                                      35 Digitizer features per channel per file
 ```
 
-By default these are enriched with **trigger rate features** from the matching TriggerBoard CSV:
+By default, **LVDS pin counts** from the matching LVDSCounts CSV are added as a per-channel feature (disable with `--no-trigger-LVDS`):
+
+```
+LVDSpin                          →  1 feature,  LVDS count for the pin corresponding
+                                                 to this channel  (pin = channel // 2)
+                                    ─────────────────────────────────────────
+                                     ch 0 & 1 share pin 0, ch 2 & 3 share pin 1, etc.
+```
+
+Trigger and run-level quantities are independent of individual digitizer channels and
+are therefore represented as **pseudo-channel rows** appended to the feature DataFrame,
+rather than being broadcast across every channel row.
+
+**`"trigger_rate"` pseudo-channel** (added when `use_trigger=True`):
 
 ```
 triggerRate_bit{1–13}            →  13 features, per-bit trigger rate in Hz
 triggerRate_tot                  →  1 feature,  total trigger rate in Hz
 triggerCounts_tot                →  1 feature,  total trigger count for the subrun
                                     ─────────────────────────────────────────
-                                     15 TriggerBoard features per file
+                                     15 TriggerBoard features; all other columns NaN
 ```
 
-By default, **LVDS count features** from the matching LVDSCounts CSV are also included (disable with `--no-trigger-LVDS`):
+**`"trigger_lvds_total"` pseudo-channel** (added when `use_lvds=True`):
 
 ```
-LVDSpin{0–49}                    →  50 features, per-pin LVDS counts for the subrun
-LVDStotal                        →  1 feature,  sum of all LVDS pin counts
+LVDStotal                        →  1 feature,  sum of all LVDS pin counts for the subrun
                                     ─────────────────────────────────────────
-                                     51 LVDS features per file
+                                     1 feature; all other columns NaN
 ```
 
-**Total features per channel per file:**
+All rows (real channels and pseudo-channels) share the same column space. Columns that
+are not applicable to a given row are `NaN`. The reference model and Isolation Forest
+treat pseudo-channels exactly like real channels — each gets its own Welford statistics
+and IF anomaly score.
 
-| Mode | Features |
+**Total columns in the shared feature space (before `ignore_features`):**
+
+| Mode | Columns |
 |---|---|
-| Default (trigger on, LVDS on) | 35 + 15 + 51 = **101** |
+| Default (trigger on, LVDS on) | 35 + 1 (LVDSpin) + 15 (trigger) + 1 (LVDStotal) = **52** |
 | `--no-trigger-LVDS` | 35 + 15 = **50** |
-| `--no-trigger` | 35 + 51 = **86** |
+| `--no-trigger` | 35 + 1 (LVDSpin) + 1 (LVDStotal) = **37** |
 | `--no-trigger --no-trigger-LVDS` | **35** |
 
+**`ignore_features`** (set in `config.json`) accepts a list of glob patterns that are
+removed from the feature set at training time and automatically excluded at inference:
+
+```json
+"ignore_features": ["TDCRollovers_*", "triggerRate_bit1*"]
+```
+
+Patterns use standard `fnmatch` syntax (`*` matches anything within a name). The
+excluded columns are stored inside `reference.npz` so a loaded model always uses the
+same feature set it was trained with — no need to repeat the patterns at apply time.
+The `reference_mean_table.png` reflects only the active (non-ignored) features.
+
 All TriggerBoard and LVDS files are located automatically from the Digitizer filename
-in the same directory. Their values are constant within a file (one row per subrun),
-so they are appended as the same value to every channel row — deviations are visible
-on every channel simultaneously, reflecting that they are file-wide conditions.
+in the same directory.
 
 If a companion file is absent or the subrun entry is missing (e.g. the last few subruns
-of a run are sometimes not recorded), those features are set to `NaN` for that file.
-The reference model handles this gracefully — NaN entries are skipped in the Welford
-update so they do not corrupt the running mean or variance for other files.
+of a run are sometimes not recorded), the corresponding pseudo-channel row has all-`NaN`
+values for that file. The reference model handles this gracefully — NaN entries are
+skipped in the Welford update so they do not corrupt the running mean or variance.
 
 Feature flags are saved in `models/reference.npz` and applied automatically by all
 subsequent steps (apply, plots) — no flags needed at inference time.
@@ -494,7 +534,7 @@ and folds in only the new ones. The Isolation Forest is always fully retrained
 As the reference improves with more files:
 - Per-channel mean and std estimates become tighter
 - Isolation Forest has a larger, more representative training set
-- The false positive rate drops; consider lowering `--file-alert-threshold` from 0.20 toward 0.05
+- The false positive rate drops; consider lowering `--file-alert-threshold` from 0.001 toward 0.0005
 - Consider also lowering `--if-contamination` from 0.05 toward 0.01
 
 There is no hard limit on the number of files the reference can absorb — memory usage
@@ -528,25 +568,28 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--good-list` | `../data/good_run_list_EOS.txt` | Run list of good files for training |
-| `--apply-list` | `../data/all_run_list_EOS.txt` | Run list of files to apply the trained model to |
+| `--config` | `config.json` | Path to JSON configuration file |
+| `--good-list` | from config.json | Run list of good files for training |
+| `--apply-list` | from config.json | Run list of files to apply the trained model to |
+| `--model-tag` | from config.json | Base tag for all outputs. `_noTrigger` and/or `_noLVDS` are appended automatically when the corresponding flags are active, e.g. `myrun_noTrigger_noLVDS` |
+| `--models-dir` | from config.json | Base directory for saved models |
+| `--logs-dir` | from config.json | Base directory for anomaly logs |
+| `--reports-dir` | from config.json | Base directory for reports |
+| `--plots-dir` | from config.json | Base directory for plots |
 | `--test-train [N]` | off | Sample N training files (default N=50 when flag is given) |
 | `--test-apply [N]` | off | Sample N apply files (default N=50 when flag is given) |
-| `--no-trigger` | off | Exclude TriggerBoard features (Digitizer-only mode) |
-| `--no-trigger-LVDS` | off | Exclude LVDS pin count features (on by default; requires LVDSCounts files) |
-| `--z-threshold` | `5.0` | σ threshold for the statistical layer (passed to train) |
-| `--if-contamination` | `0.05` | Expected anomaly fraction for Isolation Forest (passed to train) |
-| `--file-alert-threshold` | `0.20` | Fraction of anomalous channels to trigger a file-level ALERT (used in apply, report, and plots) |
-| `--models-dir` | `models/` | Saved models directory |
-| `--log-file` | `logs/anomalies.csv` | Output anomaly log |
-| `--reports-dir` | `reports/` | Run quality report output |
-| `--plots-dir` | `plots/` | Plot output directory |
+| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
+| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.json) |
+| `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.json) |
+| `--z-threshold` | from config.json | σ threshold for the statistical layer |
+| `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
+| `--file-alert-threshold` | from config.json | Fraction of anomalous channels to trigger a file-level ALERT |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |
 | `--skip-plots` | off | Skip plot generation |
 
-The pipeline also writes a path cache (`<log-stem>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
+The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
 
 ---
 
@@ -558,9 +601,9 @@ sequence for one variant.
 
 ### Prerequisites
 
-1. `env.sh` is configured with correct absolute paths (see [Setup](#setup))
-2. Dependencies are installed: `bash setup.sh`
-3. Both run list files exist at the paths in `env.sh`
+1. `config.json` has correct absolute paths for `good_list`, `apply_list`, and the output directories (see [Setup](#setup))
+2. `INSTALLATION_PATH` in `env.sh` points to the correct `isolation_forest/` directory (only variable it contains)
+3. Dependencies are installed: `bash setup.sh`
 
 ### Submit
 
@@ -571,14 +614,16 @@ condor_submit condor/submit.sub
 
 This submits 4 jobs, one per feature variant:
 
-| Job | Variant | Flags | Features |
-|---|---|---|---|
-| `.0` | `trigger_lvds` | *(none)* | 101 |
-| `.1` | `trigger_nolvds` | `--no-trigger-LVDS` | 50 |
-| `.2` | `notrigger_lvds` | `--no-trigger` | 86 |
-| `.3` | `notrigger_nolvds` | `--no-trigger --no-trigger-LVDS` | 35 |
+Feature counts are before `ignore_features` is applied (see `config.json`).
 
-Each job requests 4 CPUs, 4 GB RAM, and the `longlunch` flavour (2-hour wall time).
+| Job | Variant | Flags | Model tag | Features |
+|---|---|---|---|---|
+| `.0` | `trigger_lvds` | *(none)* | `condor` | 52 |
+| `.1` | `trigger_nolvds` | `--no-trigger-LVDS` | `condor_noLVDS` | 50 |
+| `.2` | `notrigger_lvds` | `--no-trigger` | `condor_noTrigger` | 37 |
+| `.3` | `notrigger_nolvds` | `--no-trigger --no-trigger-LVDS` | `condor_noTrigger_noLVDS` | 35 |
+
+Each job requests 4 CPUs, 4 GB RAM, and the `workday` flavour (8-hour wall time).
 AFS and EOS are mounted on lxplus Condor nodes — no file transfer is needed.
 You will receive an email at `j.tafoya.vargas@cern.ch` when all jobs complete.
 
@@ -591,25 +636,25 @@ condor_history <cluster_id>   # after jobs finish
 
 ### Output
 
-Each variant writes to its own subdirectory to avoid conflicts:
+Each variant writes to its own subdirectory under the base tag `condor`, with suffixes appended automatically by `pipeline.py` based on the active feature flags:
 
 ```
-models/condor_trigger_lvds/       logs/condor_trigger_lvds.csv
-models/condor_trigger_nolvds/     logs/condor_trigger_nolvds.csv
-models/condor_notrigger_lvds/     logs/condor_notrigger_lvds.csv
-models/condor_notrigger_nolvds/   logs/condor_notrigger_nolvds.csv
-reports/condor_*/
-plots/condor_*/
+models/condor/                    logs/condor.csv
+models/condor_noLVDS/             logs/condor_noLVDS.csv
+models/condor_noTrigger/          logs/condor_noTrigger.csv
+models/condor_noTrigger_noLVDS/   logs/condor_noTrigger_noLVDS.csv
+reports/condor*/
+plots/condor*/
 ```
 
-Condor stdout/stderr and the shared job event log are in `condor/logs/`.
+Condor stdout/stderr are written to `condor/logs/<cluster>.<process>.<variant>.{out,err}` so reruns never overwrite previous output. The shared job event log is `condor/logs/condor.log`.
 
 ---
 
 ## Known limitations
 
 - **Small training set**: with fewer than ~20 good files, the Isolation Forest produces
-  some false positives at the channel level. The 20% file-alert threshold compensates.
+  some false positives at the channel level. The 0.1% file-alert threshold compensates.
   This improves automatically as good data grows.
 - **Single directory watch**: the monitor watches one directory. For multiple live paths,
   run a separate `monitor.py` instance per directory with a shared `--log-file`.

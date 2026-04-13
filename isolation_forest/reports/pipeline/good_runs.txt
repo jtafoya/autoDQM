@@ -1,4 +1,0 @@
-# Runs where every subrun is nominal
-run1637  (4 subrun(s))
-run1642  (3 subrun(s))
-run1644  (1 subrun(s))

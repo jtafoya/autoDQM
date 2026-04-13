@@ -34,6 +34,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from .config import load_config
+
 _FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
 
 
@@ -46,7 +48,7 @@ def _parse_run_subrun(filename: str):
     return None, None
 
 
-def classify_runs(log_path: str, file_alert_threshold: float = 0.20) -> dict:
+def classify_runs(log_path: str, file_alert_threshold: float = 0.001) -> dict:
     """
     Read the anomaly log and return a per-run classification dict.
 
@@ -119,7 +121,8 @@ def classify_runs(log_path: str, file_alert_threshold: float = 0.20) -> dict:
                   .sum()
         )
         persistent_channels = sorted(
-            int(ch) for ch in channel_flags[channel_flags >= n_subruns].index
+            channel_flags[channel_flags >= n_subruns].index.tolist(),
+            key=str,
         )
 
         # Upgrade classification if persistent channels detected but per-file
@@ -220,28 +223,46 @@ def write_report(runs: dict, out_dir: Path) -> None:
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--config", default="config.json")
+    cfg = load_config(_pre.parse_known_args()[0].config)
+
+    tag = cfg["model_tag"]
+
     parser = argparse.ArgumentParser(
         description="Classify runs from the anomaly log into quality categories."
     )
+    parser.add_argument("--config", default="config.json",
+                        help="Path to JSON configuration file (default: config.json)")
     parser.add_argument(
         "--log-file",
-        default="logs/anomalies.csv",
-        help="Path to the anomaly log produced by monitor.py (default: logs/anomalies.csv)",
+        help="Path to the anomaly log produced by monitor.py",
     )
     parser.add_argument(
         "--out-dir",
-        default="reports",
-        help="Directory to write output files (default: reports/)",
+        help="Directory to write output files",
     )
     parser.add_argument(
         "--file-alert-threshold",
         type=float,
-        default=0.20,
         metavar="FRAC",
-        help="Fraction of anomalous channels that marks a subrun as bad "
-             "(default: 0.20, same as monitor.py)",
+        help="Fraction of anomalous channels that marks a subrun as bad",
     )
+
+    parser.set_defaults(
+        log_file             = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
+        out_dir              = str(Path(cfg["reports_dir"]) / tag),
+        file_alert_threshold = cfg["file_alert_threshold"],
+    )
+
     args = parser.parse_args()
+
+    from .config import print_banner
+    print_banner("report", args.config, [
+        ("log file",             args.log_file),
+        ("out dir",              args.out_dir),
+        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+    ])
 
     if not Path(args.log_file).exists():
         print(f"ERROR: log file not found: {args.log_file}", file=sys.stderr)

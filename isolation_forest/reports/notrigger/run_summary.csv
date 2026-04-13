@@ -1,6 +1,0 @@
-run,classification,n_good_subruns,n_bad_subruns,last_good_subrun,first_bad_subrun
-1637,good,11,0,329.0,
-1640,mixed,24,4,721.0,9.0
-1642,good,3,0,184.0,
-1644,good,7,0,198.0,
-2068,bad,0,1,,1.0

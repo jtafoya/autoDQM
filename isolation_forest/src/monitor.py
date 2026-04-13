@@ -30,6 +30,7 @@ from pathlib import Path
 
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
+from .config import load_config
 
 
 LOG_FIELDS = [
@@ -46,7 +47,7 @@ def process_file(
     filepath: str,
     detector: AnomalyDetector,
     log_path: str,
-    file_alert_threshold: float = 0.20,
+    file_alert_threshold: float = 0.001,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
 ) -> bool:
@@ -87,20 +88,21 @@ def process_file(
         print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
     elif frac_bad >= file_alert_threshold:
         alerted = True
-        bad_channels = sorted(anomalies.index.tolist())
+        bad_channels = sorted(anomalies.index.tolist(), key=str)
         print(
             f"[ALERT] {timestamp}  {filename}  —  "
             f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels: {bad_channels}"
         )
         for ch in bad_channels:
             row = anomalies.loc[ch]
+            ch_label = f"ch{ch}" if isinstance(ch, int) else str(ch)
             print(
-                f"         ch{ch:>3d}  method={row['method']:<20s}  "
+                f"         {ch_label:>20s}  method={row['method']:<20s}  "
                 f"max_z={row['max_z']:<8}  if_score={row['if_score']:<10}  "
                 f"features=[{row['triggered_features']}]"
             )
     else:
-        bad_channels = sorted(anomalies.index.tolist())
+        bad_channels = sorted(anomalies.index.tolist(), key=str)
         print(
             f"[WARN]  {timestamp}  {filename}  —  "
             f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels "
@@ -148,7 +150,7 @@ def watch_directory(
     log_path: str,
     poll_interval: float = 5.0,
     process_existing: bool = False,
-    file_alert_threshold: float = 0.20,
+    file_alert_threshold: float = 0.001,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
     refresh_log_plots_every: int = 0,
@@ -229,9 +231,15 @@ def watch_directory(
 
 
 def main() -> None:
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--config", default="config.json")
+    cfg = load_config(_pre.parse_known_args()[0].config)
+
     parser = argparse.ArgumentParser(
         description="Monitor a directory for anomalous Digitizer files."
     )
+    parser.add_argument("--config", default="config.json",
+                        help="Path to JSON configuration file (default: config.json)")
     parser.add_argument("--watch-dir", help="Directory to watch for new CSVs")
     parser.add_argument(
         "--run-list",
@@ -239,37 +247,16 @@ def main() -> None:
              "randomly samples N files from the list and processes them, then exits. "
              "Alternative to --watch-dir for batch and test use.",
     )
-    parser.add_argument("--models-dir", default="models", help="Directory containing saved models")
-    parser.add_argument("--log-file", default="logs/anomalies.csv", help="Output log file")
-    parser.add_argument(
-        "--poll-interval",
-        type=float,
-        default=5.0,
-        help="Seconds between directory scans (default: 5)",
-    )
-    parser.add_argument(
-        "--process-existing",
-        action="store_true",
-        help="Also process files already present in watch-dir at startup",
-    )
-    parser.add_argument(
-        "--file-alert-threshold",
-        type=float,
-        default=0.20,
-        help="Fraction of anomalous channels required to print [ALERT] (default: 0.20). "
-             "Channels are always logged individually regardless of this setting.",
-    )
-    parser.add_argument(
-        "--plot-alerts",
-        action="store_true",
-        help="Auto-generate diagnostic plots for every alerted file, "
-             "saved to plots-dir/alerts/<stem>/",
-    )
-    parser.add_argument(
-        "--plots-dir",
-        default="plots",
-        help="Root directory for plot output (default: plots/)",
-    )
+    parser.add_argument("--models-dir", help="Directory containing saved models")
+    parser.add_argument("--log-file",   help="Output log file")
+    parser.add_argument("--poll-interval",  type=float, help="Seconds between directory scans")
+    parser.add_argument("--process-existing", action="store_true",
+                        help="Also process files already present in watch-dir at startup")
+    parser.add_argument("--file-alert-threshold", type=float,
+                        help="Fraction of anomalous channels required to print [ALERT]")
+    parser.add_argument("--plot-alerts", action="store_true",
+                        help="Auto-generate diagnostic plots for every alerted file")
+    parser.add_argument("--plots-dir",  help="Root directory for plot output")
     parser.add_argument(
         "--refresh-log-plots-every",
         type=int,
@@ -282,10 +269,32 @@ def main() -> None:
         type=int,
         default=0,
         metavar="N",
-        help="Test mode: randomly sample N files from watch-dir, process them, then exit "
-             "(no polling loop). Useful for quick end-to-end checks.",
+        help="Test mode: randomly sample N files from watch-dir, process them, then exit",
     )
+    parser.add_argument("--test-seed", type=int,
+                        help="Random seed for reproducible test-mode sampling")
+
+    parser.set_defaults(
+        models_dir           = cfg["models_dir"],
+        log_file             = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
+        plots_dir            = cfg["plots_dir"],
+        poll_interval        = cfg["poll_interval"],
+        file_alert_threshold = cfg["file_alert_threshold"],
+        test_seed            = cfg["test_seed"],
+    )
+
     args = parser.parse_args()
+
+    from .config import print_banner
+    print_banner("monitor", args.config, [
+        ("models dir",           args.models_dir),
+        ("log file",             args.log_file),
+        ("source",               args.watch_dir or args.run_list),
+        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+        ("poll interval",        f"{args.poll_interval}s"),
+        ("test mode",            f"{args.test} files" if args.test else "off (watch loop)"),
+        ("test seed",            str(args.test_seed)),
+    ])
 
     if not args.watch_dir and not args.run_list:
         parser.error("one of --watch-dir or --run-list is required")
@@ -317,6 +326,7 @@ def main() -> None:
     # ── Run-list test mode ────────────────────────────────────────────────────
     if args.run_list:
         import random
+        random.seed(args.test_seed)
         from .run_list import resolve_run_list
         all_files = resolve_run_list(args.run_list)
         sample = random.sample(all_files, min(args.test, len(all_files)))

@@ -1,0 +1,44 @@
+# All classified runs — good and bad combined.
+# Used for validation and quick end-to-end checks (e.g. with --test N).
+# NOT used for training (use good_run_list_EOS.txt for that).
+
+# ── GOOD RUNS ─────────────────────────────────────────────────────────────────
+
+# Standard GOOD runs
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1606_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1607_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1608_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1609_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1610_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1611_subrun*.csv
+
+# run1637: good subruns 1–356 (incident starts at 357)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun[1-9][0-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun1[0-9][0-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun2[0-9][0-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun3[0-4][0-9].csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun35[0-6].csv
+
+# run1644: all subruns good (after broken-base fix)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1644_subrun*.csv
+
+# run2082: all subruns good (after noisy-channel fix) — local copy
+../data/noisy_channel__AfterFix/Digitizer_run2082_subrun*.csv
+
+# ── BAD RUNS ──────────────────────────────────────────────────────────────────
+
+# run1637: bad subruns 357–359 (broken-base onset)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1637_subrun35[7-9].csv
+
+# run1640: all subruns bad (broken base during incident)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1640_subrun*.csv
+
+# run1642: all subruns bad (broken base, just before fix)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1642_subrun*.csv
+
+# run2068: all subruns bad (noisy LVDS channel)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2068_subrun*.csv
+
+# run2071: all subruns bad (noisy LVDS channel)
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2071_subrun*.csv

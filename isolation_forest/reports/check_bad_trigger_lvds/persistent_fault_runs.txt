@@ -1,3 +1,0 @@
-# Runs where one or more channels are anomalous in every subrun
-# (systematic fault — e.g. dead/missing channel — below per-file threshold)
-# Columns: run  n_subruns  persistent_channels

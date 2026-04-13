@@ -1,7 +1,0 @@
-run,classification,n_good_subruns,n_bad_subruns,last_good_subrun,first_bad_subrun,persistent_channels
-1606,good,1,0,226,,2;59
-1607,good,3,0,423,,
-1608,partial,3,1,328,353.0,
-1609,good,7,0,382,,
-1610,good,3,0,257,,
-1611,partial,1,1,248,319.0,5;33;80

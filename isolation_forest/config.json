@@ -1,0 +1,31 @@
+{
+    "_comment": "autoDQM isolation-forest pipeline — central configuration. All paths are absolute so the file works from Condor worker nodes, cron jobs, or any working directory. CLI arguments always override these values.",
+
+    "_comment_input": "Run lists: text files where each line is a glob pattern resolving to Digitizer CSV files. data_path is the base directory; the individual lists are absolute paths derived from it.",
+    "data_path":            "/afs/cern.ch/user/t/tafoyava/autoDQM/data",
+    "good_list":            "/afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_EOS.txt",
+    "apply_list":           "/afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EOS.txt",
+
+    "_comment_output": "model_tag namespaces all outputs: models/<tag>/, logs/<tag>.csv, reports/<tag>/, plots/<tag>/.",
+    "model_tag":            "default",
+    "models_dir":           "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/models",
+    "logs_dir":             "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/logs",
+    "reports_dir":          "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/reports",
+    "plots_dir":            "/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/plots",
+
+    "_comment_features": "Feature set flags. use_trigger includes TriggerBoard rate features; use_lvds includes LVDS pin-count features. ignore_features is a list of glob patterns for features to exclude entirely from training and scoring (e.g. 'TDCRollovers_*' drops TDCRollovers_mean/std/median).",
+    "use_trigger":          true,
+    "use_lvds":             true,
+    "_commented_ignore_features":      [],
+    "_commented_ignore_features":      ["TDCRollovers_*"],
+    "ignore_features":      ["TDC*"],
+
+    "_comment_thresholds": "z_threshold: number of standard deviations above which a channel feature is flagged. if_contamination: expected fraction of anomalies in training data passed to IsolationForest. file_alert_threshold: fraction of anomalous channels required to classify a file as ALERT (vs WARN).",
+    "z_threshold":          5.0,
+    "if_contamination":     0.05,
+    "file_alert_threshold": 0.001,
+
+    "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling.",
+    "poll_interval":        5.0,
+    "test_seed":            42
+}

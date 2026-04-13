@@ -1,3 +1,0 @@
-run,classification,n_good_subruns,n_bad_subruns,last_good_subrun,first_bad_subrun,persistent_channels
-1640,mixed,11,27,734,44.0,32;33
-1642,persistent_fault,5,0,174,,32;33

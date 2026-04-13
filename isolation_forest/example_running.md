@@ -4,7 +4,8 @@ All commands are run from `isolation_forest/`.
 
 ## HTCondor — all 4 feature variants in parallel (production)
 
-Before submitting, verify `env.sh` has the correct paths for your account, then:
+Before submitting, verify `config.json` has correct absolute paths and that
+`INSTALLATION_PATH` in `env.sh` is correct (it is the only variable defined there), then:
 
 ```bash
 bash setup.sh                    # install deps on lxplus (once)
@@ -12,9 +13,12 @@ condor_submit condor/submit.sub  # submit 4 jobs
 condor_q <cluster_id>            # check status
 ```
 
-Each job runs the full pipeline for one variant. Output goes to
-`models/condor_<variant>/`, `logs/condor_<variant>.csv`, `reports/condor_<variant>/`,
-`plots/condor_<variant>/`. You receive an email on completion.
+Each job runs the full pipeline for one variant using `--model-tag condor`; the
+feature-set suffixes (`_noTrigger`, `_noLVDS`) are appended automatically.
+Output goes to `models/condor<suffix>/`, `logs/condor<suffix>.csv`,
+`reports/condor<suffix>/`, `plots/condor<suffix>/` (base dirs from `config.json`).
+Stdout/stderr land in `condor/logs/<cluster>.<process>.<variant>.{out,err}`.
+You receive an email on completion.
 
 ---
 
@@ -33,6 +37,9 @@ python3 -m src.pipeline --test-train 100 --test-apply 50
 # Full production run (all files)
 python3 -m src.pipeline
 
+# Named run — all outputs go to models/myrun/, logs/myrun.csv, reports/myrun/, plots/myrun/
+python3 -m src.pipeline --model-tag myrun
+
 # Digitizer-only mode (no TriggerBoard features)
 python3 -m src.pipeline --test-train --test-apply --no-trigger
 
@@ -42,6 +49,10 @@ python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
 
 Runs all four steps in order: train → apply → report → plots.  
 Use `--skip-train`, `--skip-apply`, `--skip-report`, `--skip-plots` to re-run individual steps.
+
+Output directories are controlled by `--model-tag` (default: `default`). The base directories
+are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (set by `env.sh`),
+falling back to `models/`, `logs/`, `reports/`, `plots/` when those env vars are unset.
 
 ## Step by step
 

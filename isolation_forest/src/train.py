@@ -27,43 +27,33 @@ from pathlib import Path
 from .run_list import resolve_run_list
 from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
+from .config import load_config
 
 
 def main() -> None:
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--config", default="config.json")
+    cfg = load_config(_pre.parse_known_args()[0].config)
+
     parser = argparse.ArgumentParser(
         description="Build reference model and train Isolation Forest from a run list."
     )
-    parser.add_argument(
-        "--good-list",
-        default="../data/good_run_list_EOS.txt",
-        help="Path to a text file listing good Digitizer CSV files "
-             "(default: ../data/good_run_list_EOS.txt)",
-    )
-    parser.add_argument("--models-dir", default="models", help="Directory to save models")
+    parser.add_argument("--config", default="config.json",
+                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--good-list",  help="Path to a text file listing good Digitizer CSV files")
+    parser.add_argument("--models-dir", help="Directory to save models")
     parser.add_argument(
         "--update",
         action="store_true",
         help="Incremental mode: add new files to an existing reference without reprocessing old ones",
     )
-    parser.add_argument(
-        "--no-trigger",
-        action="store_true",
-        help="Exclude TriggerBoard features (use Digitizer-only features)",
-    )
-    parser.add_argument(
-        "--no-trigger-LVDS",
-        action="store_true",
-        dest="no_trigger_lvds",
-        help="Exclude LVDS pin count features from TriggerBoardSlab_run<N>_LVDSCounts.csv "
-             "(enabled by default; use this flag to disable)",
-    )
-    parser.add_argument("--z-threshold", type=float, default=5.0, help="Z-score alert threshold")
-    parser.add_argument(
-        "--if-contamination",
-        type=float,
-        default=0.05,
-        help="Expected fraction of anomalies in training data (Isolation Forest)",
-    )
+    parser.add_argument("--no-trigger", action="store_true",
+                        help="Exclude TriggerBoard features (use Digitizer-only features)")
+    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
+                        help="Exclude LVDS pin count features")
+    parser.add_argument("--z-threshold",     type=float, help="Z-score alert threshold")
+    parser.add_argument("--if-contamination", type=float,
+                        help="Expected fraction of anomalies in training data (Isolation Forest)")
     parser.add_argument(
         "--test",
         type=int,
@@ -73,11 +63,37 @@ def main() -> None:
         metavar="N",
         help="Test mode: randomly sample N files (default N=50 when flag is given, omit for full run)",
     )
+    parser.add_argument("--test-seed", type=int,
+                        help="Random seed for reproducible test-mode sampling")
+
+    parser.set_defaults(
+        good_list        = cfg["good_list"],
+        models_dir       = cfg["models_dir"],
+        z_threshold      = cfg["z_threshold"],
+        if_contamination = cfg["if_contamination"],
+        test_seed        = cfg["test_seed"],
+    )
+
     args = parser.parse_args()
-    use_trigger = not args.no_trigger
-    use_lvds    = not args.no_trigger_lvds
+    use_trigger = cfg["use_trigger"] and not args.no_trigger
+    use_lvds    = cfg["use_lvds"]    and not args.no_trigger_lvds
 
     models_dir = Path(args.models_dir)
+
+    from .config import print_banner
+    print_banner("train", args.config, [
+        ("models dir",       str(models_dir)),
+        ("good list",        args.good_list),
+        ("trigger features", "yes" if use_trigger else "no"),
+        ("LVDS features",    "yes" if use_lvds else "no"),
+        ("ignore features",  str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
+        ("z threshold",      f"{args.z_threshold}σ"),
+        ("IF contamination", str(args.if_contamination)),
+        ("test mode",        f"{args.test} files" if args.test else "off (full run)"),
+        ("test seed",        str(args.test_seed)),
+        ("incremental",      "yes" if args.update else "no"),
+    ])
+
     models_dir.mkdir(parents=True, exist_ok=True)
     ref_path = models_dir / "reference.npz"
     det_path = models_dir / "detector.pkl"
@@ -95,6 +111,7 @@ def main() -> None:
     # ---- Test mode: subsample ----
     if args.test:
         import random
+        random.seed(args.test_seed)
         n = min(args.test, len(all_csv))
         all_csv = random.sample(all_csv, n)
         print(f"  [TEST MODE] Randomly selected {n} file(s) for training.")
@@ -118,7 +135,11 @@ def main() -> None:
                   f"Reference now covers {len(ref.known_channels())} channels.")
     else:
         print("Building reference from scratch...")
-        ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds)
+        ignore_features = tuple(cfg["ignore_features"])
+        if ignore_features:
+            print(f"  Ignored features: {list(ignore_features)}")
+        ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds,
+                                              ignore_features=ignore_features)
         seen = {Path(f).name for f in all_csv}
 
     ref.save(str(ref_path))

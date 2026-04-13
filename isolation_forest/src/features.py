@@ -5,15 +5,23 @@ with trigger rate and LVDS count information from matching TriggerBoard CSVs.
 A Digitizer file is in long format: each row is one (event, channel) pair.
 This module aggregates all events into one feature vector per channel.
 
-TriggerBoard and LVDS features are file-level constants (one value per subrun),
-appended as additional columns to every channel row so the existing reference
-model and detector can handle them without any architectural changes.
+Two pseudo-channels are appended to the returned DataFrame when the
+corresponding data sources are available:
+
+  "trigger_rate" — one row holding all TriggerBoard rate / count features.
+                    Digitizer and LVDS columns are NaN for this row.
+  "trigger_lvds_total"    — one row holding the run-level LVDS total count.
+                    Digitizer and trigger columns are NaN for this row.
+
+Per-channel LVDS pin counts (LVDSpin) remain as a regular channel feature:
+  ch 0 & 1 → LVDSpin0, ch 2 & 3 → LVDSpin1, etc.
 
 Scalability: reads one file at a time, no global state.
 """
 
 from __future__ import annotations
 
+import fnmatch
 import re
 import numpy as np
 import pandas as pd
@@ -32,30 +40,55 @@ METRIC_COLS = [
 
 AGG_FUNCS = ["mean", "std", "median"]
 
-# ── TriggerBoard features ────────────────────────────────────────────────────
+_DIGI_COLS = [f"{m}_{s}" for m in METRIC_COLS for s in AGG_FUNCS] + ["occupancy", "frac_dead"]
 
-# Per-bit rates (Hz) + global rate + global counts
+# ── Per-channel LVDS feature ─────────────────────────────────────────────────
+
+# LVDSpin: pin = channel // 2  (ch0,ch1 share pin0; ch2,ch3 share pin1; etc.)
+_LVDS_PIN_COL = ["LVDSpin"]
+
+# ── Pseudo-channel feature groups ────────────────────────────────────────────
+
+# "trigger_rate" pseudo-channel — one row per file, independent of channels
 TRIGGER_COLS = [f"triggerRate_bit{i}" for i in range(1, 14)] + [
     "triggerRate_tot",
     "triggerCounts_tot",
 ]
 
-# ── LVDS features ─────────────────────────────────────────────────────────────
+# "trigger_lvds_total" pseudo-channel — run-level LVDS sum, independent of channels
+LVDS_TOTAL_COL = ["LVDStotal"]
 
-# 50 per-pin counts + the total column (renamed to LVDStotal to avoid ambiguity)
-LVDS_COLS = [f"LVDSpin{i}" for i in range(50)] + ["LVDStotal"]
+# Index labels for pseudo-channel rows
+PSEUDO_TRIGGER = "trigger_rate"
+PSEUDO_LVDS    = "trigger_lvds_total"
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
-def feature_columns(use_trigger: bool = True, use_lvds: bool = True) -> list:
-    """Ordered list of all feature column names produced by extract_features()."""
-    cols  = [f"{m}_{s}" for m in METRIC_COLS for s in AGG_FUNCS]
-    cols += ["occupancy", "frac_dead"]
+def feature_columns(
+    use_trigger: bool = True,
+    use_lvds: bool = True,
+    ignore_features: tuple = (),
+) -> list:
+    """
+    Ordered list of all feature column names shared by both real channels and
+    pseudo-channels. Columns irrelevant to a given row are NaN in the DataFrame.
+
+    ignore_features : sequence of glob patterns (e.g. "TDCRollovers_*") whose
+        matching columns are excluded from the returned list.
+    """
+    cols = list(_DIGI_COLS)
+    if use_lvds:
+        cols += _LVDS_PIN_COL
     if use_trigger:
         cols += TRIGGER_COLS
     if use_lvds:
-        cols += LVDS_COLS
+        cols += LVDS_TOTAL_COL
+    if ignore_features:
+        cols = [
+            c for c in cols
+            if not any(fnmatch.fnmatch(c, pat) for pat in ignore_features)
+        ]
     return cols
 
 
@@ -63,35 +96,45 @@ def extract_features(
     filepath: str,
     use_trigger: bool = True,
     use_lvds: bool = True,
+    ignore_features: tuple = (),
 ) -> pd.DataFrame:
     """
-    Read a Digitizer CSV and return a per-channel feature DataFrame.
+    Read a Digitizer CSV and return a combined feature DataFrame.
 
-    Columns (always present):
+    The index is mixed: integer channel IDs for real digitizer channels, then
+    string labels for pseudo-channels appended at the end.
+
+    Real channel rows
+    -----------------
       {metric}_{mean|std|median}  — aggregated Digitizer metrics (33 features)
       occupancy                   — fraction of events where this channel fired
       frac_dead                   — fraction of appearances with nPulses == 0
+      LVDSpin (if use_lvds)       — LVDS count for pin = channel // 2
 
-    Columns (only when use_trigger=True):
-      triggerRate_bit{1-13}       — per-bit trigger rate in Hz (from TriggerBoard)
-      triggerRate_tot             — total trigger rate in Hz
-      triggerCounts_tot           — total trigger count for this subrun
+    Pseudo-channel rows
+    -------------------
+      "trigger_rate" (if use_trigger):
+          triggerRate_bit{1-13}, triggerRate_tot, triggerCounts_tot
+          All other columns are NaN.
 
-    Columns (only when use_lvds=True):
-      LVDSpin{0-49}               — per-pin LVDS counts (from TriggerBoardSlab LVDSCounts)
-      LVDStotal                   — sum of all LVDS pin counts for this subrun
+      "trigger_lvds_total" (if use_lvds):
+          LVDStotal — sum of all LVDS pin counts for this subrun.
+          All other columns are NaN.
 
-    TriggerBoard / LVDS features are NaN if the matching file is not found
-    or the subrun entry is missing.
+    TriggerBoard / LVDS pseudo-channel rows have NaN values (not absent rows)
+    when the matching file is not found — the reference and detector treat
+    all-NaN pseudo-channels as no-data rather than anomalies.
     """
+    all_cols = feature_columns(use_trigger=use_trigger, use_lvds=use_lvds,
+                               ignore_features=ignore_features)
     df = pd.read_csv(filepath)
 
     if df.empty:
-        return pd.DataFrame(columns=feature_columns(use_trigger=use_trigger, use_lvds=use_lvds))
+        return pd.DataFrame(columns=all_cols)
 
     n_events = df["event_id"].nunique()
 
-    # ── Digitizer aggregations ────────────────────────────────────────────────
+    # ── Digitizer aggregations (real channels) ────────────────────────────────
     agg = df.groupby("channel")[METRIC_COLS].agg(AGG_FUNCS)
     agg.columns = [f"{m}_{s}" for m, s in agg.columns]
 
@@ -104,22 +147,45 @@ def extract_features(
         .nunique()
     )
     agg["frac_dead"] = (dead_counts / channel_event_counts).fillna(0.0)
-
     agg = agg.fillna(0.0)
 
-    # ── TriggerBoard features ─────────────────────────────────────────────────
-    if use_trigger:
-        tb_row = _load_triggerboard_row(filepath)   # dict or None
-        for col in TRIGGER_COLS:
-            agg[col] = tb_row[col] if tb_row is not None else np.nan
+    # ── Per-channel LVDS pin feature ──────────────────────────────────────────
+    lvds_row = _load_lvds_row(filepath) if use_lvds else None
 
-    # ── LVDS features ─────────────────────────────────────────────────────────
     if use_lvds:
-        lvds_row = _load_lvds_row(filepath)         # dict or None
-        for col in LVDS_COLS:
-            agg[col] = lvds_row[col] if lvds_row is not None else np.nan
+        if lvds_row is not None:
+            agg["LVDSpin"] = agg.index.map(
+                lambda ch: lvds_row.get(f"LVDSpin{int(ch) // 2}", np.nan)
+            )
+        else:
+            agg["LVDSpin"] = np.nan
 
-    return agg[feature_columns(use_trigger=use_trigger, use_lvds=use_lvds)]
+    # Pad real channel rows with NaN for pseudo-channel-only columns
+    for col in all_cols:
+        if col not in agg.columns:
+            agg[col] = np.nan
+
+    frames = [agg[all_cols]]
+
+    # ── "trigger_rate" pseudo-channel ────────────────────────────────────────
+    if use_trigger:
+        tb_row = _load_triggerboard_row(filepath)
+        tb_vals = {col: np.nan for col in all_cols}
+        if tb_row is not None:
+            for col in TRIGGER_COLS:
+                tb_vals[col] = tb_row.get(col, np.nan)
+        frames.append(pd.DataFrame([tb_vals], index=[PSEUDO_TRIGGER]))
+
+    # ── "trigger_lvds_total" pseudo-channel ───────────────────────────────────────────
+    if use_lvds:
+        lt_vals = {col: np.nan for col in all_cols}
+        if lvds_row is not None:
+            lt_vals["LVDStotal"] = lvds_row.get("LVDStotal", np.nan)
+        frames.append(pd.DataFrame([lt_vals], index=[PSEUDO_LVDS]))
+
+    result = pd.concat(frames)
+    result.index.name = "channel"
+    return result[all_cols]
 
 
 # ── TriggerBoard helpers ─────────────────────────────────────────────────────
@@ -215,11 +281,9 @@ def _find_lvds(digitizer_path: str) -> Optional[Path]:
 
 def _load_lvds_row(digitizer_path: str) -> Optional[dict]:
     """
-    Return a dict of LVDS_COLS values for the subrun matching the given
-    Digitizer file. Returns None if the LVDSCounts file is absent or the
-    subrun entry is missing.
-
-    The CSV column 'total' is exposed as 'LVDStotal' to avoid ambiguity.
+    Return a dict with keys LVDSpin0…LVDSpin49 and LVDStotal for the subrun
+    matching the given Digitizer file. Returns None if the LVDSCounts file
+    is absent or the subrun entry is missing.
     """
     m = _DIGI_RE.search(Path(digitizer_path).name)
     if m is None:
@@ -230,7 +294,6 @@ def _load_lvds_row(digitizer_path: str) -> Optional[dict]:
     if lvds_path is None:
         return None
 
-    # The LVDSCounts file shares the same repeated-header format as TriggerBoard
     lvds = _read_triggerboard(lvds_path)
     if lvds.empty or "subrunnum" not in lvds.columns:
         return None
@@ -240,7 +303,8 @@ def _load_lvds_row(digitizer_path: str) -> Optional[dict]:
         return None
 
     result = {}
-    for col in LVDS_COLS:
-        csv_col = "total" if col == "LVDStotal" else col
-        result[col] = float(row.iloc[0][csv_col]) if csv_col in row.columns else np.nan
+    for i in range(50):
+        col = f"LVDSpin{i}"
+        result[col] = float(row.iloc[0][col]) if col in row.columns else np.nan
+    result["LVDStotal"] = float(row.iloc[0]["total"]) if "total" in row.columns else np.nan
     return result

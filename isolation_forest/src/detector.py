@@ -39,9 +39,14 @@ class AnomalyDetector:
         self.z_threshold = z_threshold
         self.if_contamination = if_contamination
         self._if_model: Optional[IsolationForest] = None
-        self._use_trigger: bool = getattr(reference, "_use_trigger", True)
-        self._use_lvds: bool    = getattr(reference, "_use_lvds",    False)
-        self._feat_cols: list = feature_columns(use_trigger=self._use_trigger, use_lvds=self._use_lvds)
+        self._use_trigger: bool     = getattr(reference, "_use_trigger",     True)
+        self._use_lvds: bool        = getattr(reference, "_use_lvds",         False)
+        self._ignore_features: tuple = getattr(reference, "_ignore_features", ())
+        self._feat_cols: list = feature_columns(
+            use_trigger=self._use_trigger,
+            use_lvds=self._use_lvds,
+            ignore_features=self._ignore_features,
+        )
 
     # ------------------------------------------------------------------
     # Training
@@ -72,7 +77,10 @@ class AnomalyDetector:
         z_vectors: list = []
         source = features_cache if features_cache is not None else None
         for i, f in enumerate(csv_files):
-            features = source[i] if source is not None else extract_features(str(f), use_trigger=self._use_trigger, use_lvds=self._use_lvds)
+            features = source[i] if source is not None else extract_features(
+                str(f), use_trigger=self._use_trigger, use_lvds=self._use_lvds,
+                ignore_features=self._ignore_features,
+            )
             z_df = self.reference.z_score(features)
             # Drop rows that are entirely NaN (channels not in the reference).
             # Fill any remaining NaN with 0 (= nominal z-score) so that channels
@@ -119,7 +127,10 @@ class AnomalyDetector:
         Channels present in the reference but absent from this file are flagged as
         "missing_channel" — they fired in training data but produced zero hits here.
         """
-        features = extract_features(filepath, use_trigger=self._use_trigger, use_lvds=self._use_lvds)
+        features = extract_features(
+            filepath, use_trigger=self._use_trigger, use_lvds=self._use_lvds,
+            ignore_features=self._ignore_features,
+        )
         if features.empty:
             import warnings
             warnings.warn(f"No events found in {filepath} — returning empty results.")

@@ -30,6 +30,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from .config import load_config
+
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
 
@@ -47,6 +49,7 @@ def step_train(
     test_n: int,
     use_trigger: bool = True,
     use_lvds: bool = False,
+    ignore_features: tuple = (),
 ) -> None:
     from .run_list import resolve_run_list
     from .reference import build_reference
@@ -67,7 +70,10 @@ def step_train(
         all_csv = random.sample(all_csv, n)
         print(f"  [TEST MODE] Using {n} randomly sampled file(s).")
 
-    ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds)
+    if ignore_features:
+        print(f"  Ignored features: {list(ignore_features)}")
+    ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds,
+                                          ignore_features=ignore_features)
     ref.save(str(models_dir / "reference.npz"))
 
     import json
@@ -80,6 +86,11 @@ def step_train(
     detector.train_isolation_forest(all_csv, features_cache=features_cache)
     detector.save(str(models_dir / "detector.pkl"))
     print(f"  Detector saved  → {models_dir}/detector.pkl")
+
+    from .plot import plot_mean_table
+    print("Saving mean feature table...")
+    plot_mean_table(ref, models_dir)
+    print(f"  Mean table saved → {models_dir}/reference_mean_table.png")
 
 
 def step_apply(
@@ -202,42 +213,51 @@ def step_plots(
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    # ── Pre-parse to locate the config file, then load it ────────────────────
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--config", default="config.json")
+    cfg = load_config(_pre.parse_known_args()[0].config)
+
     parser = argparse.ArgumentParser(
         description="Run the full autoDQM pipeline: train → apply → report → plots."
     )
 
+    # ── Config ──
+    parser.add_argument("--config", default="config.json",
+                        help="Path to JSON configuration file (default: config.json)")
+
     # ── Input ──
-    parser.add_argument("--good-list",  default="../data/good_run_list_EOS.txt",
-                        help="Run list of good files for training "
-                             "(default: ../data/good_run_list_EOS.txt)")
-    parser.add_argument("--apply-list", default="../data/all_run_list_EOS.txt",
-                        help="Run list of files to apply the trained model to "
-                             "(default: ../data/all_run_list_EOS.txt)")
+    parser.add_argument("--good-list",  help="Run list of good files for training")
+    parser.add_argument("--apply-list", help="Run list of files to apply the trained model to")
+
+    # ── Output tag and directories ──
+    parser.add_argument(
+        "--model-tag",
+        help="Tag used to name all outputs: models/<tag>/, logs/<tag>.csv, etc.",
+    )
+    parser.add_argument("--models-dir",  help="Base directory for saved models")
+    parser.add_argument("--logs-dir",    help="Base directory for anomaly logs")
+    parser.add_argument("--reports-dir", help="Base directory for run-classification reports")
+    parser.add_argument("--plots-dir",   help="Base directory for diagnostic plots")
+
+    # ── Feature set ──
+    parser.add_argument("--no-trigger", action="store_true",
+                        help="Exclude TriggerBoard features (Digitizer-only mode)")
+    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
+                        help="Exclude LVDS pin count features")
+
+    # ── Thresholds ──
+    parser.add_argument("--z-threshold",          type=float)
+    parser.add_argument("--if-contamination",     type=float)
+    parser.add_argument("--file-alert-threshold", type=float,
+                        help="Fraction of anomalous channels to trigger a file-level ALERT")
 
     # ── Test mode ──
     parser.add_argument("--test-train", type=int, nargs="?", const=50, default=None, metavar="N",
                         help="Test mode: sample N training files (default N=50 when flag is given)")
     parser.add_argument("--test-apply", type=int, nargs="?", const=50, default=None, metavar="N",
                         help="Test mode: sample N apply files (default N=50 when flag is given)")
-
-    # ── Feature set ──
-    parser.add_argument("--no-trigger", action="store_true",
-                        help="Exclude TriggerBoard features (Digitizer-only mode)")
-    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
-                        help="Exclude LVDS pin count features from TriggerBoardSlab LVDSCounts CSV "
-                             "(enabled by default; use this flag to disable)")
-
-    # ── Thresholds ──
-    parser.add_argument("--z-threshold",       type=float, default=5.0)
-    parser.add_argument("--if-contamination",  type=float, default=0.05)
-    parser.add_argument("--file-alert-threshold", type=float, default=0.20,
-                        help="Fraction of anomalous channels to trigger a file-level ALERT")
-
-    # ── Output paths ──
-    parser.add_argument("--models-dir",  default="models",           help="Saved models directory")
-    parser.add_argument("--log-file",    default="logs/anomalies.csv", help="Output anomaly log")
-    parser.add_argument("--reports-dir", default="reports",           help="Run quality report output")
-    parser.add_argument("--plots-dir",   default="plots",             help="Plot output directory")
+    parser.add_argument("--test-seed", type=int)
 
     # ── Skip flags ──
     parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
@@ -245,17 +265,60 @@ def main() -> None:
     parser.add_argument("--skip-report", action="store_true", help="Skip report step")
     parser.add_argument("--skip-plots",  action="store_true", help="Skip plots step")
 
+    # Apply config as defaults (CLI args override)
+    parser.set_defaults(
+        good_list            = cfg["good_list"],
+        apply_list           = cfg["apply_list"],
+        model_tag            = cfg["model_tag"],
+        models_dir           = cfg["models_dir"],
+        logs_dir             = cfg["logs_dir"],
+        reports_dir          = cfg["reports_dir"],
+        plots_dir            = cfg["plots_dir"],
+        z_threshold          = cfg["z_threshold"],
+        if_contamination     = cfg["if_contamination"],
+        file_alert_threshold = cfg["file_alert_threshold"],
+        test_seed            = cfg["test_seed"],
+    )
+
     args = parser.parse_args()
 
-    models_dir  = Path(args.models_dir)
-    log_file    = Path(args.log_file)
-    reports_dir = Path(args.reports_dir)
-    plots_dir   = Path(args.plots_dir)
+    random.seed(args.test_seed)
+
+    # use_trigger/use_lvds: config sets the baseline, --no-* flags override
+    use_trigger = cfg["use_trigger"] and not args.no_trigger
+    use_lvds    = cfg["use_lvds"]    and not args.no_trigger_lvds
+
+    # Auto-append feature-set suffix to the tag so outputs are self-documenting
+    tag = args.model_tag
+    if not use_trigger:
+        tag += "_noTrigger"
+    if not use_lvds:
+        tag += "_noLVDS"
+
+    models_dir  = Path(args.models_dir)  / tag
+    log_file    = Path(args.logs_dir)    / f"{tag}.csv"
+    reports_dir = Path(args.reports_dir) / tag
+    plots_dir   = Path(args.plots_dir)   / tag
+
+    from .config import print_banner
+    print_banner("pipeline", args.config, [
+        ("model tag",            tag),
+        ("good list",            args.good_list),
+        ("apply list",           args.apply_list),
+        ("models dir",           str(models_dir)),
+        ("log file",             str(log_file)),
+        ("reports dir",          str(reports_dir)),
+        ("plots dir",            str(plots_dir)),
+        ("trigger features",     "yes" if use_trigger else "no"),
+        ("LVDS features",        "yes" if use_lvds else "no"),
+        ("ignore features",      str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
+        ("z threshold",          f"{args.z_threshold}σ"),
+        ("IF contamination",     str(args.if_contamination)),
+        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+        ("test seed",            str(args.test_seed)),
+    ])
 
     models_dir.mkdir(parents=True, exist_ok=True)
-
-    use_trigger = not args.no_trigger
-    use_lvds    = not args.no_trigger_lvds
 
     # ── Step 1: Train ──────────────────────────────────────────────────────
     if not args.skip_train:
@@ -265,6 +328,7 @@ def main() -> None:
             args.test_train,
             use_trigger=use_trigger,
             use_lvds=use_lvds,
+            ignore_features=tuple(cfg["ignore_features"]),
         )
     else:
         print("[SKIP] Training")

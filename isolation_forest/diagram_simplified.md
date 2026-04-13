@@ -13,8 +13,8 @@ flowchart TD
     %% ── Feature Extraction ───────────────────────────────────────────────────
     subgraph FE["  Feature Extraction  ·  features.py  "]
         direction TB
-        AGG["group by channel\n─────────────────────────────\nmean · std · median\nof 11 pulse metrics\n+ occupancy  +  frac_dead"]
-        VEC["feature vector  xᶜ ∈ ℝᵈ  per channel\n─────────────────────────────\nd = 35   Digitizer only\nd = 50   + TriggerBoard\nd = 86   + LVDS\nd = 101  full"]
+        AGG["group by channel\n─────────────────────────────\nmean · std · median\nof 11 pulse metrics\n+ occupancy  +  frac_dead\n+ LVDSpin (pin = ch // 2)"]
+        VEC["shared feature space  (d columns)\n─────────────────────────────\nreal channels: digitizer + LVDSpin\n'trigger_board' pseudo-ch: 15 trigger cols\n'lvds_total' pseudo-ch: LVDStotal col\ninapplicable columns = NaN\n─────────────────────────────\nd = 35   Digitizer only\nd = 50   + TriggerBoard\nd = 37   + LVDS\nd = 52   full"]
         AGG --> VEC
     end
 
@@ -41,7 +41,7 @@ flowchart TD
 
     %% ── Application ──────────────────────────────────────────────────────────
     subgraph APP["  Application  ·  monitor.py  "]
-        THR["file-level alert threshold\n─────────────────────────────\n  f_bad = n_anom / n_channels\n\n  f_bad = 0          → 🟢 OK\n  0 < f_bad < 0.20   → 🟡 WARN\n  f_bad ≥ 0.20       → 🔴 ALERT"]
+        THR["file-level alert threshold\n─────────────────────────────\n  f_bad = n_anom / n_channels\n\n  f_bad = 0          → 🟢 OK\n  0 < f_bad < 0.001  → 🟡 WARN\n  f_bad ≥ 0.001      → 🔴 ALERT"]
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────
@@ -57,9 +57,9 @@ flowchart TD
     %% ── Condor ───────────────────────────────────────────────────────────────
     subgraph CND["  ☁️  HTCondor  —  4 parallel jobs  "]
         direction LR
-        C1["trigger_lvds\nd=101"]
+        C1["trigger_lvds\nd=52"]
         C2["trigger_nolvds\nd=50"]
-        C3["notrigger_lvds\nd=86"]
+        C3["notrigger_lvds\nd=37"]
         C4["notrigger_nolvds\nd=35"]
     end
 
@@ -89,7 +89,7 @@ plus two occupancy features:
 
 $$\text{occupancy}_{c} = \frac{|\text{events where channel } c \text{ fired}|}{|\text{total events}|} \qquad \text{frac\\_dead}_{c} = \frac{|\text{appearances with nPulses}=0|}{|\text{appearances of } c|}$$
 
-giving a feature vector $\mathbf{x}_c \in \mathbb{R}^d$ per channel per file, with $d \in \{35, 50, 86, 101\}$ depending on which companion files are enabled.
+giving a feature vector $\mathbf{x}_c \in \mathbb{R}^d$ per row per file, with $d \in \{35, 37, 50, 52\}$ depending on which companion files are enabled. Trigger and run-level quantities are not appended to channel rows; instead they are represented as **pseudo-channel rows** (`"trigger_board"`, `"lvds_total"`) in the same shared feature space, with `NaN` in columns that do not apply to them.
 
 ---
 
@@ -149,8 +149,8 @@ $$f_{\text{bad}} = \frac{n_{\text{anomalous}}}{n_{\text{channels}}}$$
 | $f_{\text{bad}}$ | Status |
 |---|---|
 | $= 0$ | 🟢 **OK** |
-| $0 < f_{\text{bad}} < 0.20$ | 🟡 **WARN** |
-| $\geq 0.20$ | 🔴 **ALERT** |
+| $0 < f_{\text{bad}} < 0.001$ | 🟡 **WARN** |
+| $\geq 0.001$ | 🔴 **ALERT** |
 
 ---
 
@@ -158,7 +158,7 @@ $$f_{\text{bad}} = \frac{n_{\text{anomalous}}}{n_{\text{channels}}}$$
 
 | Variant | Digitizer | TriggerBoard | LVDS | $d$ |
 |---|:---:|:---:|:---:|:---:|
-| `trigger_lvds` | ✓ | ✓ | ✓ | **101** |
+| `trigger_lvds` | ✓ | ✓ | ✓ | **52** |
 | `trigger_nolvds` | ✓ | ✓ | — | **50** |
-| `notrigger_lvds` | ✓ | — | ✓ | **86** |
+| `notrigger_lvds` | ✓ | — | ✓ | **37** |
 | `notrigger_nolvds` | ✓ | — | — | **35** |

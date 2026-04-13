@@ -22,8 +22,9 @@ arguments  = $(VARIANT)
 initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
 
 # Per-job stdout/stderr; shared job event log
-output = condor/logs/$(VARIANT).out
-error  = condor/logs/$(VARIANT).err
+# $(Cluster).$(Process) ensures each submission gets its own output files
+output = condor/logs/$(Cluster).$(Process).$(VARIANT).out
+error  = condor/logs/$(Cluster).$(Process).$(VARIANT).err
 log    = condor/logs/condor.log
 
 # IsolationForest uses n_jobs=-1; give it cores to work with.
@@ -33,7 +34,7 @@ request_memory = 4096
 
 # longlunch = 2 h wall time; increase to "workday" (8 h) if the full
 # good-list training takes longer than expected.
-+JobFlavour = "longlunch"
++JobFlavour = "workday"
 
 # AFS and EOS are mounted on lxplus condor nodes — no file transfer needed.
 should_transfer_files = NO

@@ -1,4 +1,0 @@
-# Runs that start nominal then transition to anomalous
-# Columns: run  n_good_subruns  n_bad_subruns  last_good_subrun  first_bad_subrun
-run1608  n_good=3  n_bad=1  last_good_subrun=328  first_bad_subrun=353
-run1611  n_good=1  n_bad=1  last_good_subrun=248  first_bad_subrun=319

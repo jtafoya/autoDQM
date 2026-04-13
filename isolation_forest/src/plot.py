@@ -20,6 +20,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
+from .config import load_config
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .features import extract_features, METRIC_COLS
@@ -44,7 +45,7 @@ CMAP_SEQ     = "viridis"
 
 def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     """Three figures summarising the trained reference model."""
-    channels  = sorted(ref.known_channels())
+    channels  = sorted(ref.known_channels(), key=str)
     feat_cols = ref._feat_cols
 
     means = np.array([ref.get_stats(c)[0] for c in channels])   # (n_ch, n_feat)
@@ -101,6 +102,112 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     print(f"  Reference plots saved to {out_dir}/")
 
 
+def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
+    """
+    Heatmap table of per-channel reference mean feature values.
+
+    Rows = channels (integer channels first, pseudo-channels last).
+    Columns = features, grouped as: digitizer metrics | LVDS pin | trigger | trigger_lvds_total.
+    Cell colour = per-column min-max normalisation so every feature's variation
+    across channels is visible regardless of its absolute scale.
+    Cell text = actual mean value in a compact format.
+    """
+    from .features import PSEUDO_TRIGGER, PSEUDO_LVDS
+
+    all_channels = sorted(ref.known_channels(), key=str)
+    # Real channels first, then trigger_rate, then trigger_lvds_total at the very bottom
+    real_channels = sorted([c for c in all_channels if isinstance(c, int)])
+    trigger_row   = [PSEUDO_TRIGGER] if PSEUDO_TRIGGER in all_channels else []
+    lvds_row      = [PSEUDO_LVDS]    if PSEUDO_LVDS    in all_channels else []
+    pseudo_channels = trigger_row + lvds_row
+    channels  = real_channels + pseudo_channels
+    feat_cols = ref._feat_cols
+
+    n_ch   = len(channels)
+    n_feat = len(feat_cols)
+
+    # Build raw mean matrix  (n_ch × n_feat)
+    means = np.full((n_ch, n_feat), np.nan)
+    for i, ch in enumerate(channels):
+        stats = ref.get_stats(ch)
+        if stats is not None:
+            means[i] = stats[0]
+
+    # Per-column min-max normalisation for colour scale
+    col_min   = np.nanmin(means, axis=0)
+    col_max   = np.nanmax(means, axis=0)
+    col_range = col_max - col_min
+    col_range[col_range < 1e-12] = 1.0          # constant feature → midpoint colour
+    means_norm = (means - col_min) / col_range   # [0, 1], NaN stays NaN
+
+    # Figure sizing: give each cell ~0.5 × 0.22 inches
+    cell_w = 0.50
+    cell_h = 0.22
+    fig_w  = max(16, n_feat * cell_w + 4.0)
+    fig_h  = max( 8, n_ch   * cell_h + 2.5)
+
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+
+    # Draw heatmap (NaN cells come out white)
+    cmap = plt.get_cmap("YlOrRd").copy()
+    cmap.set_bad(color="#f0f0f0")              # light grey for NaN / no-data cells
+    im = ax.imshow(means_norm, aspect="auto", cmap=cmap, vmin=0, vmax=1,
+                   interpolation="nearest")
+
+    # Annotate every cell with the raw mean value
+    def _fmt(v: float) -> str:
+        if np.isnan(v):
+            return ""
+        if v == 0.0:
+            return "0"
+        a = abs(v)
+        if a >= 1e4 or a < 1e-2:
+            return f"{v:.1e}"
+        if a >= 100:
+            return f"{v:.1f}"
+        if a >= 10:
+            return f"{v:.2f}"
+        return f"{v:.3g}"
+
+    for i in range(n_ch):
+        for j in range(n_feat):
+            txt = _fmt(means[i, j])
+            if not txt:
+                continue
+            # Use white text on dark cells, black on light cells
+            norm_val = means_norm[i, j]
+            text_color = "white" if (not np.isnan(norm_val) and norm_val > 0.65) else "black"
+            ax.text(j, i, txt, ha="center", va="center",
+                    fontsize=5, color=text_color, clip_on=True)
+
+    # Separator line between real and pseudo-channels
+    if pseudo_channels:
+        sep = len(real_channels) - 0.5
+        ax.axhline(sep, color="steelblue", linewidth=1.5, linestyle="--")
+
+    # Axis tick labels
+    ax.set_xticks(range(n_feat))
+    ax.set_xticklabels(feat_cols, fontsize=6, rotation=45, ha="right")
+    ax.set_yticks(range(n_ch))
+    ax.set_yticklabels(
+        [f"ch{c}" if isinstance(c, int) else c for c in channels],
+        fontsize=6,
+    )
+
+    ax.set_title(
+        f"Reference mean feature values — {len(real_channels)} digitiser channels, "
+        f"{len(feat_cols)} features  (colour scale: per-feature min→max)",
+        fontsize=9,
+    )
+    ax.set_xlabel("Feature", fontsize=8)
+    ax.set_ylabel("Digitiser", fontsize=8)
+
+    fig.colorbar(im, ax=ax, label="Relative value within feature (0=min, 1=max)",
+                 shrink=0.4, pad=0.01)
+    fig.tight_layout()
+    _save(fig, out_dir / "reference_mean_table.png")
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # 2.  SINGLE-FILE ANALYSIS PLOTS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -121,7 +228,7 @@ def plot_file(filepath: str, detector: AnomalyDetector, out_dir: Path) -> None:
                .first()
                .reset_index())
 
-    channels = sorted(results.index.tolist())
+    channels = sorted(results.index.tolist(), key=str)
 
     # ── 2a. Z-score heatmap ──────────────────────────────────────────────────
     z_matrix = np.full((len(channels), len(feat_cols)), np.nan)
@@ -253,7 +360,7 @@ def _run_subrun_key(filename: str):
     return (float("inf"), float("inf"))
 
 
-def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.20) -> None:
+def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.001) -> None:
     """Four figures summarising the anomaly log."""
     df = pd.read_csv(log_path)
     if df.empty:
@@ -277,10 +384,10 @@ def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.20) -
     LABEL_THRESHOLD = 150
     fig_w = min(max(8, n_files * 0.5), 80)
     fig, ax = plt.subplots(figsize=(fig_w, 4))
-    colors = ["tomato" if f >= 0.20 else "steelblue" for f in per_file["frac"]]
+    colors = ["tomato" if f >= file_alert_threshold else "steelblue" for f in per_file["frac"]]
     ax.bar(range(n_files), per_file["frac"] * 100, color=colors, width=0.8)
-    ax.axhline(20, color="black", linestyle="--", linewidth=1,
-               label="20% alert threshold")
+    ax.axhline(file_alert_threshold * 100, color="black", linestyle="--", linewidth=1,
+               label=f"{file_alert_threshold:.1%} alert threshold")
     ax.set_ylabel("Anomalous channels (%)")
     if n_files <= LABEL_THRESHOLD:
         ax.set_xticks(range(n_files))
@@ -415,11 +522,24 @@ def _load_models(models_dir: str):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--config", default="config.json")
+    cfg = load_config(_pre.parse_known_args()[0].config)
+
+    tag = cfg["model_tag"]
+
     parser = argparse.ArgumentParser(
         description="Generate visualizations for training and anomaly detection output."
     )
-    parser.add_argument("--models-dir", default="models", help="Directory with saved models")
-    parser.add_argument("--out-dir",    default="plots",  help="Directory to save figures")
+    parser.add_argument("--config", default="config.json",
+                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--models-dir", help="Directory with saved models")
+    parser.add_argument("--out-dir",    help="Directory to save figures")
+
+    parser.set_defaults(
+        models_dir = str(Path(cfg["models_dir"]) / tag),
+        out_dir    = str(Path(cfg["plots_dir"])  / tag),
+    )
 
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -429,14 +549,25 @@ def main() -> None:
     p_file.add_argument("csv", help="Path to Digitizer CSV file")
 
     p_log = sub.add_parser("log", help="Plot summary of the anomaly log")
-    p_log.add_argument("--log-file", default="logs/anomalies.csv",
+    p_log.add_argument("--log-file",
+                       default=str(Path(cfg["logs_dir"]) / f"{tag}.csv"),
                        help="Path to the anomaly log CSV")
-    p_log.add_argument("--file-alert-threshold", type=float, default=0.20,
-                       help="Anomalous channel fraction that marks a subrun as bad (default: 0.20)")
+    p_log.add_argument("--file-alert-threshold", type=float,
+                       default=cfg["file_alert_threshold"],
+                       help="Anomalous channel fraction that marks a subrun as bad")
 
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    log_file_str = getattr(args, "log_file", "n/a")
+    from .config import print_banner
+    print_banner("plot", args.config, [
+        ("subcommand",           args.command),
+        ("models dir",           args.models_dir),
+        ("out dir",              str(out_dir)),
+        ("log file",             log_file_str),
+    ])
 
     if args.command == "reference":
         detector = _load_models(args.models_dir)
