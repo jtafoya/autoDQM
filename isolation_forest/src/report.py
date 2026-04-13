@@ -9,7 +9,7 @@ Reads logs/anomalies.csv (produced by monitor.py) and writes three files:
   run_summary.csv             — full per-run breakdown (all categories)
 
 A subrun is "bad" if the fraction of anomalous channels meets or exceeds
---file-alert-threshold (same default as monitor.py: 0.20).
+--file-alert-n-channels (same default as monitor.py: 2).
 
 A run is classified as:
   good              — all subruns good, no persistent channel faults
@@ -48,7 +48,7 @@ def _parse_run_subrun(filename: str):
     return None, None
 
 
-def classify_runs(log_path: str, file_alert_threshold: float = 0.001) -> dict:
+def classify_runs(log_path: str, file_alert_n_channels: int = 2) -> dict:
     """
     Read the anomaly log and return a per-run classification dict.
 
@@ -74,14 +74,13 @@ def classify_runs(log_path: str, file_alert_threshold: float = 0.001) -> dict:
     df["run"]    = df["run"].astype(int)
     df["subrun"] = df["subrun"].astype(int)
 
-    # Per-subrun anomaly fraction (mirrors monitor.py's process_file logic)
+    # Per-subrun anomaly count (mirrors monitor.py's process_file logic)
     per_subrun = (
         df.groupby(["run", "subrun"])
           .agg(total=("channel", "count"), n_bad=("anomalous", "sum"))
-          .assign(frac_bad=lambda x: x["n_bad"] / x["total"])
           .reset_index()
     )
-    per_subrun["is_bad"] = per_subrun["frac_bad"] >= file_alert_threshold
+    per_subrun["is_bad"] = per_subrun["n_bad"] >= file_alert_n_channels
 
     runs: dict = {}
     for run, grp in per_subrun.groupby("run"):
@@ -243,16 +242,16 @@ def main() -> None:
         help="Directory to write output files",
     )
     parser.add_argument(
-        "--file-alert-threshold",
-        type=float,
-        metavar="FRAC",
-        help="Fraction of anomalous channels that marks a subrun as bad",
+        "--file-alert-n-channels",
+        type=int,
+        metavar="N",
+        help="Number of anomalous channels that marks a subrun as bad",
     )
 
     parser.set_defaults(
         log_file             = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
         out_dir              = str(Path(cfg["reports_dir"]) / tag),
-        file_alert_threshold = cfg["file_alert_threshold"],
+        file_alert_n_channels = cfg["file_alert_n_channels"],
     )
 
     args = parser.parse_args()
@@ -261,7 +260,7 @@ def main() -> None:
     print_banner("report", args.config, [
         ("log file",             args.log_file),
         ("out dir",              args.out_dir),
-        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+        ("alert threshold",      f"{args.file_alert_n_channels} channels"),
     ])
 
     if not Path(args.log_file).exists():
@@ -269,7 +268,7 @@ def main() -> None:
         sys.exit(1)
 
     print(f"Reading {args.log_file} ...")
-    runs = classify_runs(args.log_file, args.file_alert_threshold)
+    runs = classify_runs(args.log_file, args.file_alert_n_channels)
 
     if not runs:
         print("No runs found in log.", file=sys.stderr)

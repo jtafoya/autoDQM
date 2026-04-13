@@ -94,16 +94,16 @@ flowchart TD
         direction TB
         WATCH["Watch directory  (poll 5 s)
         or batch via run list"]
-        THRESH{"frac_anomalous
-        channels ≥ 0.1%?"}
+        THRESH{"n_anomalous
+        channels ≥ 2?"}
         OK["🟢 OK  — all nominal"]
-        WARN["🟡 WARN  — below threshold"]
-        ALT["🔴 ALERT  — above threshold
+        WARN["🟡 WARN  — exactly 1 anomalous channel"]
+        ALT["🔴 ALERT  — ≥ 2 anomalous channels
         → auto-plot if enabled"]
         WATCH --> THRESH
-        THRESH -->|"= 0%"| OK
-        THRESH -->|"> 0, < 0.1%"| WARN
-        THRESH -->|"≥ 0.1%"| ALT
+        THRESH -->|"= 0"| OK
+        THRESH -->|"= 1"| WARN
+        THRESH -->|"≥ 2"| ALT
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────

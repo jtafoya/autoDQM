@@ -19,7 +19,7 @@ Detection uses two complementary layers:
 | 2 | Isolation Forest | Multivariate anomalies: combinations of features that break nominal correlation structure, including novel failure modes not seen in training |
 
 A channel is flagged if **either** layer triggers.  
-A file is printed as `[ALERT]` if **≥ 0.1%** of its channels are flagged (configurable).
+A file is printed as `[ALERT]` if **≥ 2 channels** are anomalous (configurable); a single anomalous channel prints `[WARN]`.
 
 ---
 
@@ -232,7 +232,7 @@ Options:
 | `--models-dir` | from config.json | Directory with saved models |
 | `--log-file` | from config.json | Output log path |
 | `--poll-interval` | from config.json | Seconds between directory scans |
-| `--file-alert-threshold` | from config.json | Fraction of anomalous channels needed to print `[ALERT]` |
+| `--file-alert-n-channels` | from config.json | Number of anomalous channels needed to print `[ALERT]` (exactly 1 → `[WARN]`) |
 | `--process-existing` | off | Also process files already in the directory at startup |
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
 | `--plots-dir` | from config.json | Root directory for all plot output |
@@ -274,7 +274,7 @@ Runs are classified as:
 | `partial` | At least one good subrun followed by at least one bad subrun (clean transition) |
 | `bad` | All subruns above the alert threshold |
 | `mixed` | Good and bad subruns interleaved with no clean transition |
-| `persistent_fault` | All subruns appear nominal by the per-file threshold, but one or more channels are anomalous in every subrun — e.g. a dead or missing channel that never triggers enough to cross 0.1% on its own |
+| `persistent_fault` | All subruns appear nominal by the per-file threshold, but one or more channels are anomalous in every subrun — e.g. a dead or missing channel that never triggers enough to reach the alert count on its own |
 
 > **`persistent_fault` guard:** requires at least **2 subruns** in the log for the run.
 > A run with only 1 subrun trivially satisfies "anomalous in every subrun" (1/1),
@@ -287,7 +287,7 @@ Options:
 | `--config` | `config.json` | Path to JSON configuration file |
 | `--log-file` | from config.json (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
 | `--out-dir` | from config.json (`<reports_dir>/<tag>`) | Directory to write output files |
-| `--file-alert-threshold` | from config.json | Fraction of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
+| `--file-alert-n-channels` | from config.json | Number of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
 
 ### 5. Plot
 
@@ -399,7 +399,7 @@ Files are ordered by **run number then subrun number** in all log plots.
 | `log_feature_frequency.png` | Bar chart of the 20 most frequently triggered features. Identifies which metrics are driving alerts — useful for diagnosing systematic hardware problems (e.g. TDC drift, occupancy loss, trigger rate shifts). |
 | `log_run_summary.png` | Bar chart with one bar per run showing what fraction of its subruns are good data (0–100%). Blue = all subruns good, orange = partial, red = all bad. Each bar is annotated with the raw count (good/total subruns). |
 
-The `log` subcommand accepts `--file-alert-threshold` (default `0.001`) to match the threshold
+The `log` subcommand accepts `--file-alert-n-channels` (default `2`) to match the threshold
 used during monitoring.
 
 ---
@@ -582,7 +582,7 @@ Options:
 | `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.json) |
 | `--z-threshold` | from config.json | σ threshold for the statistical layer |
 | `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
-| `--file-alert-threshold` | from config.json | Fraction of anomalous channels to trigger a file-level ALERT |
+| `--file-alert-n-channels` | from config.json | Number of anomalous channels to trigger a file-level ALERT (exactly 1 → WARN) |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |
@@ -678,17 +678,16 @@ Lower this first:
 "if_contamination": 0.01
 ```
 
-**File alert threshold too low for detector size (`file_alert_threshold`)**
+**Alert threshold (`file_alert_n_channels`)**
 
-At `0.001` (0.1%), a single anomalous channel out of ~98 gives a fraction of ~1%,
-which already exceeds the threshold — so any single flagged channel raises an ALERT.
-A more meaningful threshold for a 96-channel detector requires several channels to agree:
+This sets the minimum number of anomalous channels required to raise an ALERT. A single
+anomalous channel always prints WARN regardless of this value. The default is 2 — meaning
+one channel is a heads-up, two or more is an alert. Raise it if the detector routinely
+has one or two noisy channels that are not operationally significant:
 
 ```json
-"file_alert_threshold": 0.05
+"file_alert_n_channels": 5
 ```
-
-This requires ~5 channels to be flagged before raising an ALERT.
 
 **Noisy reference statistics from a small training set**
 
@@ -709,7 +708,7 @@ by broadening the training set, or by adding the unstable features to `ignore_fe
 ```json
 "z_threshold":          6.0,
 "if_contamination":     0.01,
-"file_alert_threshold": 0.05
+"file_alert_n_channels": 5
 ```
 
 Retrain and reapply to the known-good list after each change, using the frequency plots

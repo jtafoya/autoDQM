@@ -18,7 +18,7 @@ use_trigger          Include TriggerBoard rate features (bool).
 use_lvds             Include LVDS pin-count features (bool).
 z_threshold          |z-score| above which a channel feature is flagged.
 if_contamination     Expected anomaly fraction passed to IsolationForest.
-file_alert_threshold Fraction of anomalous channels that triggers a file ALERT.
+file_alert_n_channels Number of anomalous channels that triggers a file ALERT (WARN if exactly 1 below this).
 poll_interval        Seconds between directory scans in watch mode.
 test_seed            Random seed for reproducible test-mode sampling.
 """
@@ -42,7 +42,7 @@ DEFAULTS: dict = {
     "use_lvds":             True,
     "z_threshold":          5.0,
     "if_contamination":     0.05,
-    "file_alert_threshold": 0.001,
+    "file_alert_n_channels": 2,
     "poll_interval":        5.0,
     "test_seed":            42,
     "ignore_features":      [],

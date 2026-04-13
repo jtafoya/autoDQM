@@ -47,7 +47,7 @@ def process_file(
     filepath: str,
     detector: AnomalyDetector,
     log_path: str,
-    file_alert_threshold: float = 0.001,
+    file_alert_n_channels: int = 2,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
 ) -> bool:
@@ -56,10 +56,8 @@ def process_file(
 
     Returns True if the file crossed the alert threshold, False otherwise.
 
-    file_alert_threshold : fraction of channels that must be anomalous before
-        the file is printed as [ALERT]. Individual channel anomalies are always
-        logged, but low counts (likely spurious) are printed as [WARN] instead.
-        Set to 0.0 to alert on any single anomalous channel.
+    file_alert_n_channels : number of anomalous channels required to print [ALERT].
+        Exactly 1 anomalous channel prints [WARN]. 0 prints [OK].
     plot_alerts : if True and the file crosses the threshold, generate diagnostic
         plots saved to plots_dir/alerts/<stem>/.
     plots_dir : root directory for plot output.
@@ -86,7 +84,7 @@ def process_file(
 
     if n_bad == 0:
         print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
-    elif frac_bad >= file_alert_threshold:
+    elif n_bad >= file_alert_n_channels:
         alerted = True
         bad_channels = sorted(anomalies.index.tolist(), key=str)
         print(
@@ -106,7 +104,7 @@ def process_file(
         print(
             f"[WARN]  {timestamp}  {filename}  —  "
             f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels "
-            f"(below alert threshold): {bad_channels}"
+            f"(below alert threshold of {file_alert_n_channels}): {bad_channels}"
         )
 
     # Append to log
@@ -150,7 +148,7 @@ def watch_directory(
     log_path: str,
     poll_interval: float = 5.0,
     process_existing: bool = False,
-    file_alert_threshold: float = 0.001,
+    file_alert_n_channels: int = 2,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
     refresh_log_plots_every: int = 0,
@@ -181,7 +179,7 @@ def watch_directory(
         for f in sample:
             process_file(
                 str(f), detector, log_path,
-                file_alert_threshold=file_alert_threshold,
+                file_alert_n_channels=file_alert_n_channels,
                 plot_alerts=plot_alerts,
                 plots_dir=plots_dir,
             )
@@ -209,7 +207,7 @@ def watch_directory(
                     seen.add(f)
                     process_file(
                         str(f), detector, log_path,
-                        file_alert_threshold=file_alert_threshold,
+                        file_alert_n_channels=file_alert_n_channels,
                         plot_alerts=plot_alerts,
                         plots_dir=plots_dir,
                     )
@@ -221,7 +219,7 @@ def watch_directory(
                             print(f"  [log plots] Refreshing after {n_processed} files...")
                             try:
                                 _plot_log(log_path, Path(plots_dir),
-                                          file_alert_threshold=file_alert_threshold)
+                                          file_alert_n_channels=file_alert_n_channels)
                             except Exception as exc:
                                 print(f"[ERROR] Log plot refresh failed: {exc}", file=sys.stderr)
 
@@ -252,8 +250,8 @@ def main() -> None:
     parser.add_argument("--poll-interval",  type=float, help="Seconds between directory scans")
     parser.add_argument("--process-existing", action="store_true",
                         help="Also process files already present in watch-dir at startup")
-    parser.add_argument("--file-alert-threshold", type=float,
-                        help="Fraction of anomalous channels required to print [ALERT]")
+    parser.add_argument("--file-alert-n-channels", type=int,
+                        help="Number of anomalous channels required to print [ALERT] (1 channel → [WARN])")
     parser.add_argument("--plot-alerts", action="store_true",
                         help="Auto-generate diagnostic plots for every alerted file")
     parser.add_argument("--plots-dir",  help="Root directory for plot output")
@@ -279,7 +277,7 @@ def main() -> None:
         log_file             = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
         plots_dir            = cfg["plots_dir"],
         poll_interval        = cfg["poll_interval"],
-        file_alert_threshold = cfg["file_alert_threshold"],
+        file_alert_n_channels = cfg["file_alert_n_channels"],
         test_seed            = cfg["test_seed"],
     )
 
@@ -290,7 +288,7 @@ def main() -> None:
         ("models dir",           args.models_dir),
         ("log file",             args.log_file),
         ("source",               args.watch_dir or args.run_list),
-        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+        ("alert threshold",       f"{args.file_alert_n_channels} channels"),
         ("poll interval",        f"{args.poll_interval}s"),
         ("test mode",            f"{args.test} files" if args.test else "off (watch loop)"),
         ("test seed",            str(args.test_seed)),
@@ -334,7 +332,7 @@ def main() -> None:
         for f in sample:
             process_file(
                 f, detector, args.log_file,
-                file_alert_threshold=args.file_alert_threshold,
+                file_alert_n_channels=args.file_alert_n_channels,
                 plot_alerts=args.plot_alerts,
                 plots_dir=args.plots_dir,
             )
@@ -348,7 +346,7 @@ def main() -> None:
         args.log_file,
         poll_interval=args.poll_interval,
         process_existing=args.process_existing,
-        file_alert_threshold=args.file_alert_threshold,
+        file_alert_n_channels=args.file_alert_n_channels,
         plot_alerts=args.plot_alerts,
         plots_dir=args.plots_dir,
         refresh_log_plots_every=args.refresh_log_plots_every,

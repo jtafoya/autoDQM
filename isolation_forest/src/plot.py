@@ -385,18 +385,17 @@ def _run_subrun_key(filename: str):
     return (float("inf"), float("inf"))
 
 
-def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.001) -> None:
+def plot_log(log_path: str, out_dir: Path, file_alert_n_channels: int = 2) -> None:
     """Four figures summarising the anomaly log."""
     df = pd.read_csv(log_path)
     if df.empty:
         print("ERROR: Log file is empty.", file=sys.stderr)
         return
 
-    # ── 3a. Anomalous channel fraction per file ──────────────────────────────
+    # ── 3a. Anomalous channel count per file ─────────────────────────────────
     per_file = (df.groupby("filename")
                   .agg(total=("channel", "count"),
                        n_anomalous=("anomalous", "sum"))
-                  .assign(frac=lambda x: x["n_anomalous"] / x["total"])
                   .reset_index())
 
     # Sort by run number then subrun number
@@ -409,21 +408,27 @@ def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.001) 
     LABEL_THRESHOLD = 150
     fig_w = min(max(8, n_files * 0.5), 80)
     fig, ax = plt.subplots(figsize=(fig_w, 4))
-    colors = ["tomato" if f >= file_alert_threshold else "steelblue" for f in per_file["frac"]]
-    ax.bar(range(n_files), per_file["frac"] * 100, color=colors, width=0.8)
-    ax.axhline(file_alert_threshold * 100, color="black", linestyle="--", linewidth=1,
-               label=f"{file_alert_threshold:.1%} alert threshold")
-    ax.set_ylabel("Anomalous channels (%)")
+    colors = ["tomato" if n >= file_alert_n_channels else
+              ("orange" if n > 0 else "steelblue")
+              for n in per_file["n_anomalous"]]
+    ax.bar(range(n_files), per_file["n_anomalous"], color=colors, width=0.8)
+    ax.axhline(file_alert_n_channels, color="black", linestyle="--", linewidth=1,
+               label=f"alert threshold ({file_alert_n_channels} channels)")
+    ax.set_ylabel("Anomalous channels (count)")
     if n_files <= LABEL_THRESHOLD:
         ax.set_xticks(range(n_files))
-        ax.set_xticklabels(per_file["filename"], fontsize=6, rotation=45, ha="right")
+        ax.set_xticklabels(
+            ["● " + fn for fn in per_file["filename"]],
+            fontsize=6, rotation=45, ha="right",
+        )
+        for tick, c in zip(ax.get_xticklabels(), colors):
+            tick.set_color(c)
         ax.set_xlabel("File (sorted by run / subrun)")
     else:
         ax.set_xticks([])
         ax.set_xlabel(f"File (sorted by run / subrun) — {n_files} files, labels hidden above {LABEL_THRESHOLD}")
-    ax.set_ylim(0, 105)
-    ax.set_title("Anomalous channel fraction per file\n"
-                 "(red = above alert threshold)")
+    ax.set_title("Anomalous channel count per file\n"
+                 "(red = ALERT, orange = WARN, blue = OK)")
     ax.legend(fontsize=8)
     fig.tight_layout()
     _save(fig, out_dir / "log_anomaly_rate.png")
@@ -475,7 +480,7 @@ def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.001) 
     if parseable.empty:
         print("  No parseable run/subrun filenames — skipping run summary plot.")
     else:
-        parseable["is_good"] = parseable["frac"] < file_alert_threshold
+        parseable["is_good"] = parseable["n_anomalous"] < file_alert_n_channels
         run_stats = (
             parseable.groupby("_run")
                      .agg(n_subruns=("filename", "count"),
@@ -505,12 +510,16 @@ def plot_log(log_path: str, out_dir: Path, file_alert_threshold: float = 0.001) 
         ax.set_ylim(0, 115)
         ax.set_ylabel("Good subruns (%)")
         ax.set_xticks(range(n_runs))
-        ax.set_xticklabels([f"run{int(r)}" for r in run_stats["_run"]],
-                           rotation=45, ha="right", fontsize=8)
+        ax.set_xticklabels(
+            ["● " + f"run{int(r)}" for r in run_stats["_run"]],
+            rotation=45, ha="right", fontsize=8,
+        )
+        for tick, c in zip(ax.get_xticklabels(), bar_colors):
+            tick.set_color(c)
         ax.axhline(100, color="steelblue", linestyle=":", linewidth=0.8, alpha=0.5)
         ax.set_title(
             f"Good subrun fraction per run  "
-            f"(threshold: {file_alert_threshold:.0%} anomalous channels)\n"
+            f"(alert threshold: {file_alert_n_channels} anomalous channels)\n"
             f"blue = all good · orange = partial · red = all bad"
         )
         fig.tight_layout()
@@ -577,9 +586,9 @@ def main() -> None:
     p_log.add_argument("--log-file",
                        default=str(Path(cfg["logs_dir"]) / f"{tag}.csv"),
                        help="Path to the anomaly log CSV")
-    p_log.add_argument("--file-alert-threshold", type=float,
-                       default=cfg["file_alert_threshold"],
-                       help="Anomalous channel fraction that marks a subrun as bad")
+    p_log.add_argument("--file-alert-n-channels", type=int,
+                       default=cfg["file_alert_n_channels"],
+                       help="Number of anomalous channels that marks a file as ALERT")
 
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
@@ -606,7 +615,7 @@ def main() -> None:
         if not Path(args.log_file).exists():
             print(f"ERROR: Log file not found: {args.log_file}", file=sys.stderr)
             sys.exit(1)
-        plot_log(args.log_file, out_dir, file_alert_threshold=args.file_alert_threshold)
+        plot_log(args.log_file, out_dir, file_alert_n_channels=args.file_alert_n_channels)
 
 
 if __name__ == "__main__":

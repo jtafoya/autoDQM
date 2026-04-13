@@ -41,7 +41,7 @@ flowchart TD
 
     %% ── Application ──────────────────────────────────────────────────────────
     subgraph APP["  Application  ·  monitor.py  "]
-        THR["file-level alert threshold\n─────────────────────────────\n  f_bad = n_anom / n_channels\n\n  f_bad = 0          → 🟢 OK\n  0 < f_bad < 0.001  → 🟡 WARN\n  f_bad ≥ 0.001      → 🔴 ALERT"]
+        THR["file-level alert threshold\n─────────────────────────────\n  n_anom = anomalous channels\n\n  n_anom = 0   → 🟢 OK\n  n_anom = 1   → 🟡 WARN\n  n_anom ≥ 2   → 🔴 ALERT"]
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────
@@ -144,13 +144,13 @@ A channel is flagged when `predict(z) = −1`, corresponding to $s > 0.5$.
 
 ### File-Level Alert
 
-$$f_{\text{bad}} = \frac{n_{\text{anomalous}}}{n_{\text{channels}}}$$
+Let $n_{\text{anom}}$ be the number of anomalous channels in the file.
 
-| $f_{\text{bad}}$ | Status |
+| $n_{\text{anom}}$ | Status |
 |---|---|
 | $= 0$ | 🟢 **OK** |
-| $0 < f_{\text{bad}} < 0.001$ | 🟡 **WARN** |
-| $\geq 0.001$ | 🔴 **ALERT** |
+| $= 1$ | 🟡 **WARN** |
+| $\geq 2$ | 🔴 **ALERT** |
 
 ---
 

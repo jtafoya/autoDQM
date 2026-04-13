@@ -97,7 +97,7 @@ def step_apply(
     apply_list: str,
     models_dir: Path,
     log_file: Path,
-    file_alert_threshold: float,
+    file_alert_n_channels: int,
     test_n: int,
 ) -> None:
     from .run_list import resolve_run_list
@@ -127,19 +127,19 @@ def step_apply(
 
     for i, f in enumerate(all_files, 1):
         process_file(str(f), detector, str(log_file),
-                     file_alert_threshold=file_alert_threshold)
+                     file_alert_n_channels=file_alert_n_channels)
         if i % 100 == 0:
             print(f"  --- {i}/{len(all_files)} files processed ---")
 
     print(f"\n  Log written → {log_file}")
 
 
-def step_report(log_file: Path, reports_dir: Path, file_alert_threshold: float) -> None:
+def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> None:
     from .report import classify_runs, write_report
 
     _step("STEP 3 — REPORT")
 
-    runs = classify_runs(str(log_file), file_alert_threshold)
+    runs = classify_runs(str(log_file), file_alert_n_channels)
     if not runs:
         print("  No runs found in log — skipping report.")
         return
@@ -150,7 +150,7 @@ def step_plots(
     log_file: Path,
     models_dir: Path,
     plots_dir: Path,
-    file_alert_threshold: float,
+    file_alert_n_channels: int,
 ) -> None:
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
@@ -167,16 +167,15 @@ def step_plots(
     plot_reference(ref, plots_dir)
 
     print("Log summary plots...")
-    plot_log(str(log_file), plots_dir, file_alert_threshold=file_alert_threshold)
+    plot_log(str(log_file), plots_dir, file_alert_n_channels=file_alert_n_channels)
 
     print("Per-file plots for ALERT files...")
     df = pd.read_csv(str(log_file))
     per_file = (
         df.groupby("filename")
           .agg(total=("channel", "count"), n_bad=("anomalous", "sum"))
-          .assign(frac=lambda x: x["n_bad"] / x["total"])
     )
-    alert_names = per_file[per_file["frac"] >= file_alert_threshold].index.tolist()
+    alert_names = per_file[per_file["n_bad"] >= file_alert_n_channels].index.tolist()
 
     # Recover full paths from the log (filenames only) via the apply list lookup
     # We stored full paths in the log as base names; reconstruct from the log's
@@ -249,8 +248,8 @@ def main() -> None:
     # ── Thresholds ──
     parser.add_argument("--z-threshold",          type=float)
     parser.add_argument("--if-contamination",     type=float)
-    parser.add_argument("--file-alert-threshold", type=float,
-                        help="Fraction of anomalous channels to trigger a file-level ALERT")
+    parser.add_argument("--file-alert-n-channels", type=int,
+                        help="Number of anomalous channels to trigger a file-level ALERT")
 
     # ── Test mode ──
     parser.add_argument("--test-train", type=int, nargs="?", const=50, default=None, metavar="N",
@@ -276,7 +275,7 @@ def main() -> None:
         plots_dir            = cfg["plots_dir"],
         z_threshold          = cfg["z_threshold"],
         if_contamination     = cfg["if_contamination"],
-        file_alert_threshold = cfg["file_alert_threshold"],
+        file_alert_n_channels = cfg["file_alert_n_channels"],
         test_seed            = cfg["test_seed"],
     )
 
@@ -314,7 +313,7 @@ def main() -> None:
         ("ignore features",      str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
         ("z threshold",          f"{args.z_threshold}σ"),
         ("IF contamination",     str(args.if_contamination)),
-        ("file alert threshold", f"{args.file_alert_threshold:.1%}"),
+        ("alert threshold",       f"{args.file_alert_n_channels} channels"),
         ("test seed",            str(args.test_seed)),
     ])
 
@@ -365,7 +364,7 @@ def main() -> None:
         log_file.unlink(missing_ok=True)
         for i, f in enumerate(all_apply, 1):
             process_file(str(f), detector, str(log_file),
-                         file_alert_threshold=args.file_alert_threshold)
+                         file_alert_n_channels=args.file_alert_n_channels)
             if i % 100 == 0:
                 print(f"  --- {i}/{len(all_apply)} files processed ---")
         print(f"\n  Log written → {log_file}")
@@ -377,13 +376,13 @@ def main() -> None:
 
     # ── Step 3: Report ─────────────────────────────────────────────────────
     if not args.skip_report:
-        step_report(log_file, reports_dir, args.file_alert_threshold)
+        step_report(log_file, reports_dir, args.file_alert_n_channels)
     else:
         print("[SKIP] Report")
 
     # ── Step 4: Plots ──────────────────────────────────────────────────────
     if not args.skip_plots:
-        step_plots(log_file, models_dir, plots_dir, args.file_alert_threshold)
+        step_plots(log_file, models_dir, plots_dir, args.file_alert_n_channels)
     else:
         print("[SKIP] Plots")
 
