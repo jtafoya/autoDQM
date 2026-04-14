@@ -18,8 +18,26 @@ Detection uses two complementary layers:
 | 1 | Statistical z-score | Individual feature drift > 5σ from reference (noisy/dead channels, gain shifts, timing jumps) |
 | 2 | Isolation Forest | Multivariate anomalies: combinations of features that break nominal correlation structure, including novel failure modes not seen in training |
 
-A channel is flagged if **either** layer triggers.  
-A file is printed as `[ALERT]` if **≥ 2 channels** are anomalous (configurable); a single anomalous channel prints `[WARN]`.
+A channel is flagged if **either** layer triggers.
+
+To suppress single-file fluctuations, the pipeline distinguishes two levels of anomaly:
+
+| Level | Condition | Status |
+|---|---|---|
+| **Persistent** | channel anomalous in the current file **and** every one of the `alert_consecutive_n − 1` preceding files **within the same run** | counts toward ALERT |
+| **Transient** | channel anomalous now but streak incomplete | counts toward WARN only |
+
+**Channel history is reset at every run boundary.** A helper `_run_number()` extracts the run number from the filename; when it changes, the streak counters are cleared and the file index within the run resets to zero. The first `alert_consecutive_n − 1` files of each run cannot yet confirm nominal behaviour — they print `[PEND]` if clean, or escalate to `[ALERT]` immediately if a single-file condition fires.
+
+Three independent conditions can raise `[ALERT]`:
+
+| Condition | Config key | Rationale |
+|---|---|---|
+| **Persistent** | `file_alert_n_channels` | ≥ N channels each anomalous in `alert_consecutive_n` consecutive files. Can be low (e.g. 2) because persistence already suppresses transient noise. |
+| **Bulk** | `single_file_alert_n_channels` | ≥ K anomalous channels in a single file. Targets sudden widespread events (power glitch, noisy run). No history required; set higher than `file_alert_n_channels` (e.g. 5) since there is no persistence filter. 0 = disabled. |
+| **Extreme** | `single_file_alert_max_z` | Any single channel's `max_z` ≥ this value. Targets a catastrophically out-of-range channel (e.g. broken hardware). 0.0 = disabled. |
+
+Setting `alert_consecutive_n = 1` disables the persistence check and restores single-file behaviour (`[PEND]` never fires).
 
 ---
 
@@ -42,7 +60,7 @@ isolation_forest/
     submit.sub       — HTCondor job description (4 feature-variant jobs)
     run_pipeline.sh  — worker-node entry point (sources env.sh, calls pipeline.py)
     logs/            — per-job stdout/stderr and shared job event log
-  models/            — saved reference stats and trained Isolation Forest (created by train.py)
+  models/            — saved reference stats and trained Isolation Forest (created by train.py); each tag subdirectory also contains a config.json snapshot of the settings used for that training run
   logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
   reports/           — run quality lists and summary table (created by report.py / pipeline.py)
   plots/             — diagnostic figures (created by plot.py / pipeline.py)
@@ -177,6 +195,7 @@ This creates:
 - `models/reference.npz` — per-channel Welford statistics (mean, variance, count)
 - `models/detector.pkl` — trained Isolation Forest
 - `models/seen_files.json` — list of files already incorporated into the reference
+- `models/config.json` — snapshot of the config file used for this training run (overwritten on every retrain)
 
 The `use_trigger` and `use_lvds` settings are saved into `reference.npz` so all subsequent
 steps (apply, plots) automatically use the same feature set.
@@ -232,7 +251,10 @@ Options:
 | `--models-dir` | from config.json | Directory with saved models |
 | `--log-file` | from config.json | Output log path |
 | `--poll-interval` | from config.json | Seconds between directory scans |
-| `--file-alert-n-channels` | from config.json | Number of anomalous channels needed to print `[ALERT]` (exactly 1 → `[WARN]`) |
+| `--file-alert-n-channels` | from config.json | Number of *persistent* anomalous channels needed to print `[ALERT]` (persistence condition) |
+| `--alert-consecutive-n` | from config.json | A channel must be anomalous in this many consecutive files to count as persistent. Set to `1` to disable (any anomaly → ALERT-eligible, no `[PEND]`) |
+| `--single-file-alert-n-channels` | from config.json | Minimum anomalous channels in a single file to trigger `[ALERT]` (bulk condition). Should be higher than `--file-alert-n-channels`. `0` = disabled |
+| `--single-file-alert-max-z` | from config.json | If any channel's `max_z` meets or exceeds this value, trigger `[ALERT]` immediately (extreme condition). `0.0` = disabled |
 | `--process-existing` | off | Also process files already in the directory at startup |
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
 | `--plots-dir` | from config.json | Root directory for all plot output |
@@ -240,14 +262,22 @@ Options:
 | `--test [N]` | off | Test mode: randomly sample N files from the source (watch-dir or run-list), process them, then exit |
 | `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
 
-Terminal output:
+Terminal output (with `alert_consecutive_n = 3`, `single_file_alert_n_channels = 5`, `single_file_alert_max_z = 15.0`):
 ```
-[OK]    2026-04-08T17:00:00Z  Digitizer_run2090_subrun1.csv  —  96 channels, all nominal
-[WARN]  2026-04-08T17:00:05Z  Digitizer_run2090_subrun2.csv  —  3/96 (3%) anomalous (below threshold)
-[ALERT] 2026-04-08T17:00:10Z  Digitizer_run2091_subrun1.csv  —  91/96 (95%) anomalous: [1, 3, 4, ...]
-         ch  1  method=statistical+IF        max_z=20.35     if_score=-0.59   features=[nPulses_std;occupancy]
-         ch  3  method=statistical           max_z=2000000   if_score=-0.65   features=[sideband_mean_median;...]
+[run 2090] New run — channel history reset
+[PEND]  2026-04-08T17:00:00Z  Digitizer_run2090_subrun1.csv  —  96 channels, no anomalies  (run start: file 1/3, need 2 more clean file(s) to confirm [OK])
+[PEND]  2026-04-08T17:00:05Z  Digitizer_run2090_subrun2.csv  —  96 channels, no anomalies  (run start: file 2/3, need 1 more clean file(s) to confirm [OK])
+[OK]    2026-04-08T17:00:10Z  Digitizer_run2090_subrun3.csv  —  96 channels, all nominal
+[WARN]  2026-04-08T17:00:15Z  Digitizer_run2090_subrun4.csv  —  2 transient anomalous channel(s)  [window: 3 files, need 2 persistent for ALERT]
+                  ch1  method=statistical+IF        max_z=8.2    if_score=-0.59   features=[nPulses_std;occupancy]  [1/3 files]
+                  ch3  method=statistical           max_z=6.4    if_score=-0.41   features=[sideband_mean_median]   [1/3 files]
+[ALERT] 2026-04-08T17:00:20Z  Digitizer_run2090_subrun6.csv  —  2 persistent + 1 transient anomalous channel(s)  (window: 3 files)  |  bulk: 6 channels ≥ 5 threshold
+                  ch1  method=statistical+IF        max_z=8.2    if_score=-0.59   features=[nPulses_std;occupancy]  [3/3 files]
+                  ch3  method=statistical           max_z=6.4    if_score=-0.65   features=[sideband_mean_median]   [3/3 files]
+                 ch57  method=isolation_forest      max_z=4.1    if_score=-0.71   features=[]                       [1/3 files]
 ```
+
+With `alert_consecutive_n = 1` (persistence check disabled) the `[k/N files]` annotations are omitted, `[PEND]` never fires, and the output matches the original single-file format.
 
 ### 4. Classify runs
 
@@ -353,6 +383,8 @@ plots/
   log_channel_frequency.png
   log_feature_frequency.png
   log_run_summary.png
+  log_persistence_subrun_grid.png  ← persistence-aware subrun heatmap
+  log_persistence_run_summary.png  ← persistence-aware run quality bar chart
 ```
 
 Good files and files below the alert threshold generate no plots, keeping storage proportional
@@ -382,7 +414,7 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 | `<stem>_zscore_heatmap.png` | Full channels × features z-score matrix, clamped at 50σ. Same layout as `reference_mean_table.png`: digitiser channels (`ch0`–`ch95`) ordered numerically top to bottom, pseudo-channels (`trigger_rate`, `trigger_lvds_total`) below a dashed separator, cell text showing the actual \|z\| value, grey cells for features not applicable to that row. Red shading highlights flagged channels. |
 | `<stem>_max_zscore.png` | Bar chart of the maximum absolute z-score per channel (log scale), channels ordered numerically with pseudo-channels at the right. The dashed line marks the alert threshold. Red bars are flagged channels, blue are nominal. |
 | `<stem>_if_scores.png` | Isolation Forest anomaly score per channel, same channel ordering. More negative = more anomalous. Complements the z-score plot by capturing multivariate anomalies not visible in any single feature. |
-| `<stem>_geometry.png` | Detector layout plot: one panel per layer (all 4 layers in a single row), channels placed at their (row, column) position and coloured by max \|z\|. Red rings mark flagged channels. Useful for spotting spatially localised problems (e.g. a dead row or noisy column). |
+| `<stem>_geometry.png` | Detector layout plot: one panel per layer (all 4 layers in a single row), channels placed at their (row, column) position and coloured by max \|z\|. Each channel also gets a status ring: 🟢 green = OK (nominal), 🟡 yellow = WARN (anomalous but no alert condition fired), 🔴 red = ALERT (bulk or extreme condition triggered). Useful for spotting spatially localised problems (e.g. a dead row or noisy column). |
 
 ### Log summary plots
 
@@ -394,13 +426,22 @@ Files are ordered by **run number then subrun number** in all log plots.
 
 | File | Description |
 |---|---|
-| `log_anomaly_rate.png` | Anomalous channel fraction per file, sorted by run/subrun. Red bars exceed the alert threshold; blue bars are below it. |
+| `log_anomaly_rate.png` | Anomalous channel count per file, sorted by run/subrun. Red bars = ALERT (any of the three alert conditions fired), orange/dark-orange = WARN, light-blue = PEND (probationary — first N−1 files of each run with no anomalies), steel-blue = OK. A second dashed threshold line marks the bulk single-file threshold. Each x-axis label is coloured to match its bar, so zero-count files remain visible. |
 | `log_channel_frequency.png` | Bar chart of the 40 most frequently flagged channels across all processed files. Persistent entries point to channels with chronic issues rather than transient noise. |
 | `log_feature_frequency.png` | Bar chart of the 20 most frequently triggered features. Identifies which metrics are driving alerts — useful for diagnosing systematic hardware problems (e.g. TDC drift, occupancy loss, trigger rate shifts). |
-| `log_run_summary.png` | Bar chart with one bar per run showing what fraction of its subruns are good data (0–100%). Blue = all subruns good, orange = partial, red = all bad. Each bar is annotated with the raw count (good/total subruns). |
+| `log_run_summary.png` | Bar chart with one bar per run showing what fraction of its subruns are non-ALERT (0–100%), based on raw per-file anomaly counts. Blue = all good, orange = partial, red = all bad. Each bar is annotated with the raw count. |
+| `log_persistence_subrun_grid.png` | Heatmap of every (run, subrun) cell coloured by its persistence-aware status: blue = OK, light-blue = PEND (probationary, first N−1 files of the run), orange = WARN (transient anomaly, streak incomplete), red = ALERT (any alert condition fired — persistent, bulk, or extreme). Grey = no data. Shows at a glance which subruns are anomalous only transiently versus truly persistent, and which are probationary at run start. |
+| `log_persistence_run_summary.png` | Same as `log_run_summary.png` but subrun badness is determined by the full alert logic (persistent + bulk + extreme conditions): a subrun is counted as bad only if it reaches ALERT level. Runs with only transient spikes appear fully good here while showing anomalies in `log_run_summary.png`. |
 
-The `log` subcommand accepts `--file-alert-n-channels` (default `2`) to match the threshold
-used during monitoring.
+Options for the `log` subcommand:
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--log-file` | from config.json (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
+| `--file-alert-n-channels` | from config.json | Number of persistent anomalous channels that marks a file as ALERT — persistence condition (must match the value used in monitor.py) |
+| `--alert-consecutive-n` | from config.json | Consecutive files a channel must be anomalous in to count as persistent (must match the value used in monitor.py) |
+| `--single-file-alert-n-channels` | from config.json | Bulk alert threshold for replayed log colouring (must match the value used in monitor.py). `0` = disabled |
+| `--single-file-alert-max-z` | from config.json | Extreme alert threshold for replayed log colouring (must match the value used in monitor.py). `0.0` = disabled |
 
 ---
 
@@ -582,11 +623,16 @@ Options:
 | `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.json) |
 | `--z-threshold` | from config.json | σ threshold for the statistical layer |
 | `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
-| `--file-alert-n-channels` | from config.json | Number of anomalous channels to trigger a file-level ALERT (exactly 1 → WARN) |
+| `--file-alert-n-channels` | from config.json | Number of *persistent* anomalous channels to trigger a file-level ALERT (persistence condition) |
+| `--alert-consecutive-n` | from config.json | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
+| `--single-file-alert-n-channels` | from config.json | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |
+| `--single-file-alert-max-z` | from config.json | Extreme alert: `[ALERT]` when any channel's `max_z` meets or exceeds this value. `0.0` = disabled |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |
-| `--skip-plots` | off | Skip plot generation |
+| `--skip-all-plots` | off | Skip the entire plots step — no `reference_*`, `log_*`, or per-file plots |
+| `--skip-subrun-plots` | off | Skip per-ALERT subrun plots only; `reference_*` and `log_*` summary plots are still generated |
+| `--max-subrun-plots` | from config.json | Maximum number of per-ALERT subrun plot sets to generate, in run/subrun order. `-1` = no limit (plots all ALERT files — a loud warning is printed) |
 
 The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
 
@@ -678,16 +724,60 @@ Lower this first:
 "if_contamination": 0.01
 ```
 
-**Alert threshold (`file_alert_n_channels`)**
+**Alert thresholds**
 
-This sets the minimum number of anomalous channels required to raise an ALERT. A single
-anomalous channel always prints WARN regardless of this value. The default is 2 — meaning
-one channel is a heads-up, two or more is an alert. Raise it if the detector routinely
-has one or two noisy channels that are not operationally significant:
+`file_alert_n_channels` is the minimum number of *persistent* anomalous channels required to raise an ALERT via the persistence condition. Any anomalous channel below this count prints WARN unless a single-file condition also fires. The default is 2. Raise it if the detector routinely has one or two noisy channels that are not operationally significant:
 
 ```json
 "file_alert_n_channels": 5
 ```
+
+Two additional single-file conditions can raise ALERT independently, without waiting for persistence:
+
+- **`single_file_alert_n_channels`**: fires when ≥ K channels are anomalous in a single file. Targets sudden widespread events (power glitch, noisy run). Set higher than `file_alert_n_channels` (e.g. 5–10) because there is no persistence filter to suppress transient noise. `0` = disabled.
+- **`single_file_alert_max_z`**: fires when any single channel's `max_z` meets or exceeds this value. Targets a catastrophically out-of-range channel (e.g. broken digitizer hardware). `0.0` = disabled.
+
+```json
+"single_file_alert_n_channels": 5,
+"single_file_alert_max_z": 15.0
+```
+
+**Persistence window (`alert_consecutive_n`)**
+
+This is the primary lever for suppressing single-file fluctuations without raising the
+channel count threshold. A channel must be anomalous in this many consecutive files
+(including the current one) to be counted as persistent and contribute to ALERT. The
+default is 3 — a transient spike in any single subrun prints WARN; sustained anomalies
+over 3 consecutive subruns escalate to ALERT.
+
+- **Larger N**: reduces false alerts from single-file noise; delays detection of new faults by N − 1 files
+- **`N = 1`**: disables persistence entirely — every anomaly is immediately ALERT-eligible (original behaviour)
+- **N = 2**: one confirmation file required (fastest escalation with any protection)
+
+```json
+"alert_consecutive_n": 2
+```
+
+Note that `alert_consecutive_n` acts at the *console/alert* level only. The anomaly log
+(`logs/<tag>.csv`) records every anomalous channel in every file regardless of persistence,
+so the full history is always available for offline analysis via `report.py` and `plot.py`.
+
+> **Caveats**
+>
+> - **Run boundaries**: channel history is **reset at every run boundary**. The helper
+>   `_run_number()` extracts the run number from the filename. When a new run number is
+>   detected, the streak counters and `channel_history` dict are cleared and `run_file_index`
+>   resets to zero. The first `alert_consecutive_n − 1` files of each run are classified
+>   `[PEND]` if nominal (insufficient history to confirm OK), or escalate directly to
+>   `[ALERT]` if a bulk or extreme single-file condition fires.
+>
+> - **Test mode / random sampling**: in test mode files are randomly sampled then
+>   processed in run/subrun order. If the sample skips subruns (e.g. picks subruns 1, 5,
+>   10 but not 2–9), the persistence window spans the *sampled* files rather than truly
+>   consecutive subruns. A channel anomalous in subruns 1 and 10 accumulates as `[2/3
+>   files]` even if subruns 2–9 were nominal. The persistent/transient verdict is therefore
+>   approximate in test mode and should not be used as a production-quality persistence
+>   judgement.
 
 **Noisy reference statistics from a small training set**
 
@@ -706,9 +796,12 @@ by broadening the training set, or by adding the unstable features to `ignore_fe
 ### Suggested starting point for a detector of this size
 
 ```json
-"z_threshold":          6.0,
-"if_contamination":     0.01,
-"file_alert_n_channels": 5
+"z_threshold":                    6.0,
+"if_contamination":               0.01,
+"file_alert_n_channels":          2,
+"alert_consecutive_n":            3,
+"single_file_alert_n_channels":   5,
+"single_file_alert_max_z":        15.0
 ```
 
 Retrain and reapply to the known-good list after each change, using the frequency plots

@@ -41,7 +41,7 @@ flowchart TD
 
     %% ── Application ──────────────────────────────────────────────────────────
     subgraph APP["  Application  ·  monitor.py  "]
-        THR["file-level alert threshold\n─────────────────────────────\n  n_anom = anomalous channels\n\n  n_anom = 0   → 🟢 OK\n  n_anom = 1   → 🟡 WARN\n  n_anom ≥ 2   → 🔴 ALERT"]
+        THR["file-level alert logic  (3 independent conditions)\n─────────────────────────────────────────────────\n  run boundary → channel history reset  (_run_number)\n  first N−1 files of a run: no alert history yet\n\n  PERSISTENT  channel anomalous in ≥ N consecutive files\n  BULK        ≥ single_file_alert_n_channels bad at once\n  EXTREME     any channel max_z ≥ single_file_alert_max_z\n\n  no anomalies, run_file_index &lt; N−1 → 🔵 PEND\n  no anomalies, confirmed              → 🟢 OK\n  anomalies, none of the above         → 🟡 WARN\n  any condition above fires            → 🔴 ALERT"]
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ flowchart TD
     subgraph OUT["  Outputs  "]
         direction LR
         REP["📊  report.py\n─────────────────────────────────\nclassify runs:\n  good  · partial  · bad\n  mixed · persistent_fault\n\npersistent fault :\n  channel anomalous in every\n  subrun of a run"]
-        PLT["📈  plot.py\n─────────────────────────────────\nreference : means · stds · coverage\nper-file  : z-heatmap · max_z\n            IF scores · geometry\nlog       : anomaly rate over time\n            channel / feature freq"]
+        PLT["📈  plot.py\n─────────────────────────────────\nreference : means · stds · coverage\nper-file  : z-heatmap · max_z\n            IF scores · geometry map\n            🟢 ring=OK  🟡=WARN  🔴=ALERT\nlog       : anomaly rate (pend-aware)\n            channel / feature freq\n            persistence heatmap (ok/pend/warn/alert)"]
     end
 
     %% ── Condor ───────────────────────────────────────────────────────────────
@@ -144,13 +144,28 @@ A channel is flagged when `predict(z) = −1`, corresponding to $s > 0.5$.
 
 ### File-Level Alert
 
-Let $n_{\text{anom}}$ be the number of anomalous channels in the file.
+Channel history is **reset at every run boundary** — the helper `_run_number()` extracts the run number from the filename and resets the streak counters when it changes.  The first $N-1$ files of each run have insufficient history to confirm nominal behaviour; they are classified **PEND** (probationary) if they contain no anomalies.
 
-| $n_{\text{anom}}$ | Status |
+A channel is **persistent** if it is anomalous in the current file and in all $N-1$ preceding subrun files **within the same run** (window $N$ = `alert_consecutive_n`).  A channel anomalous only in the current file is **transient**.
+
+Three independent conditions can raise an **ALERT** for a file:
+
+| Condition | Parameter | Description |
+|---|---|---|
+| **Persistent** | `file_alert_n_channels` | $\geq \theta$ channels each anomalous in $N$ consecutive files; targets sustained degradation; can be low (e.g. 2) because persistence suppresses noise |
+| **Bulk** | `single_file_alert_n_channels` | $\geq k$ anomalous channels in a single file; targets sudden widespread events (power glitch, noisy run); no history needed; set higher than $\theta$ (e.g. 5) since no persistence filter |
+| **Extreme** | `single_file_alert_max_z` | any channel's $\text{max\_z} \geq z_{\max}$ in a single file; targets a single catastrophically out-of-range channel (broken hardware); 0.0 = disabled |
+
+Let $n_{\text{persist}}$ be the number of persistent channels, $n_{\text{bad}}$ the total anomalous channels, $z_{\max}$ the configured extreme threshold, and $i$ the zero-based file index within the current run.
+
+| Condition | Status |
 |---|---|
-| $= 0$ | 🟢 **OK** |
-| $= 1$ | 🟡 **WARN** |
-| $\geq 2$ | 🔴 **ALERT** |
+| No anomalies and $i < N - 1$ | 🔵 **PEND** (probationary — insufficient run history) |
+| No anomalies and $i \geq N - 1$ | 🟢 **OK** |
+| Anomalies present, none of the three ALERT conditions fire | 🟡 **WARN** |
+| $n_{\text{persist}} \geq \theta$, OR $n_{\text{bad}} \geq k$, OR $\text{max\_z} \geq z_{\max}$ | 🔴 **ALERT** |
+
+Setting $N = 1$ disables the persistence check: every anomalous channel is immediately persistent and `[PEND]` never fires.  Setting `single_file_alert_n_channels = 0` and `single_file_alert_max_z = 0.0` disables the two single-file conditions.
 
 ---
 

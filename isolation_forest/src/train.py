@@ -21,6 +21,7 @@ Models are saved to --models-dir (default: models/).
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -159,6 +160,11 @@ def main() -> None:
     detector.train_isolation_forest(all_csv, features_cache=cache)
     detector.save(str(det_path))
     print(f"  Detector saved to {det_path}")
+
+    # Save a snapshot of the config used for this training run
+    config_snapshot = models_dir / "config.json"
+    shutil.copy2(args.config, config_snapshot)
+    print(f"  Config snapshot saved to {config_snapshot}")
 
     print("\nDone. Next step: run  python -m src.monitor --watch-dir <live-dir>")
 

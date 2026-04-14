@@ -94,16 +94,26 @@ flowchart TD
         direction TB
         WATCH["Watch directory  (poll 5 s)
         or batch via run list"]
-        THRESH{"n_anomalous
-        channels ≥ 2?"}
-        OK["🟢 OK  — all nominal"]
-        WARN["🟡 WARN  — exactly 1 anomalous channel"]
-        ALT["🔴 ALERT  — ≥ 2 anomalous channels
+        RUNBND["_run_number()  —  run boundary check
+        new run → reset channel_history + run_file_index"]
+        THRESH{"3 independent ALERT conditions:
+        PERSISTENT  ≥ file_alert_n_channels channels
+                    each anomalous in N consecutive files
+        BULK        ≥ single_file_alert_n_channels bad at once
+        EXTREME     any channel max_z ≥ single_file_alert_max_z"}
+        PEND["🔵 PEND  — no anomalies
+        but run_file_index &lt; N−1
+        (insufficient history to confirm OK)"]
+        OK["🟢 OK  — no anomalies, run confirmed nominal"]
+        WARN["🟡 WARN  — anomalous channels present
+        but no ALERT condition fires"]
+        ALT["🔴 ALERT  — persistent | bulk | extreme
         → auto-plot if enabled"]
-        WATCH --> THRESH
-        THRESH -->|"= 0"| OK
-        THRESH -->|"= 1"| WARN
-        THRESH -->|"≥ 2"| ALT
+        WATCH --> RUNBND --> THRESH
+        THRESH -->|"0 anomalies, early in run"| PEND
+        THRESH -->|"0 anomalies, confirmed"| OK
+        THRESH -->|"anomalies, no condition fires"| WARN
+        THRESH -->|"any condition fires"| ALT
     end
 
     %% ── Log ──────────────────────────────────────────────────────────────────
@@ -146,11 +156,13 @@ flowchart TD
         channel coverage bar chart"]
         PF["Per-file plots  (on ALERT)
         z-score heatmap · max_z per channel
-        IF scores · detector geometry"]
+        IF scores · detector geometry map
+        🟢 green ring = OK · 🟡 yellow = WARN · 🔴 red = ALERT"]
         PL["Log summary plots
-        anomaly rate over time
+        anomaly rate (pend-aware colouring)
         channel frequency · feature frequency
-        per-run good-fraction"]
+        persistence heatmap  (ok / pend / warn / alert)
+        per-run good-fraction (persistence-gated)"]
     end
 
     %% ── Condor ───────────────────────────────────────────────────────────────

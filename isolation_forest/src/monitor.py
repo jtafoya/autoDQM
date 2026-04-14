@@ -7,6 +7,9 @@ Each new Digitizer_*.csv file found is processed once; results are appended to a
 Usage:
     python -m src.monitor --watch-dir /eos/.../live --log-file logs/anomalies.csv
 
+    # Require a channel to be anomalous in 3 consecutive files before raising ALERT:
+    python -m src.monitor --watch-dir /eos/.../live --alert-consecutive-n 3
+
     # Auto-generate diagnostic plots for every alerted file:
     python -m src.monitor --watch-dir /eos/.../live --plot-alerts
 
@@ -19,12 +22,54 @@ Log columns:
     triggered_features semicolon-separated feature names that exceeded z_threshold
     max_z              largest |z-score| across all features for this channel
     if_score           Isolation Forest anomaly score (more negative = more anomalous)
+
+Alert logic
+-----------
+A channel is *persistent* if it is anomalous in the current file AND in all
+alert_consecutive_n-1 preceding files. A channel anomalous only in the current
+file (insufficient history or broken streak) is *transient*.
+
+There are three independent conditions that can raise [ALERT]. They target
+different failure modes and any one of them is sufficient:
+
+  1. Persistent   — catches sustained, gradual degradation.
+                    Fires when at least file_alert_n_channels channels have been
+                    anomalous across the last alert_consecutive_n consecutive files.
+                    The low channel-count threshold (e.g. 2) is safe here because
+                    persistence already filters out transient noise.
+
+  2. Bulk         — catches sudden widespread events (e.g. power supply glitch,
+                    noisy run condition) where many channels go bad at once in a
+                    single file, even if they were fine before.
+                    Fires when at least single_file_alert_n_channels channels are
+                    anomalous in the current file, regardless of history.
+                    The threshold should be higher than file_alert_n_channels
+                    (e.g. 5) because there is no persistence filter to suppress noise.
+                    Set single_file_alert_n_channels=0 to disable.
+
+  3. Extreme      — catches a single channel that is catastrophically out of range,
+                    even if it appears in only one file (e.g. hardware failure, stuck
+                    digitizer channel). Fires when any channel's max_z meets or
+                    exceeds single_file_alert_max_z, regardless of history.
+                    Set single_file_alert_max_z=0.0 to disable.
+
+    [OK]    — no anomalous channels
+    [WARN]  — anomalous channels present but no alert condition met
+    [ALERT] — one or more conditions triggered; active reasons shown in suffix
+
+Setting alert_consecutive_n=1 (or omitting it) disables the persistence check:
+every anomalous channel is immediately treated as persistent, reproducing the
+original single-file behaviour. In that mode, condition 1 and condition 2 both
+count all anomalous channels in the current file and differ only in their
+threshold values.
 """
 
 import argparse
 import csv
+import re
 import sys
 import time
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -43,29 +88,79 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _sort_key(path: str) -> tuple:
+    """(run, subrun) integer sort key extracted from a Digitizer filename."""
+    m = re.search(r"run(\d+).*subrun(\d+)", str(path), re.IGNORECASE)
+    if m:
+        return (int(m.group(1)), int(m.group(2)))
+    return (float("inf"), float("inf"))
+
+
+def _run_number(path: str) -> "int | None":
+    """Run number extracted from a Digitizer filename, or None if not parseable."""
+    m = re.search(r"run(\d+)", str(path), re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
 def process_file(
     filepath: str,
     detector: AnomalyDetector,
     log_path: str,
     file_alert_n_channels: int = 2,
+    alert_consecutive_n: int = 1,
+    channel_history: "dict | None" = None,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
+    run_file_index: int = 9999,
 ) -> bool:
     """
     Analyze one file and append per-channel results to the log.
 
-    Returns True if the file crossed the alert threshold, False otherwise.
+    Returns True if the file crossed any alert threshold, False otherwise.
 
-    file_alert_n_channels : number of anomalous channels required to print [ALERT].
-        Exactly 1 anomalous channel prints [WARN]. 0 prints [OK].
-    plot_alerts : if True and the file crosses the threshold, generate diagnostic
-        plots saved to plots_dir/alerts/<stem>/.
-    plots_dir : root directory for plot output.
+    Persistence-based alert (sustained degradation)
+    ------------------------------------------------
+    file_alert_n_channels        : minimum number of *persistent* anomalous
+        channels required to raise [ALERT]. Can be low (e.g. 2) because the
+        persistence requirement already suppresses transient noise.
+    alert_consecutive_n          : a channel must be anomalous in this many
+        consecutive files to be counted as persistent. Set to 1 to treat every
+        anomaly as immediately persistent (disables the history window).
+        Requires channel_history to be passed and re-used between calls.
+    channel_history              : dict mapping channel id → deque[bool] of
+        recent anomaly flags (mutated in-place). Create once before your
+        processing loop and pass the same dict to every call.
+
+    Single-file severity alerts (no persistence required)
+    ------------------------------------------------------
+    single_file_alert_n_channels : raise [ALERT] if this many or more channels
+        are anomalous in the current file, regardless of their history. Targets
+        sudden widespread events. Should be higher than file_alert_n_channels
+        (e.g. 5) since there is no persistence filter to suppress noise.
+        0 = disabled.
+    single_file_alert_max_z      : raise [ALERT] if any channel's max_z meets or
+        exceeds this value in the current file, regardless of history. Targets a
+        single channel that is catastrophically out of range (e.g. hardware
+        failure). 0 = disabled.
+
+    run_file_index               : 0-based position of this file within its run
+        (0 = first file of the run, 1 = second, etc.). The first
+        alert_consecutive_n-1 files of each run are "probationary": they can
+        still raise [ALERT] via the single-file conditions, but a clean file
+        prints [PEND] instead of [OK] because there is not yet enough within-run
+        history to confirm nominal behaviour. Default 9999 (not probationary).
+
+    Other
+    -----
+    plot_alerts                  : generate diagnostic plots for ALERT files.
+    plots_dir                    : root directory for plot output.
     """
-    filename = Path(filepath).name
-    stem     = Path(filepath).stem
+    filename  = Path(filepath).name
+    stem      = Path(filepath).stem
     timestamp = _utc_now()
-    alerted = False
+    alerted   = False
 
     try:
         results = detector.analyze_file(filepath)
@@ -82,32 +177,152 @@ def process_file(
     n_bad     = len(anomalies)
     frac_bad  = n_bad / n_total if n_total > 0 else 0.0
 
-    if n_bad == 0:
-        print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
-    elif n_bad >= file_alert_n_channels:
-        alerted = True
-        bad_channels = sorted(anomalies.index.tolist(), key=str)
-        print(
-            f"[ALERT] {timestamp}  {filename}  —  "
-            f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels: {bad_channels}"
-        )
-        for ch in bad_channels:
-            row = anomalies.loc[ch]
-            ch_label = f"ch{ch}" if isinstance(ch, int) else str(ch)
-            print(
-                f"         {ch_label:>20s}  method={row['method']:<20s}  "
-                f"max_z={row['max_z']:<8}  if_score={row['if_score']:<10}  "
-                f"features=[{row['triggered_features']}]"
-            )
+    # ── Classify each anomalous channel as persistent or transient ───────────
+    # Persistent: anomalous in ALL of the last alert_consecutive_n files.
+    # Transient : anomalous now but the streak is not yet complete.
+    use_history = alert_consecutive_n > 1 and channel_history is not None
+
+    persistent_chs: list = []
+    transient_chs:  list = []
+
+    for ch in anomalies.index:
+        if use_history:
+            hist = channel_history.get(ch, deque())
+            if len(hist) >= alert_consecutive_n - 1 and all(hist):
+                persistent_chs.append(ch)
+            else:
+                transient_chs.append(ch)
+        else:
+            persistent_chs.append(ch)
+
+    n_persistent = len(persistent_chs)
+    n_transient  = len(transient_chs)
+
+    # ── Single-file severity checks (immediate ALERT, no persistence needed) ──
+    # These are independent of channel history and fire on a single bad file.
+    #
+    # alert_bulk: catches widespread events where many channels fail at once
+    # (e.g. noisy run, power issue). The threshold is intentionally higher than
+    # file_alert_n_channels because there is no persistence filter here.
+    alert_bulk = (
+        single_file_alert_n_channels > 0
+        and n_bad >= single_file_alert_n_channels
+    )
+    # alert_extreme: catches a single channel that is catastrophically out of
+    # range, even in isolation (e.g. stuck or broken digitizer channel).
+    if not anomalies.empty and anomalies["max_z"].notna().any():
+        worst_z_val = float(anomalies["max_z"].max())
+        worst_z_ch  = anomalies["max_z"].idxmax()
     else:
-        bad_channels = sorted(anomalies.index.tolist(), key=str)
+        worst_z_val = 0.0
+        worst_z_ch  = None
+    alert_extreme = (
+        single_file_alert_max_z > 0
+        and not anomalies.empty
+        and worst_z_val >= single_file_alert_max_z
+    )
+
+    # ── Overall alert decision ────────────────────────────────────────────────
+    # Any one condition is sufficient. Active reasons are all printed in the
+    # [ALERT] suffix so the operator knows which condition fired.
+    alert_persistent_triggered = n_persistent >= file_alert_n_channels
+    alerted = alert_persistent_triggered or alert_bulk or alert_extreme
+
+    # ── Helpers for formatting ───────────────────────────────────────────────
+    def _ch_label(ch):
+        return f"ch{ch}" if isinstance(ch, int) else str(ch)
+
+    def _hist_tag(ch):
+        """Return ' [k/N files]' annotation when the history window is active."""
+        if not use_history:
+            return ""
+        hist = channel_history.get(ch, deque())
+        k = sum(hist) + 1       # True entries in window including current file
+        return f"  [{k}/{alert_consecutive_n} files]"
+
+    def _print_channel(ch):
+        row = anomalies.loc[ch]
         print(
-            f"[WARN]  {timestamp}  {filename}  —  "
-            f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channels "
-            f"(below alert threshold of {file_alert_n_channels}): {bad_channels}"
+            f"         {_ch_label(ch):>20s}  method={row['method']:<20s}  "
+            f"max_z={row['max_z']:<8}  if_score={row['if_score']:<10}  "
+            f"features=[{row['triggered_features']}]{_hist_tag(ch)}"
         )
 
-    # Append to log
+    # ── Print status line ────────────────────────────────────────────────────
+    if n_bad == 0:
+        # The first (alert_consecutive_n - 1) files of a run are "probationary":
+        # no within-run history exists yet, so we cannot confirm nominal behaviour.
+        # They are labelled [PEND] until the run has accumulated enough clean files.
+        # When alert_consecutive_n=1 (persistence disabled), n_probationary=0 and
+        # [PEND] is never emitted.
+        n_probationary = max(0, alert_consecutive_n - 1)
+        if run_file_index < n_probationary:
+            files_so_far = run_file_index + 1
+            remaining    = n_probationary - run_file_index
+            print(
+                f"[PEND]  {timestamp}  {filename}  —  {n_total} channels, no anomalies"
+                f"  (run start: file {files_so_far}/{alert_consecutive_n},"
+                f" need {remaining} more clean file(s) to confirm [OK])"
+            )
+        else:
+            print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
+
+    elif alerted:
+        # Build reason string — one clause per active alert condition
+        reasons = []
+        if alert_persistent_triggered:
+            parts = [f"{n_persistent} persistent"]
+            if n_transient:
+                parts.append(f"{n_transient} transient")
+            r = " + ".join(parts) + " anomalous ch"
+            if use_history:
+                r += f"  (window: {alert_consecutive_n} files)"
+            reasons.append(r)
+        if alert_bulk:
+            reasons.append(
+                f"{n_bad}/{n_total} anomalous ch  [bulk ≥{single_file_alert_n_channels}]"
+            )
+        if alert_extreme:
+            reasons.append(
+                f"extreme z={worst_z_val:.1f} on {_ch_label(worst_z_ch)}"
+            )
+        print(f"[ALERT] {timestamp}  {filename}  —  {'  |  '.join(reasons)}")
+        for ch in sorted(persistent_chs, key=str):
+            _print_channel(ch)
+        for ch in sorted(transient_chs, key=str):
+            _print_channel(ch)
+
+    else:
+        # WARN: anomalous channels present but no alert condition met
+        if use_history:
+            parts = []
+            if n_persistent:
+                parts.append(f"{n_persistent} persistent")
+            if n_transient:
+                parts.append(f"{n_transient} transient")
+            suffix = (
+                " + ".join(parts) + " anomalous channel(s)"
+                f"  [window: {alert_consecutive_n} files"
+                f", need {file_alert_n_channels} persistent for ALERT]"
+            )
+        else:
+            suffix = (
+                f"{n_bad}/{n_total} ({frac_bad:.0%}) anomalous channel(s)"
+                f"  (below alert threshold of {file_alert_n_channels})"
+            )
+        print(f"[WARN]  {timestamp}  {filename}  —  {suffix}")
+        for ch in sorted(persistent_chs + transient_chs, key=str):
+            _print_channel(ch)
+
+    # ── Update channel history ───────────────────────────────────────────────
+    if use_history:
+        for ch in results.index:
+            is_anom = bool(results.loc[ch, "anomalous"])
+            if ch not in channel_history:
+                channel_history[ch] = deque(maxlen=alert_consecutive_n - 1)
+            channel_history[ch].append(is_anom)
+
+    # ── Append to log ────────────────────────────────────────────────────────
     log_path_obj = Path(log_path)
     write_header = not log_path_obj.exists()
     with open(log_path, "a", newline="") as fh:
@@ -115,27 +330,27 @@ def process_file(
         if write_header:
             writer.writeheader()
         for channel, row in results.iterrows():
-            writer.writerow(
-                {
-                    "timestamp": timestamp,
-                    "filename": filename,
-                    "channel": channel,
-                    "anomalous": row["anomalous"],
-                    "method": row["method"],
-                    "triggered_features": row["triggered_features"],
-                    "max_z": row["max_z"],
-                    "if_score": row["if_score"],
-                }
-            )
+            writer.writerow({
+                "timestamp":          timestamp,
+                "filename":           filename,
+                "channel":            channel,
+                "anomalous":          row["anomalous"],
+                "method":             row["method"],
+                "triggered_features": row["triggered_features"],
+                "max_z":              row["max_z"],
+                "if_score":           row["if_score"],
+            })
 
-    # Auto-plot if alerted
+    # ── Auto-plot if alerted ─────────────────────────────────────────────────
     if alerted and plot_alerts:
         from .plot import plot_file as _plot_file
         out = Path(plots_dir) / "alerts" / stem
         out.mkdir(parents=True, exist_ok=True)
         print(f"         Generating plots → {out}/")
         try:
-            _plot_file(filepath, detector, out)
+            _plot_file(filepath, detector, out,
+                       single_file_alert_n_channels=single_file_alert_n_channels,
+                       single_file_alert_max_z=single_file_alert_max_z)
         except Exception as exc:
             print(f"[ERROR] Plotting failed for {filename}: {exc}", file=sys.stderr)
 
@@ -149,10 +364,13 @@ def watch_directory(
     poll_interval: float = 5.0,
     process_existing: bool = False,
     file_alert_n_channels: int = 2,
+    alert_consecutive_n: int = 1,
     plot_alerts: bool = False,
     plots_dir: str = "plots",
     refresh_log_plots_every: int = 0,
     test_n: int = 0,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
 ) -> None:
     """
     Poll watch_dir for new Digitizer_*.csv files and process each one.
@@ -160,29 +378,52 @@ def watch_directory(
     Files already present when the monitor starts are skipped unless
     --process-existing is passed.
 
-    test_n : if > 0, randomly sample this many files from watch_dir, process
-        them, then exit immediately (no polling loop). Useful for quick checks
-        that the pipeline is working end-to-end.
+    Channel history is maintained within each run and reset at run boundaries,
+    so the persistence check never spans two different runs. The first
+    alert_consecutive_n-1 files of each run are marked [PEND] when clean,
+    because there is not yet enough within-run history to confirm nominal
+    behaviour.
 
+    test_n : if > 0, randomly sample this many files from watch_dir, process
+        them (sorted by run/subrun), then exit immediately (no polling loop).
     refresh_log_plots_every : if > 0, regenerate log summary plots every N
         processed files. 0 disables automatic log plot refresh.
     """
     import random
     watch_path = Path(watch_dir)
-    n_processed = 0
+    n_processed   = 0
+    channel_history: dict      = {}
+    current_run:     "int | None" = None
+    run_file_index:  int          = 0
 
     # ── Test mode: sample N files and exit ───────────────────────────────────
     if test_n > 0:
-        all_files = sorted(watch_path.glob("Digitizer_*.csv"))
+        all_files = sorted(watch_path.glob("Digitizer_*.csv"),
+                           key=lambda p: _sort_key(str(p)))
         sample = random.sample(all_files, min(test_n, len(all_files)))
+        # Sort sampled files by run/subrun so history accumulates meaningfully
+        sample = sorted(sample, key=lambda p: _sort_key(str(p)))
         print(f"[TEST MODE] Randomly selected {len(sample)} file(s) from {watch_dir}\n")
         for f in sample:
+            run = _run_number(str(f))
+            if run != current_run:
+                if current_run is not None:
+                    print(f"  [run {run}] New run — channel history reset")
+                current_run    = run
+                run_file_index = 0
+                channel_history = {}
             process_file(
                 str(f), detector, log_path,
                 file_alert_n_channels=file_alert_n_channels,
+                alert_consecutive_n=alert_consecutive_n,
+                channel_history=channel_history,
                 plot_alerts=plot_alerts,
                 plots_dir=plots_dir,
+                single_file_alert_n_channels=single_file_alert_n_channels,
+                single_file_alert_max_z=single_file_alert_max_z,
+                run_file_index=run_file_index,
             )
+            run_file_index += 1
         print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
         return
 
@@ -194,6 +435,8 @@ def watch_directory(
         print(f"  Skipping {len(seen)} pre-existing file(s). Watching for new ones...")
 
     print(f"Watching {watch_dir}  (poll every {poll_interval}s)  —  log: {log_path}")
+    if alert_consecutive_n > 1:
+        print(f"  Persistence window: {alert_consecutive_n} consecutive files for ALERT")
     if plot_alerts:
         print(f"  Alert plots → {plots_dir}/alerts/<stem>/")
     if refresh_log_plots_every > 0:
@@ -205,12 +448,25 @@ def watch_directory(
             for f in sorted(watch_path.glob("Digitizer_*.csv")):
                 if f not in seen:
                     seen.add(f)
+                    run = _run_number(str(f))
+                    if run != current_run:
+                        if current_run is not None:
+                            print(f"  [run {run}] New run — channel history reset")
+                        current_run    = run
+                        run_file_index = 0
+                        channel_history = {}
                     process_file(
                         str(f), detector, log_path,
                         file_alert_n_channels=file_alert_n_channels,
+                        alert_consecutive_n=alert_consecutive_n,
+                        channel_history=channel_history,
                         plot_alerts=plot_alerts,
                         plots_dir=plots_dir,
+                        single_file_alert_n_channels=single_file_alert_n_channels,
+                        single_file_alert_max_z=single_file_alert_max_z,
+                        run_file_index=run_file_index,
                     )
+                    run_file_index += 1
                     n_processed += 1
 
                     if refresh_log_plots_every > 0 and n_processed % refresh_log_plots_every == 0:
@@ -219,7 +475,10 @@ def watch_directory(
                             print(f"  [log plots] Refreshing after {n_processed} files...")
                             try:
                                 _plot_log(log_path, Path(plots_dir),
-                                          file_alert_n_channels=file_alert_n_channels)
+                                          file_alert_n_channels=file_alert_n_channels,
+                                          alert_consecutive_n=alert_consecutive_n,
+                                          single_file_alert_n_channels=single_file_alert_n_channels,
+                                          single_file_alert_max_z=single_file_alert_max_z)
                             except Exception as exc:
                                 print(f"[ERROR] Log plot refresh failed: {exc}", file=sys.stderr)
 
@@ -251,7 +510,28 @@ def main() -> None:
     parser.add_argument("--process-existing", action="store_true",
                         help="Also process files already present in watch-dir at startup")
     parser.add_argument("--file-alert-n-channels", type=int,
-                        help="Number of anomalous channels required to print [ALERT] (1 channel → [WARN])")
+                        help="Number of persistent anomalous channels required to print [ALERT]")
+    parser.add_argument(
+        "--alert-consecutive-n",
+        type=int,
+        metavar="N",
+        help="A channel must be anomalous in this many consecutive files to count as "
+             "persistent (and contribute to ALERT). Set to 1 to disable (original behaviour).",
+    )
+    parser.add_argument(
+        "--single-file-alert-n-channels",
+        type=int,
+        metavar="N",
+        help="Raise [ALERT] immediately if this many channels are anomalous in a single "
+             "file, regardless of persistence. 0 = disabled.",
+    )
+    parser.add_argument(
+        "--single-file-alert-max-z",
+        type=float,
+        metavar="Z",
+        help="Raise [ALERT] immediately if any channel's max_z reaches this value in a "
+             "single file, regardless of persistence. 0 = disabled.",
+    )
     parser.add_argument("--plot-alerts", action="store_true",
                         help="Auto-generate diagnostic plots for every alerted file")
     parser.add_argument("--plots-dir",  help="Root directory for plot output")
@@ -273,25 +553,33 @@ def main() -> None:
                         help="Random seed for reproducible test-mode sampling")
 
     parser.set_defaults(
-        models_dir           = cfg["models_dir"],
-        log_file             = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
-        plots_dir            = cfg["plots_dir"],
-        poll_interval        = cfg["poll_interval"],
-        file_alert_n_channels = cfg["file_alert_n_channels"],
-        test_seed            = cfg["test_seed"],
+        models_dir                    = cfg["models_dir"],
+        log_file                      = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
+        plots_dir                     = cfg["plots_dir"],
+        poll_interval                 = cfg["poll_interval"],
+        file_alert_n_channels         = cfg["file_alert_n_channels"],
+        alert_consecutive_n           = cfg["alert_consecutive_n"],
+        single_file_alert_n_channels  = cfg["single_file_alert_n_channels"],
+        single_file_alert_max_z       = cfg["single_file_alert_max_z"],
+        test_seed                     = cfg["test_seed"],
     )
 
     args = parser.parse_args()
 
     from .config import print_banner
     print_banner("monitor", args.config, [
-        ("models dir",           args.models_dir),
-        ("log file",             args.log_file),
-        ("source",               args.watch_dir or args.run_list),
-        ("alert threshold",       f"{args.file_alert_n_channels} channels"),
-        ("poll interval",        f"{args.poll_interval}s"),
-        ("test mode",            f"{args.test} files" if args.test else "off (watch loop)"),
-        ("test seed",            str(args.test_seed)),
+        ("models dir",               args.models_dir),
+        ("log file",                 args.log_file),
+        ("source",                   args.watch_dir or args.run_list),
+        ("alert threshold",          f"{args.file_alert_n_channels} channels"),
+        ("alert window",             f"{args.alert_consecutive_n} consecutive file(s)"),
+        ("single-file bulk alert",   f"{args.single_file_alert_n_channels} ch"
+                                     if args.single_file_alert_n_channels else "disabled"),
+        ("single-file extreme alert",f"z≥{args.single_file_alert_max_z}"
+                                     if args.single_file_alert_max_z else "disabled"),
+        ("poll interval",            f"{args.poll_interval}s"),
+        ("test mode",                f"{args.test} files" if args.test else "off (watch loop)"),
+        ("test seed",                str(args.test_seed)),
     ])
 
     if not args.watch_dir and not args.run_list:
@@ -326,16 +614,34 @@ def main() -> None:
         import random
         random.seed(args.test_seed)
         from .run_list import resolve_run_list
-        all_files = resolve_run_list(args.run_list)
+        all_files = sorted(resolve_run_list(args.run_list), key=_sort_key)
         sample = random.sample(all_files, min(args.test, len(all_files)))
+        # Process in run/subrun order so history is meaningful
+        sample = sorted(sample, key=_sort_key)
         print(f"[TEST MODE] {len(sample)} file(s) sampled from {args.run_list}\n")
+        channel_history: dict      = {}
+        current_run:     "int | None" = None
+        run_file_index:  int          = 0
         for f in sample:
+            run = _run_number(f)
+            if run != current_run:
+                if current_run is not None:
+                    print(f"  [run {run}] New run — channel history reset")
+                current_run     = run
+                run_file_index  = 0
+                channel_history = {}
             process_file(
                 f, detector, args.log_file,
                 file_alert_n_channels=args.file_alert_n_channels,
+                alert_consecutive_n=args.alert_consecutive_n,
+                channel_history=channel_history,
                 plot_alerts=args.plot_alerts,
                 plots_dir=args.plots_dir,
+                single_file_alert_n_channels=args.single_file_alert_n_channels,
+                single_file_alert_max_z=args.single_file_alert_max_z,
+                run_file_index=run_file_index,
             )
+            run_file_index += 1
         print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
         return
 
@@ -347,10 +653,13 @@ def main() -> None:
         poll_interval=args.poll_interval,
         process_existing=args.process_existing,
         file_alert_n_channels=args.file_alert_n_channels,
+        alert_consecutive_n=args.alert_consecutive_n,
         plot_alerts=args.plot_alerts,
         plots_dir=args.plots_dir,
         refresh_log_plots_every=args.refresh_log_plots_every,
         test_n=args.test,
+        single_file_alert_n_channels=args.single_file_alert_n_channels,
+        single_file_alert_max_z=args.single_file_alert_max_z,
     )
 
 

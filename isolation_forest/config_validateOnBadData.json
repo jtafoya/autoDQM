@@ -20,10 +20,11 @@
     "_commented_ignore_features":      ["TDCRollovers_*"],
     "ignore_features":      ["TDC*"],
 
-    "_comment_thresholds": "z_threshold: number of standard deviations above which a channel feature is flagged. if_contamination: expected fraction of anomalies in training data passed to IsolationForest. file_alert_n_channels: number of anomalous channels required to classify a file as ALERT (exactly 1 → WARN).",
+    "_comment_thresholds": "z_threshold: number of standard deviations above which a channel feature is flagged. if_contamination: expected fraction of anomalies in training data passed to IsolationForest. file_alert_n_channels: number of *persistent* anomalous channels required to classify a file as ALERT. alert_consecutive_n: a channel must be anomalous in this many consecutive files to be counted as persistent (1 = disabled, any anomaly is immediately ALERT-eligible).",
     "z_threshold":          5.0,
     "if_contamination":     0.05,
     "file_alert_n_channels": 2,
+    "alert_consecutive_n":  3,
 
     "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling.",
     "poll_interval":        5.0,

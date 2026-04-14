@@ -18,13 +18,16 @@ Usage — full run (all files):
 Usage — custom sample size:
     python3 -m src.pipeline --test-train 100 --test-apply 50
 
-Any step can be skipped with --skip-train / --skip-apply / --skip-report / --skip-plots.
+Any step can be skipped with --skip-train / --skip-apply / --skip-report / --skip-all-plots.
+Use --skip-subrun-plots to skip only the per-ALERT subrun plots while still producing
+the reference_* and log_* summary plots.
 """
 
 from __future__ import annotations
 
 import argparse
 import random
+import shutil
 import sys
 from pathlib import Path
 
@@ -98,12 +101,15 @@ def step_apply(
     models_dir: Path,
     log_file: Path,
     file_alert_n_channels: int,
+    alert_consecutive_n: int,
     test_n: int,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
 ) -> None:
     from .run_list import resolve_run_list
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
-    from .monitor import process_file
+    from .monitor import process_file, _sort_key, _run_number
 
     _step("STEP 2 — APPLY")
 
@@ -122,12 +128,31 @@ def step_apply(
         all_files = random.sample(all_files, n)
         print(f"  [TEST MODE] Using {n} randomly sampled file(s).\n")
 
+    # Sort by run/subrun so channel history accumulates in chronological order
+    all_files = sorted(all_files, key=_sort_key)
+
     log_file.parent.mkdir(parents=True, exist_ok=True)
     log_file.unlink(missing_ok=True)   # fresh log for this run
 
+    channel_history: dict      = {}
+    current_run:     "int | None" = None
+    run_file_index:  int          = 0
     for i, f in enumerate(all_files, 1):
+        run = _run_number(f)
+        if run != current_run:
+            if current_run is not None:
+                print(f"  [run {run}] New run — channel history reset")
+            current_run     = run
+            run_file_index  = 0
+            channel_history = {}
         process_file(str(f), detector, str(log_file),
-                     file_alert_n_channels=file_alert_n_channels)
+                     file_alert_n_channels=file_alert_n_channels,
+                     alert_consecutive_n=alert_consecutive_n,
+                     channel_history=channel_history,
+                     single_file_alert_n_channels=single_file_alert_n_channels,
+                     single_file_alert_max_z=single_file_alert_max_z,
+                     run_file_index=run_file_index)
+        run_file_index += 1
         if i % 100 == 0:
             print(f"  --- {i}/{len(all_files)} files processed ---")
 
@@ -151,6 +176,11 @@ def step_plots(
     models_dir: Path,
     plots_dir: Path,
     file_alert_n_channels: int,
+    alert_consecutive_n: int,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
+    skip_subrun_plots: bool = False,
+    max_subrun_plots: int = 10,
 ) -> None:
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
@@ -167,7 +197,16 @@ def step_plots(
     plot_reference(ref, plots_dir)
 
     print("Log summary plots...")
-    plot_log(str(log_file), plots_dir, file_alert_n_channels=file_alert_n_channels)
+    plot_log(str(log_file), plots_dir,
+             file_alert_n_channels=file_alert_n_channels,
+             alert_consecutive_n=alert_consecutive_n,
+             single_file_alert_n_channels=single_file_alert_n_channels,
+             single_file_alert_max_z=single_file_alert_max_z)
+
+    if skip_subrun_plots:
+        print("[SKIP] Per-file subrun plots (--skip-subrun-plots)")
+        print(f"  Plots saved → {plots_dir}/")
+        return
 
     print("Per-file plots for ALERT files...")
     df = pd.read_csv(str(log_file))
@@ -177,13 +216,26 @@ def step_plots(
     )
     alert_names = per_file[per_file["n_bad"] >= file_alert_n_channels].index.tolist()
 
-    # Recover full paths from the log (filenames only) via the apply list lookup
-    # We stored full paths in the log as base names; reconstruct from the log's
-    # source column if available, otherwise skip files we can't locate.
-    # The log only stores base filenames, so we search a path cache built from
-    # the run list — but since we don't have the list here, we match against the
-    # paths already known to the detector's reference (not ideal).
-    # Simpler: use a path cache stored alongside the log.
+    n_alert = len(alert_names)
+    if max_subrun_plots == -1:
+        print()
+        print("!" * 60)
+        print("  WARNING: max_subrun_plots = -1")
+        print(f"  This will generate plots for ALL {n_alert} ALERT file(s).")
+        print("  For large runs this can be very slow and use significant")
+        print("  disk space.  Set  \"max_subrun_plots\": N  in config.json")
+        print("  (or pass --max-subrun-plots N) to cap the output.")
+        print("!" * 60)
+        print()
+        plot_names = alert_names
+    else:
+        plot_names = alert_names[:max_subrun_plots]
+        if n_alert > max_subrun_plots:
+            print(f"  Capped at {max_subrun_plots} of {n_alert} ALERT file(s)"
+                  f" (set max_subrun_plots = -1 to plot all).")
+
+    # Recover full paths from the log (filenames only) via a path cache stored
+    # alongside the log by the apply step.
     path_cache_file = log_file.parent / (log_file.stem + "_paths.txt")
     if path_cache_file.exists():
         path_map = {Path(p).name: p for p in path_cache_file.read_text().splitlines() if p.strip()}
@@ -191,7 +243,7 @@ def step_plots(
         path_map = {}
 
     n_plotted = 0
-    for name in alert_names:
+    for name in plot_names:
         full_path = path_map.get(name)
         if full_path is None:
             print(f"    [SKIP] {name} — full path not in cache, re-run with --apply-list to rebuild")
@@ -200,12 +252,14 @@ def step_plots(
         out.mkdir(parents=True, exist_ok=True)
         print(f"  {name}")
         try:
-            plot_file(full_path, detector, out)
+            plot_file(full_path, detector, out,
+                      single_file_alert_n_channels=single_file_alert_n_channels,
+                      single_file_alert_max_z=single_file_alert_max_z)
             n_plotted += 1
         except Exception as exc:
             print(f"    [ERROR] {exc}", file=sys.stderr)
 
-    print(f"\n  {n_plotted}/{len(alert_names)} ALERT file(s) plotted.")
+    print(f"\n  {n_plotted}/{n_alert} ALERT file(s) plotted.")
     print(f"  All plots saved → {plots_dir}/")
 
 
@@ -249,7 +303,28 @@ def main() -> None:
     parser.add_argument("--z-threshold",          type=float)
     parser.add_argument("--if-contamination",     type=float)
     parser.add_argument("--file-alert-n-channels", type=int,
-                        help="Number of anomalous channels to trigger a file-level ALERT")
+                        help="Number of persistent anomalous channels to trigger a file-level ALERT")
+    parser.add_argument(
+        "--alert-consecutive-n",
+        type=int,
+        metavar="N",
+        help="A channel must be anomalous in this many consecutive files to count as "
+             "persistent (and contribute to ALERT). Set to 1 to disable (original behaviour).",
+    )
+    parser.add_argument(
+        "--single-file-alert-n-channels",
+        type=int,
+        metavar="N",
+        help="Raise [ALERT] immediately if this many channels are anomalous in a single "
+             "file, regardless of persistence. 0 = disabled.",
+    )
+    parser.add_argument(
+        "--single-file-alert-max-z",
+        type=float,
+        metavar="Z",
+        help="Raise [ALERT] immediately if any channel's max_z reaches this value in a "
+             "single file, regardless of persistence. 0 = disabled.",
+    )
 
     # ── Test mode ──
     parser.add_argument("--test-train", type=int, nargs="?", const=50, default=None, metavar="N",
@@ -262,7 +337,17 @@ def main() -> None:
     parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
     parser.add_argument("--skip-apply",  action="store_true", help="Skip apply step")
     parser.add_argument("--skip-report", action="store_true", help="Skip report step")
-    parser.add_argument("--skip-plots",  action="store_true", help="Skip plots step")
+    parser.add_argument("--skip-all-plots",    action="store_true",
+                        help="Skip the entire plots step (no reference_*, log_*, or per-file plots)")
+    parser.add_argument("--skip-subrun-plots", action="store_true",
+                        help="Skip per-ALERT-file subrun plots; still generates reference_* and log_* summary plots")
+    parser.add_argument(
+        "--max-subrun-plots",
+        type=int,
+        metavar="N",
+        help="Maximum number of per-ALERT subrun plot sets to generate, in run/subrun order. "
+             "-1 = no limit (plots all ALERT files — prints a loud warning).",
+    )
 
     # Apply config as defaults (CLI args override)
     parser.set_defaults(
@@ -273,10 +358,14 @@ def main() -> None:
         logs_dir             = cfg["logs_dir"],
         reports_dir          = cfg["reports_dir"],
         plots_dir            = cfg["plots_dir"],
-        z_threshold          = cfg["z_threshold"],
-        if_contamination     = cfg["if_contamination"],
-        file_alert_n_channels = cfg["file_alert_n_channels"],
-        test_seed            = cfg["test_seed"],
+        z_threshold           = cfg["z_threshold"],
+        if_contamination      = cfg["if_contamination"],
+        file_alert_n_channels         = cfg["file_alert_n_channels"],
+        alert_consecutive_n           = cfg["alert_consecutive_n"],
+        single_file_alert_n_channels  = cfg["single_file_alert_n_channels"],
+        single_file_alert_max_z       = cfg["single_file_alert_max_z"],
+        test_seed                     = cfg["test_seed"],
+        max_subrun_plots              = cfg["max_subrun_plots"],
     )
 
     args = parser.parse_args()
@@ -313,8 +402,15 @@ def main() -> None:
         ("ignore features",      str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
         ("z threshold",          f"{args.z_threshold}σ"),
         ("IF contamination",     str(args.if_contamination)),
-        ("alert threshold",       f"{args.file_alert_n_channels} channels"),
-        ("test seed",            str(args.test_seed)),
+        ("alert threshold",          f"{args.file_alert_n_channels} channels"),
+        ("alert window",             f"{args.alert_consecutive_n} consecutive file(s)"),
+        ("single-file bulk alert",   f"{args.single_file_alert_n_channels} ch"
+                                     if args.single_file_alert_n_channels else "disabled"),
+        ("single-file extreme alert",f"z≥{args.single_file_alert_max_z}"
+                                     if args.single_file_alert_max_z else "disabled"),
+        ("max subrun plots",         "ALL (WARNING)" if args.max_subrun_plots == -1
+                                     else str(args.max_subrun_plots)),
+        ("test seed",                str(args.test_seed)),
     ])
 
     models_dir.mkdir(parents=True, exist_ok=True)
@@ -329,6 +425,10 @@ def main() -> None:
             use_lvds=use_lvds,
             ignore_features=tuple(cfg["ignore_features"]),
         )
+        # Save a snapshot of the config used for this training run
+        config_snapshot = models_dir / "config.json"
+        shutil.copy2(args.config, config_snapshot)
+        print(f"  Config snapshot saved to {config_snapshot}")
     else:
         print("[SKIP] Training")
         if not (models_dir / "reference.npz").exists():
@@ -351,7 +451,7 @@ def main() -> None:
         # Re-use the already-sampled list directly rather than re-sampling in step_apply
         from .reference import ReferenceModel
         from .detector import AnomalyDetector
-        from .monitor import process_file
+        from .monitor import process_file, _sort_key, _run_number
 
         _step("STEP 2 — APPLY")
         ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
@@ -361,10 +461,29 @@ def main() -> None:
         if args.test_apply:
             print(f"  [TEST MODE] {len(all_apply)} randomly sampled file(s).\n")
 
+        # Sort by run/subrun so channel history accumulates in chronological order
+        all_apply = sorted(all_apply, key=_sort_key)
+
         log_file.unlink(missing_ok=True)
+        channel_history: dict      = {}
+        current_run:     "int | None" = None
+        run_file_index:  int          = 0
         for i, f in enumerate(all_apply, 1):
+            run = _run_number(f)
+            if run != current_run:
+                if current_run is not None:
+                    print(f"  [run {run}] New run — channel history reset")
+                current_run     = run
+                run_file_index  = 0
+                channel_history = {}
             process_file(str(f), detector, str(log_file),
-                         file_alert_n_channels=args.file_alert_n_channels)
+                         file_alert_n_channels=args.file_alert_n_channels,
+                         alert_consecutive_n=args.alert_consecutive_n,
+                         channel_history=channel_history,
+                         single_file_alert_n_channels=args.single_file_alert_n_channels,
+                         single_file_alert_max_z=args.single_file_alert_max_z,
+                         run_file_index=run_file_index)
+            run_file_index += 1
             if i % 100 == 0:
                 print(f"  --- {i}/{len(all_apply)} files processed ---")
         print(f"\n  Log written → {log_file}")
@@ -381,8 +500,13 @@ def main() -> None:
         print("[SKIP] Report")
 
     # ── Step 4: Plots ──────────────────────────────────────────────────────
-    if not args.skip_plots:
-        step_plots(log_file, models_dir, plots_dir, args.file_alert_n_channels)
+    if not args.skip_all_plots:
+        step_plots(log_file, models_dir, plots_dir,
+                   args.file_alert_n_channels, args.alert_consecutive_n,
+                   single_file_alert_n_channels=args.single_file_alert_n_channels,
+                   single_file_alert_max_z=args.single_file_alert_max_z,
+                   skip_subrun_plots=args.skip_subrun_plots,
+                   max_subrun_plots=args.max_subrun_plots)
     else:
         print("[SKIP] Plots")
 

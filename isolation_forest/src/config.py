@@ -18,9 +18,33 @@ use_trigger          Include TriggerBoard rate features (bool).
 use_lvds             Include LVDS pin-count features (bool).
 z_threshold          |z-score| above which a channel feature is flagged.
 if_contamination     Expected anomaly fraction passed to IsolationForest.
-file_alert_n_channels Number of anomalous channels that triggers a file ALERT (WARN if exactly 1 below this).
+
+Persistence-based alert — targets sustained, gradual degradation:
+  file_alert_n_channels  Minimum number of *persistent* channels required for [ALERT].
+                         Can be low (e.g. 2) because persistence already filters noise.
+  alert_consecutive_n    A channel must be anomalous in this many consecutive files to
+                         be counted as persistent (1 = disabled, every anomaly is
+                         immediately ALERT-eligible).
+
+Single-file severity alerts — fire immediately on one bad file, no history needed:
+  single_file_alert_n_channels  Minimum anomalous channels in a single file for [ALERT].
+                         Targets sudden widespread events (power glitch, noisy run).
+                         Should be higher than file_alert_n_channels (e.g. 5) since
+                         there is no persistence filter to suppress transient noise.
+                         0 = disabled.
+  single_file_alert_max_z  If any channel's max_z meets or exceeds this value, raise
+                         [ALERT] immediately. Targets a single channel that is
+                         catastrophically out of range (e.g. broken digitizer channel).
+                         0.0 = disabled.
+
 poll_interval        Seconds between directory scans in watch mode.
 test_seed            Random seed for reproducible test-mode sampling.
+max_subrun_plots     Maximum number of per-ALERT subrun plot sets to generate
+                     in the pipeline plots step. Files are taken in run/subrun
+                     order. -1 = no limit (plots every ALERT file). Use -1 with
+                     caution: a large run can produce hundreds of plot sets,
+                     which is slow and disk-heavy. A prominent warning is printed
+                     when -1 is active.
 """
 
 import json
@@ -43,9 +67,13 @@ DEFAULTS: dict = {
     "z_threshold":          5.0,
     "if_contamination":     0.05,
     "file_alert_n_channels": 2,
+    "alert_consecutive_n":  1,
+    "single_file_alert_n_channels": 0,
+    "single_file_alert_max_z":      0.0,
     "poll_interval":        5.0,
     "test_seed":            42,
     "ignore_features":      [],
+    "max_subrun_plots":     10,
 }
 
 
