@@ -488,7 +488,7 @@ def watch_directory(
 
 
 def main() -> None:
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Monitor a directory for anomalous Digitizer files."

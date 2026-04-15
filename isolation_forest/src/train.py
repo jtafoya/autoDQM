@@ -32,7 +32,7 @@ from .args import preparse_config, add_config, add_features, add_model_threshold
 
 
 def main() -> None:
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Build reference model and train Isolation Forest from a run list."

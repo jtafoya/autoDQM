@@ -1018,7 +1018,7 @@ def _load_models(models_dir: str):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
 
     tag = cfg["model_tag"]
 

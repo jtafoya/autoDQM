@@ -222,7 +222,7 @@ def write_report(runs: dict, out_dir: Path) -> None:
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
 
     tag = cfg["model_tag"]
 

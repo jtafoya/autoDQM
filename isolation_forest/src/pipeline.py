@@ -23,8 +23,6 @@ Use --skip-subrun-plots to skip only the per-subrun plots while still producing
 the reference_* and log_* summary plots.
 """
 
-from __future__ import annotations
-
 import argparse
 import random
 import shutil
@@ -224,7 +222,7 @@ def step_plots(
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Run the full autoDQM pipeline: train → apply → report → plots."

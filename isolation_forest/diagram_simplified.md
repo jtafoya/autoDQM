@@ -154,7 +154,7 @@ Three independent conditions can raise an **ALERT** for a file:
 |---|---|---|
 | **Persistent** | `file_alert_n_channels` | $\geq \theta$ channels each anomalous in $N$ consecutive files; targets sustained degradation; can be low (e.g. 2) because persistence suppresses noise |
 | **Bulk** | `single_file_alert_n_channels` | $\geq k$ anomalous channels in a single file; targets sudden widespread events (power glitch, noisy run); no history needed; set higher than $\theta$ (e.g. 5) since no persistence filter |
-| **Extreme** | `single_file_alert_max_z` | any channel's $\text{max\_z} \geq z_{\max}$ in a single file; targets a single catastrophically out-of-range channel (broken hardware); 0.0 = disabled |
+| **Extreme** | `single_file_alert_max_z` | any channel's $$\text{max\_z} \geq z_{\max}$$ in a single file; targets a single catastrophically out-of-range channel (broken hardware); 0.0 = disabled |
 
 Let $n_{\text{persist}}$ be the number of persistent channels, $n_{\text{bad}}$ the total anomalous channels, $z_{\max}$ the configured extreme threshold, and $i$ the zero-based file index within the current run.
 
@@ -163,7 +163,7 @@ Let $n_{\text{persist}}$ be the number of persistent channels, $n_{\text{bad}}$ 
 | No anomalies and $i < N - 1$ | 🔵 **PEND** (probationary — insufficient run history) |
 | No anomalies and $i \geq N - 1$ | 🟢 **OK** |
 | Anomalies present, none of the three ALERT conditions fire | 🟡 **WARN** |
-| $n_{\text{persist}} \geq \theta$, OR $n_{\text{bad}} \geq k$, OR $\text{max\_z} \geq z_{\max}$ | 🔴 **ALERT** |
+| $n_{\text{persist}} \geq \theta$, OR $n_{\text{bad}} \geq k$, OR $$\text{max\_z} \geq z_{\max}$$ | 🔴 **ALERT** |
 
 Setting $N = 1$ disables the persistence check: every anomalous channel is immediately persistent and `[PEND]` never fires.  Setting `single_file_alert_n_channels = 0` and `single_file_alert_max_z = 0.0` disables the two single-file conditions.
 
