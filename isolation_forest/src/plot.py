@@ -366,6 +366,7 @@ def plot_file(
     if pseudo_channels:
         ax.axhline(len(real_channels) - 0.5, color="steelblue", linewidth=1.5, linestyle="--")
 
+    ax.set_xlim(-0.5, n_feat - 0.5)  # barh extends to x=n_feat; restore imshow limits
     ax.set_xticks(range(n_feat))
     ax.set_xticklabels(feat_cols, fontsize=6, rotation=45, ha="right")
     ax.set_yticks(range(n_ch))
@@ -436,29 +437,38 @@ def plot_file(
 
     for idx, layer in enumerate(layers):
         ax  = axes[idx // ncols][idx % ncols]
-        sub = geom[geom["layer"] == layer]
-        sc  = ax.scatter(sub["column"], sub["row"],
+        sub = geom[geom["layer"] == layer].copy()
+
+        # Two channels share each (column, row) position (paired by channel parity:
+        # even channels sit at row + 0.2, odd channels at row − 0.2).
+        sub["row_plot"] = sub["row"].astype(float) + sub["channel"].apply(
+            lambda c: 0.2 if c % 2 == 0 else -0.2
+        )
+
+        sc  = ax.scatter(sub["column"], sub["row_plot"],
                          c=sub["max_z"].clip(0, vmax),
                          cmap=CMAP_ZSCORE, vmin=0, vmax=vmax,
                          s=200, edgecolors="black", linewidths=0.4, zorder=3)
         # Draw one ring per channel, coloured by alert status.
         # Draw ok first (bottom), then warn, then alert on top.
         for ring_status, ring_size, ring_lw in [
-            ("ok",    270, 0.8),
-            ("warn",  310, 1.5),
-            ("alert", 340, 2.0),
+            ("ok",    270, 1.6),
+            ("warn",  310, 3.0),
+            ("alert", 340, 4.0),
         ]:
             group = sub[sub["status"] == ring_status]
             if not group.empty:
-                ax.scatter(group["column"], group["row"],
+                ax.scatter(group["column"], group["row_plot"],
                            s=ring_size, facecolors="none",
                            edgecolors=_STATUS_RING_COLOR[ring_status],
                            linewidths=ring_lw,
                            zorder=4 + ["ok", "warn", "alert"].index(ring_status))
+        ax.set_xticks(sorted(sub["column"].unique()))
+        ax.set_yticks(sorted(sub["row"].unique()))
         ax.set_title(f"Layer {layer}")
         ax.set_xlabel("Column")
         ax.set_ylabel("Row")
-        ax.invert_yaxis()
+        # row 1 at the bottom — no y-axis inversion
         fig.colorbar(sc, ax=ax, label="|z|")
 
     # Hide unused axes
@@ -468,13 +478,13 @@ def plot_file(
     # Shared ring-colour legend at the bottom of the figure
     legend_elems = [
         Line2D([0], [0], marker="o", color="w", markerfacecolor="none",
-               markeredgecolor=_STATUS_RING_COLOR["ok"],    markeredgewidth=0.8,
+               markeredgecolor=_STATUS_RING_COLOR["ok"],    markeredgewidth=1.6,
                markersize=10, label="OK"),
         Line2D([0], [0], marker="o", color="w", markerfacecolor="none",
-               markeredgecolor=_STATUS_RING_COLOR["warn"],  markeredgewidth=1.5,
+               markeredgecolor=_STATUS_RING_COLOR["warn"],  markeredgewidth=3.0,
                markersize=10, label="WARN"),
         Line2D([0], [0], marker="o", color="w", markerfacecolor="none",
-               markeredgecolor=_STATUS_RING_COLOR["alert"], markeredgewidth=2.0,
+               markeredgecolor=_STATUS_RING_COLOR["alert"], markeredgewidth=4.0,
                markersize=10, label="ALERT"),
     ]
     fig.legend(handles=legend_elems, loc="lower center", ncol=3,
