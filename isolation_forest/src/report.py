@@ -34,7 +34,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .config import load_config
+from .args import preparse_config, add_config
 
 _FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
 
@@ -222,17 +222,14 @@ def write_report(runs: dict, out_dir: Path) -> None:
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.yaml")
-    cfg = load_config(_pre.parse_known_args()[0].config)
+    config_path, cfg = preparse_config()
 
     tag = cfg["model_tag"]
 
     parser = argparse.ArgumentParser(
         description="Classify runs from the anomaly log into quality categories."
     )
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML configuration file (default: config.yaml)")
+    add_config(parser)
     parser.add_argument(
         "--log-file",
         help="Path to the anomaly log produced by monitor.py",

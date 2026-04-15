@@ -75,7 +75,7 @@ from pathlib import Path
 
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
-from .config import load_config
+from .args import preparse_config, add_config, add_alert_thresholds, add_test_mode
 
 
 LOG_FIELDS = [
@@ -488,15 +488,12 @@ def watch_directory(
 
 
 def main() -> None:
-    _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.yaml")
-    cfg = load_config(_pre.parse_known_args()[0].config)
+    config_path, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Monitor a directory for anomalous Digitizer files."
     )
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML configuration file (default: config.yaml)")
+    add_config(parser)
     parser.add_argument("--watch-dir", help="Directory to watch for new CSVs")
     parser.add_argument(
         "--run-list",
@@ -509,29 +506,7 @@ def main() -> None:
     parser.add_argument("--poll-interval",  type=float, help="Seconds between directory scans")
     parser.add_argument("--process-existing", action="store_true",
                         help="Also process files already present in watch-dir at startup")
-    parser.add_argument("--file-alert-n-channels", type=int,
-                        help="Number of persistent anomalous channels required to print [ALERT]")
-    parser.add_argument(
-        "--alert-consecutive-n",
-        type=int,
-        metavar="N",
-        help="A channel must be anomalous in this many consecutive files to count as "
-             "persistent (and contribute to ALERT). Set to 1 to disable (original behaviour).",
-    )
-    parser.add_argument(
-        "--single-file-alert-n-channels",
-        type=int,
-        metavar="N",
-        help="Raise [ALERT] immediately if this many channels are anomalous in a single "
-             "file, regardless of persistence. 0 = disabled.",
-    )
-    parser.add_argument(
-        "--single-file-alert-max-z",
-        type=float,
-        metavar="Z",
-        help="Raise [ALERT] immediately if any channel's max_z reaches this value in a "
-             "single file, regardless of persistence. 0 = disabled.",
-    )
+    add_alert_thresholds(parser, cfg)
     parser.add_argument("--plot-alerts", action="store_true",
                         help="Auto-generate diagnostic plots for every alerted file")
     parser.add_argument("--plots-dir",  help="Root directory for plot output")
@@ -549,19 +524,13 @@ def main() -> None:
         metavar="N",
         help="Test mode: randomly sample N files from watch-dir, process them, then exit",
     )
-    parser.add_argument("--test-seed", type=int,
-                        help="Random seed for reproducible test-mode sampling")
+    add_test_mode(parser, cfg)
 
     parser.set_defaults(
-        models_dir                    = cfg["models_dir"],
-        log_file                      = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
-        plots_dir                     = cfg["plots_dir"],
-        poll_interval                 = cfg["poll_interval"],
-        file_alert_n_channels         = cfg["file_alert_n_channels"],
-        alert_consecutive_n           = cfg["alert_consecutive_n"],
-        single_file_alert_n_channels  = cfg["single_file_alert_n_channels"],
-        single_file_alert_max_z       = cfg["single_file_alert_max_z"],
-        test_seed                     = cfg["test_seed"],
+        models_dir    = cfg["models_dir"],
+        log_file      = str(Path(cfg["logs_dir"]) / "anomalies.csv"),
+        plots_dir     = cfg["plots_dir"],
+        poll_interval = cfg["poll_interval"],
     )
 
     args = parser.parse_args()

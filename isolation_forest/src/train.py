@@ -28,19 +28,16 @@ from pathlib import Path
 from .run_list import resolve_run_list
 from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
-from .config import load_config
+from .args import preparse_config, add_config, add_features, add_model_thresholds, add_test_mode
 
 
 def main() -> None:
-    _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.yaml")
-    cfg = load_config(_pre.parse_known_args()[0].config)
+    config_path, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Build reference model and train Isolation Forest from a run list."
     )
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML configuration file (default: config.yaml)")
+    add_config(parser)
     parser.add_argument("--good-list",  help="Path to a text file listing good Digitizer CSV files")
     parser.add_argument("--models-dir", help="Directory to save models")
     parser.add_argument(
@@ -48,13 +45,8 @@ def main() -> None:
         action="store_true",
         help="Incremental mode: add new files to an existing reference without reprocessing old ones",
     )
-    parser.add_argument("--no-trigger", action="store_true",
-                        help="Exclude TriggerBoard features (use Digitizer-only features)")
-    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
-                        help="Exclude LVDS pin count features")
-    parser.add_argument("--z-threshold",     type=float, help="Z-score alert threshold")
-    parser.add_argument("--if-contamination", type=float,
-                        help="Expected fraction of anomalies in training data (Isolation Forest)")
+    add_features(parser, cfg)
+    add_model_thresholds(parser, cfg)
     parser.add_argument(
         "--test",
         type=int,
@@ -64,15 +56,11 @@ def main() -> None:
         metavar="N",
         help="Test mode: randomly sample N files (default N=50 when flag is given, omit for full run)",
     )
-    parser.add_argument("--test-seed", type=int,
-                        help="Random seed for reproducible test-mode sampling")
+    add_test_mode(parser, cfg)
 
     parser.set_defaults(
-        good_list        = cfg["good_list"],
-        models_dir       = cfg["models_dir"],
-        z_threshold      = cfg["z_threshold"],
-        if_contamination = cfg["if_contamination"],
-        test_seed        = cfg["test_seed"],
+        good_list  = cfg["good_list"],
+        models_dir = cfg["models_dir"],
     )
 
     args = parser.parse_args()

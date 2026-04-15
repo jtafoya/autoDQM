@@ -33,7 +33,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .config import load_config
+from .args import (preparse_config, add_config, add_features,
+                   add_model_thresholds, add_alert_thresholds, add_test_mode)
 
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
@@ -287,18 +288,14 @@ def step_plots(
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    # ── Pre-parse to locate the config file, then load it ────────────────────
-    _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.yaml")
-    cfg = load_config(_pre.parse_known_args()[0].config)
+    config_path, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
         description="Run the full autoDQM pipeline: train → apply → report → plots."
     )
 
     # ── Config ──
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML configuration file (default: config.yaml)")
+    add_config(parser)
 
     # ── Input ──
     parser.add_argument("--good-list",  help="Run list of good files for training")
@@ -315,44 +312,18 @@ def main() -> None:
     parser.add_argument("--plots-dir",   help="Base directory for diagnostic plots")
 
     # ── Feature set ──
-    parser.add_argument("--no-trigger", action="store_true",
-                        help="Exclude TriggerBoard features (Digitizer-only mode)")
-    parser.add_argument("--no-trigger-LVDS", action="store_true", dest="no_trigger_lvds",
-                        help="Exclude LVDS pin count features")
+    add_features(parser, cfg)
 
     # ── Thresholds ──
-    parser.add_argument("--z-threshold",          type=float)
-    parser.add_argument("--if-contamination",     type=float)
-    parser.add_argument("--file-alert-n-channels", type=int,
-                        help="Number of persistent anomalous channels to trigger a file-level ALERT")
-    parser.add_argument(
-        "--alert-consecutive-n",
-        type=int,
-        metavar="N",
-        help="A channel must be anomalous in this many consecutive files to count as "
-             "persistent (and contribute to ALERT). Set to 1 to disable (original behaviour).",
-    )
-    parser.add_argument(
-        "--single-file-alert-n-channels",
-        type=int,
-        metavar="N",
-        help="Raise [ALERT] immediately if this many channels are anomalous in a single "
-             "file, regardless of persistence. 0 = disabled.",
-    )
-    parser.add_argument(
-        "--single-file-alert-max-z",
-        type=float,
-        metavar="Z",
-        help="Raise [ALERT] immediately if any channel's max_z reaches this value in a "
-             "single file, regardless of persistence. 0 = disabled.",
-    )
+    add_model_thresholds(parser, cfg)
+    add_alert_thresholds(parser, cfg)
 
     # ── Test mode ──
     parser.add_argument("--test-train", type=int, nargs="?", const=50, default=None, metavar="N",
                         help="Test mode: sample N training files (default N=50 when flag is given)")
     parser.add_argument("--test-apply", type=int, nargs="?", const=50, default=None, metavar="N",
                         help="Test mode: sample N apply files (default N=50 when flag is given)")
-    parser.add_argument("--test-seed", type=int)
+    add_test_mode(parser, cfg)
 
     # ── Skip flags ──
     parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
@@ -372,21 +343,14 @@ def main() -> None:
 
     # Apply config as defaults (CLI args override)
     parser.set_defaults(
-        good_list            = cfg["good_list"],
-        apply_list           = cfg["apply_list"],
-        model_tag            = cfg["model_tag"],
-        models_dir           = cfg["models_dir"],
-        logs_dir             = cfg["logs_dir"],
-        reports_dir          = cfg["reports_dir"],
-        plots_dir            = cfg["plots_dir"],
-        z_threshold           = cfg["z_threshold"],
-        if_contamination      = cfg["if_contamination"],
-        file_alert_n_channels         = cfg["file_alert_n_channels"],
-        alert_consecutive_n           = cfg["alert_consecutive_n"],
-        single_file_alert_n_channels  = cfg["single_file_alert_n_channels"],
-        single_file_alert_max_z       = cfg["single_file_alert_max_z"],
-        test_seed                     = cfg["test_seed"],
-        max_subrun_plots              = cfg["max_subrun_plots"],
+        good_list   = cfg["good_list"],
+        apply_list  = cfg["apply_list"],
+        model_tag   = cfg["model_tag"],
+        models_dir  = cfg["models_dir"],
+        logs_dir    = cfg["logs_dir"],
+        reports_dir = cfg["reports_dir"],
+        plots_dir   = cfg["plots_dir"],
+        max_subrun_plots = cfg["max_subrun_plots"],
     )
 
     args = parser.parse_args()

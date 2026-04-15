@@ -20,7 +20,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
-from .config import load_config
+from .args import preparse_config, add_config
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .features import extract_features, METRIC_COLS
@@ -1018,17 +1018,14 @@ def _load_models(models_dir: str):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
-    _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.yaml")
-    cfg = load_config(_pre.parse_known_args()[0].config)
+    config_path, cfg = preparse_config()
 
     tag = cfg["model_tag"]
 
     parser = argparse.ArgumentParser(
         description="Generate visualizations for training and anomaly detection output."
     )
-    parser.add_argument("--config", default="config.yaml",
-                        help="Path to YAML configuration file (default: config.yaml)")
+    add_config(parser)
     parser.add_argument("--models-dir", help="Directory with saved models")
     parser.add_argument("--out-dir",    help="Directory to save figures")
 
