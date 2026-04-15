@@ -31,8 +31,6 @@ import shutil
 import sys
 from pathlib import Path
 
-import pandas as pd
-
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode)
 
@@ -97,69 +95,6 @@ def step_train(
     print(f"  Mean table saved → {models_dir}/reference_mean_table.png")
 
 
-def step_apply(
-    apply_list: str,
-    models_dir: Path,
-    log_file: Path,
-    file_alert_n_channels: int,
-    alert_consecutive_n: int,
-    test_n: int,
-    single_file_alert_n_channels: int = 0,
-    single_file_alert_max_z: float = 0.0,
-) -> None:
-    from .run_list import resolve_run_list
-    from .reference import ReferenceModel
-    from .detector import AnomalyDetector
-    from .monitor import process_file, _sort_key, _run_number
-
-    _step("STEP 2 — APPLY")
-
-    ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
-    detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
-    print(f"  Reference: {len(ref.known_channels())} channels  |  Z-threshold: {detector.z_threshold}σ")
-
-    all_files = resolve_run_list(apply_list)
-    if not all_files:
-        print("ERROR: apply run list resolved to zero files.", file=sys.stderr)
-        sys.exit(1)
-    print(f"  {len(all_files)} file(s) found in apply list.")
-
-    if test_n:
-        n = min(test_n, len(all_files))
-        all_files = random.sample(all_files, n)
-        print(f"  [TEST MODE] Using {n} randomly sampled file(s).\n")
-
-    # Sort by run/subrun so channel history accumulates in chronological order
-    all_files = sorted(all_files, key=_sort_key)
-
-    log_file.parent.mkdir(parents=True, exist_ok=True)
-    log_file.unlink(missing_ok=True)   # fresh log for this run
-
-    channel_history: dict      = {}
-    current_run:     "int | None" = None
-    run_file_index:  int          = 0
-    for i, f in enumerate(all_files, 1):
-        run = _run_number(f)
-        if run != current_run:
-            if current_run is not None:
-                print(f"  [run {run}] New run — channel history reset")
-            current_run     = run
-            run_file_index  = 0
-            channel_history = {}
-        process_file(str(f), detector, str(log_file),
-                     file_alert_n_channels=file_alert_n_channels,
-                     alert_consecutive_n=alert_consecutive_n,
-                     channel_history=channel_history,
-                     single_file_alert_n_channels=single_file_alert_n_channels,
-                     single_file_alert_max_z=single_file_alert_max_z,
-                     run_file_index=run_file_index)
-        run_file_index += 1
-        if i % 100 == 0:
-            print(f"  --- {i}/{len(all_files)} files processed ---")
-
-    print(f"\n  Log written → {log_file}")
-
-
 def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> None:
     from .report import classify_runs, write_report
 
@@ -183,6 +118,7 @@ def step_plots(
     skip_subrun_plots: bool = False,
     max_subrun_plots: int = 10,
 ) -> None:
+    import pandas as pd
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
     from .plot import plot_reference, plot_file, plot_log
@@ -433,7 +369,6 @@ def main() -> None:
         log_file.parent.mkdir(parents=True, exist_ok=True)
         path_cache.write_text("\n".join(all_apply))
 
-        # Re-use the already-sampled list directly rather than re-sampling in step_apply
         from .reference import ReferenceModel
         from .detector import AnomalyDetector
         from .monitor import process_file, _sort_key, _run_number
