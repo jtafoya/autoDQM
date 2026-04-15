@@ -28,8 +28,8 @@
     "single_file_alert_n_channels": 5,
     "single_file_alert_max_z":      15.0,
 
-    "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling. max_subrun_plots: maximum number of per-ALERT subrun plot sets to generate in the plots step; files are taken in run/subrun order. -1 = no limit (plots every ALERT file — can be very slow and disk-heavy for large runs; a loud warning is printed).",
+    "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling. max_subrun_plots: per category, produce up to this many subrun plot sets — max_subrun_plots random bad subruns (always including the worst) and max_subrun_plots random good subruns (below file_alert_n_channels). -1 = no limit (plots every file — can be very slow and disk-heavy; a loud warning is printed).",
     "poll_interval":        5.0,
     "test_seed":            42,
-    "max_subrun_plots":     10
+    "max_subrun_plots":     5
 }

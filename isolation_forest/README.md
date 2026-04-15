@@ -631,10 +631,10 @@ Options:
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |
 | `--skip-all-plots` | off | Skip the entire plots step — no `reference_*`, `log_*`, or per-file plots |
-| `--skip-subrun-plots` | off | Skip per-ALERT subrun plots only; `reference_*` and `log_*` summary plots are still generated |
-| `--max-subrun-plots` | from config.json | Maximum number of per-ALERT subrun plot sets to generate, in run/subrun order. `-1` = no limit (plots all ALERT files — a loud warning is printed) |
+| `--skip-subrun-plots` | off | Skip per-subrun plots only; `reference_*` and `log_*` summary plots are still generated |
+| `--max-subrun-plots` | from config.json | Per category: up to this many random bad subruns (always including the worst) and up to this many random good subruns. `-1` = no limit (plots every file — a loud warning is printed) |
 
-The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file ALERT plots.
+The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file plots.
 
 ---
 

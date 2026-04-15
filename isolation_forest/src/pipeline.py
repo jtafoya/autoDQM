@@ -208,31 +208,52 @@ def step_plots(
         print(f"  Plots saved → {plots_dir}/")
         return
 
-    print("Per-file plots for ALERT files...")
+    print("Per-file plots (sample of good and bad subruns)...")
     df = pd.read_csv(str(log_file))
     per_file = (
         df.groupby("filename")
           .agg(total=("channel", "count"), n_bad=("anomalous", "sum"))
     )
-    alert_names = per_file[per_file["n_bad"] >= file_alert_n_channels].index.tolist()
+    # Split into bad (alert) and good (below threshold), bad sorted worst-first
+    bad_df   = per_file[per_file["n_bad"] >= file_alert_n_channels].sort_values("n_bad", ascending=False)
+    good_df  = per_file[per_file["n_bad"] <  file_alert_n_channels]
 
-    n_alert = len(alert_names)
+    bad_names  = bad_df.index.tolist()
+    good_names = good_df.index.tolist()
+
+    n_bad  = len(bad_names)
+    n_good = len(good_names)
+
     if max_subrun_plots == -1:
         print()
         print("!" * 60)
         print("  WARNING: max_subrun_plots = -1")
-        print(f"  This will generate plots for ALL {n_alert} ALERT file(s).")
+        print(f"  This will generate plots for ALL {n_bad} bad and ALL {n_good} good file(s).")
         print("  For large runs this can be very slow and use significant")
         print("  disk space.  Set  \"max_subrun_plots\": N  in config.json")
         print("  (or pass --max-subrun-plots N) to cap the output.")
         print("!" * 60)
         print()
-        plot_names = alert_names
+        plot_bad  = bad_names
+        plot_good = good_names
     else:
-        plot_names = alert_names[:max_subrun_plots]
-        if n_alert > max_subrun_plots:
-            print(f"  Capped at {max_subrun_plots} of {n_alert} ALERT file(s)"
-                  f" (set max_subrun_plots = -1 to plot all).")
+        # Bad: always include the worst subrun, then randomly sample from the rest
+        if bad_names:
+            worst     = bad_names[:1]
+            remaining = bad_names[1:]
+            n_extra   = min(max_subrun_plots - 1, len(remaining))
+            plot_bad  = worst + random.sample(remaining, n_extra)
+        else:
+            plot_bad = []
+
+        # Good: random sample up to max_subrun_plots
+        plot_good = random.sample(good_names, min(max_subrun_plots, len(good_names)))
+
+        print(f"  Plotting {len(plot_bad)}/{n_bad} bad file(s) "
+              f"(worst + {len(plot_bad)-1 if plot_bad else 0} random) "
+              f"and {len(plot_good)}/{n_good} good file(s) (random).")
+
+    plot_names = plot_bad + plot_good
 
     # Recover full paths from the log (filenames only) via a path cache stored
     # alongside the log by the apply step.
@@ -259,7 +280,7 @@ def step_plots(
         except Exception as exc:
             print(f"    [ERROR] {exc}", file=sys.stderr)
 
-    print(f"\n  {n_plotted}/{n_alert} ALERT file(s) plotted.")
+    print(f"\n  {n_plotted}/{len(plot_names)} file(s) plotted ({len(plot_bad)} bad, {len(plot_good)} good).")
     print(f"  All plots saved → {plots_dir}/")
 
 

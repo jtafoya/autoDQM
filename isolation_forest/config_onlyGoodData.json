@@ -20,13 +20,16 @@
     "_commented_ignore_features":      ["TDCRollovers_*"],
     "ignore_features":      ["TDC*"],
 
-    "_comment_thresholds": "z_threshold: number of standard deviations above which a channel feature is flagged. if_contamination: expected fraction of anomalies in training data passed to IsolationForest. file_alert_n_channels: number of *persistent* anomalous channels required to classify a file as ALERT. alert_consecutive_n: a channel must be anomalous in this many consecutive files to be counted as persistent (1 = disabled, any anomaly is immediately ALERT-eligible).",
+    "_comment_thresholds": "Detection: z_threshold is the |z-score| above which a feature is flagged; if_contamination is the expected anomaly fraction for IsolationForest. --- Persistence-based alert (sustained degradation): file_alert_n_channels is the minimum number of *persistent* anomalous channels for [ALERT] — can be low (e.g. 2) because persistence already suppresses transient noise; alert_consecutive_n is how many consecutive files a channel must be anomalous in to count as persistent (1 = disabled). --- Single-file severity alerts (no persistence required, fire on one bad file): single_file_alert_n_channels triggers [ALERT] when this many channels are anomalous at once — targets sudden widespread events like a power glitch; set higher than file_alert_n_channels (e.g. 5) since there is no persistence filter; 0 = disabled. single_file_alert_max_z triggers [ALERT] when any channel's max_z reaches this value — targets a single catastrophically out-of-range channel (e.g. broken hardware); 0.0 = disabled.",
     "z_threshold":          6.0,
     "if_contamination":     0.01,
     "file_alert_n_channels": 2,
     "alert_consecutive_n":  3,
+    "single_file_alert_n_channels": 5,
+    "single_file_alert_max_z":      15.0,
 
-    "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling.",
+    "_comment_misc": "poll_interval: seconds between directory scans in watch mode. test_seed: random seed for reproducible test-mode file sampling. max_subrun_plots: per category, produce up to this many subrun plot sets — max_subrun_plots random bad subruns (always including the worst) and max_subrun_plots random good subruns (below file_alert_n_channels). -1 = no limit (plots every file — can be very slow and disk-heavy; a loud warning is printed).",
     "poll_interval":        5.0,
-    "test_seed":            42
+    "test_seed":            42,
+    "max_subrun_plots":     5
 }

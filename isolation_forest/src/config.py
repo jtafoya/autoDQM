@@ -39,12 +39,13 @@ Single-file severity alerts — fire immediately on one bad file, no history nee
 
 poll_interval        Seconds between directory scans in watch mode.
 test_seed            Random seed for reproducible test-mode sampling.
-max_subrun_plots     Maximum number of per-ALERT subrun plot sets to generate
-                     in the pipeline plots step. Files are taken in run/subrun
-                     order. -1 = no limit (plots every ALERT file). Use -1 with
-                     caution: a large run can produce hundreds of plot sets,
-                     which is slow and disk-heavy. A prominent warning is printed
-                     when -1 is active.
+max_subrun_plots     Number of subrun plot sets to generate per category in the
+                     pipeline plots step. Produces up to max_subrun_plots random
+                     bad subruns (always including the worst/most anomalous) and
+                     up to max_subrun_plots random good subruns (n_bad below
+                     file_alert_n_channels). -1 = no limit (plots every file —
+                     can be very slow and disk-heavy for large runs; a prominent
+                     warning is printed).
 """
 
 import json
