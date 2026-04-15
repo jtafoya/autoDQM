@@ -1009,7 +1009,7 @@ def _load_models(models_dir: str):
 
 def main() -> None:
     _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.json")
+    _pre.add_argument("--config", default="config.yaml")
     cfg = load_config(_pre.parse_known_args()[0].config)
 
     tag = cfg["model_tag"]
@@ -1017,8 +1017,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate visualizations for training and anomaly detection output."
     )
-    parser.add_argument("--config", default="config.json",
-                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--config", default="config.yaml",
+                        help="Path to YAML configuration file (default: config.yaml)")
     parser.add_argument("--models-dir", help="Directory with saved models")
     parser.add_argument("--out-dir",    help="Directory to save figures")
 

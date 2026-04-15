@@ -4,7 +4,7 @@ All commands are run from `isolation_forest/`.
 
 ## HTCondor — all 4 feature variants in parallel (production)
 
-Before submitting, verify `config.json` has correct absolute paths and that
+Before submitting, verify `config.yaml` has correct absolute paths and that
 `INSTALLATION_PATH` in `env.sh` is correct (it is the only variable defined there), then:
 
 ```bash
@@ -16,7 +16,7 @@ condor_q <cluster_id>            # check status
 Each job runs the full pipeline for one variant using `--model-tag condor`; the
 feature-set suffixes (`_noTrigger`, `_noLVDS`) are appended automatically.
 Output goes to `models/condor<suffix>/`, `logs/condor<suffix>.csv`,
-`reports/condor<suffix>/`, `plots/condor<suffix>/` (base dirs from `config.json`).
+`reports/condor<suffix>/`, `plots/condor<suffix>/` (base dirs from `config.yaml`).
 Stdout/stderr land in `condor/logs/<cluster>.<process>.<variant>.{out,err}`.
 You receive an email on completion.
 

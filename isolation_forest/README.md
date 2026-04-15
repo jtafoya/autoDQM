@@ -60,12 +60,12 @@ isolation_forest/
     submit.sub       — HTCondor job description (4 feature-variant jobs)
     run_pipeline.sh  — worker-node entry point (sources env.sh, calls pipeline.py)
     logs/            — per-job stdout/stderr and shared job event log
-  models/            — saved reference stats and trained Isolation Forest (created by train.py); each tag subdirectory also contains a config.json snapshot of the settings used for that training run
+  models/            — saved reference stats and trained Isolation Forest (created by train.py); each tag subdirectory also contains a config.yaml snapshot of the settings used for that training run
   logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
   reports/           — run quality lists and summary table (created by report.py / pipeline.py)
   plots/             — diagnostic figures (created by plot.py / pipeline.py)
-  config.json        — central pipeline configuration (paths, thresholds, feature flags)
-  env.sh             — exports INSTALLATION_PATH for condor/run_pipeline.sh (all other config is in config.json)
+  config.yaml        — central pipeline configuration (paths, thresholds, feature flags)
+  env.sh             — exports INSTALLATION_PATH for condor/run_pipeline.sh (all other config is in config.yaml)
   setup.sh           — install Python dependencies (sources env.sh)
   diagram.md         — Mermaid architecture diagram of the full framework
   ../data/
@@ -81,25 +81,23 @@ isolation_forest/
 
 ### 1. Configure
 
-`config.json` is the single source of truth for all pipeline settings. Edit it
+`config.yaml` is the single source of truth for all pipeline settings. Edit it
 before running anything else:
 
-```json
-{
-    "data_path":   "/afs/.../data",
-    "good_list":   "/afs/.../data/good_run_list_EOS.txt",
-    "apply_list":  "/afs/.../data/all_run_list_EOS.txt",
-    "models_dir":  "/afs/.../isolation_forest/models",
-    ...
-}
+```yaml
+data_path:  /afs/.../data
+good_list:  /afs/.../data/good_run_list_EOS.txt
+apply_list: /afs/.../data/all_run_list_EOS.txt
+models_dir: /afs/.../isolation_forest/models
+# ...
 ```
 
 All paths must be **absolute** so the pipeline works from Condor worker nodes, cron jobs,
-or any working directory. CLI arguments always override config.json values.
+or any working directory. CLI arguments always override config.yaml values.
 
 `env.sh` now only exports `INSTALLATION_PATH`, used by `condor/run_pipeline.sh`
 for `cd` and `PYTHONPATH` setup. If you move the installation, update
-`INSTALLATION_PATH` in `env.sh` and all paths in `config.json`.
+`INSTALLATION_PATH` in `env.sh` and all paths in `config.yaml`.
 
 ### 2. Install Python dependencies
 
@@ -195,7 +193,7 @@ This creates:
 - `models/reference.npz` — per-channel Welford statistics (mean, variance, count)
 - `models/detector.pkl` — trained Isolation Forest
 - `models/seen_files.json` — list of files already incorporated into the reference
-- `models/config.json` — snapshot of the config file used for this training run (overwritten on every retrain)
+- `models/config.yaml` — snapshot of the config file used for this training run (overwritten on every retrain)
 
 The `use_trigger` and `use_lvds` settings are saved into `reference.npz` so all subsequent
 steps (apply, plots) automatically use the same feature set.
@@ -204,16 +202,16 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--config` | `config.json` | Path to JSON configuration file |
-| `--good-list` | from config.json | Path to the good run list file |
-| `--models-dir` | from config.json | Where to save the trained models |
-| `--z-threshold` | from config.json | σ threshold for the statistical layer |
-| `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
-| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.json) |
+| `--config` | `config.yaml` | Path to YAML configuration file |
+| `--good-list` | from config.yaml | Path to the good run list file |
+| `--models-dir` | from config.yaml | Where to save the trained models |
+| `--z-threshold` | from config.yaml | σ threshold for the statistical layer |
+| `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
+| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.yaml) |
 | `--no-trigger-LVDS` | off | Exclude LVDS features: drops `LVDSpin` and the `"trigger_lvds_total"` pseudo-channel (overrides `use_lvds`) |
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
 | `--test [N]` | off | Test mode: randomly sample N files (default N=50 when flag is given) |
-| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
+| `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
 
 ### 3. Monitor
 
@@ -245,22 +243,22 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--config` | `config.json` | Path to JSON configuration file |
+| `--config` | `config.yaml` | Path to YAML configuration file |
 | `--watch-dir` | (one of these required) | Directory to watch for new CSV files |
 | `--run-list` | (one of these required) | Run list file; requires `--test N`; processes N random files then exits |
-| `--models-dir` | from config.json | Directory with saved models |
-| `--log-file` | from config.json | Output log path |
-| `--poll-interval` | from config.json | Seconds between directory scans |
-| `--file-alert-n-channels` | from config.json | Number of *persistent* anomalous channels needed to print `[ALERT]` (persistence condition) |
-| `--alert-consecutive-n` | from config.json | A channel must be anomalous in this many consecutive files to count as persistent. Set to `1` to disable (any anomaly → ALERT-eligible, no `[PEND]`) |
-| `--single-file-alert-n-channels` | from config.json | Minimum anomalous channels in a single file to trigger `[ALERT]` (bulk condition). Should be higher than `--file-alert-n-channels`. `0` = disabled |
-| `--single-file-alert-max-z` | from config.json | If any channel's `max_z` meets or exceeds this value, trigger `[ALERT]` immediately (extreme condition). `0.0` = disabled |
+| `--models-dir` | from config.yaml | Directory with saved models |
+| `--log-file` | from config.yaml | Output log path |
+| `--poll-interval` | from config.yaml | Seconds between directory scans |
+| `--file-alert-n-channels` | from config.yaml | Number of *persistent* anomalous channels needed to print `[ALERT]` (persistence condition) |
+| `--alert-consecutive-n` | from config.yaml | A channel must be anomalous in this many consecutive files to count as persistent. Set to `1` to disable (any anomaly → ALERT-eligible, no `[PEND]`) |
+| `--single-file-alert-n-channels` | from config.yaml | Minimum anomalous channels in a single file to trigger `[ALERT]` (bulk condition). Should be higher than `--file-alert-n-channels`. `0` = disabled |
+| `--single-file-alert-max-z` | from config.yaml | If any channel's `max_z` meets or exceeds this value, trigger `[ALERT]` immediately (extreme condition). `0.0` = disabled |
 | `--process-existing` | off | Also process files already in the directory at startup |
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
-| `--plots-dir` | from config.json | Root directory for all plot output |
+| `--plots-dir` | from config.yaml | Root directory for all plot output |
 | `--refresh-log-plots-every` | `0` | Regenerate log summary plots every N processed files (0 = disabled) |
 | `--test [N]` | off | Test mode: randomly sample N files from the source (watch-dir or run-list), process them, then exit |
-| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
+| `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
 
 Terminal output (with `alert_consecutive_n = 3`, `single_file_alert_n_channels = 5`, `single_file_alert_max_z = 15.0`):
 ```
@@ -287,7 +285,7 @@ After processing files with the monitor, summarise run quality from the anomaly 
 python3 -m src.report
 ```
 
-Reads the log for the active `model_tag` (from `config.json`) and writes into the corresponding reports directory:
+Reads the log for the active `model_tag` (from `config.yaml`) and writes into the corresponding reports directory:
 
 | File | Description |
 |---|---|
@@ -314,10 +312,10 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--config` | `config.json` | Path to JSON configuration file |
-| `--log-file` | from config.json (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
-| `--out-dir` | from config.json (`<reports_dir>/<tag>`) | Directory to write output files |
-| `--file-alert-n-channels` | from config.json | Number of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
+| `--config` | `config.yaml` | Path to YAML configuration file |
+| `--log-file` | from config.yaml (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
+| `--out-dir` | from config.yaml (`<reports_dir>/<tag>`) | Directory to write output files |
+| `--file-alert-n-channels` | from config.yaml | Number of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
 
 ### 5. Plot
 
@@ -334,10 +332,10 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 python3 -m src.plot log
 ```
 
-Defaults for `--out-dir`, `--models-dir`, and `--log-file` are all derived from `config.json` (using `<base_dir>/<model_tag>`). Pass `--config` to switch configs, or override individual paths explicitly — both flags must appear **before** the subcommand:
+Defaults for `--out-dir`, `--models-dir`, and `--log-file` are all derived from `config.yaml` (using `<base_dir>/<model_tag>`). Pass `--config` to switch configs, or override individual paths explicitly — both flags must appear **before** the subcommand:
 
 ```bash
-python3 -m src.plot --config config_bad.json reference
+python3 -m src.plot --config config_bad.yaml reference
 python3 -m src.plot --out-dir /tmp/myplots --models-dir models/myrun reference
 ```
 
@@ -364,7 +362,7 @@ See the [Plots](#plots) section for descriptions of each figure.
 
 ## Plots
 
-Figures are generated by `src/plot.py`. Default output directory, models directory, and log file are all read from `config.json`. All subcommands accept `--config`, `--models-dir`, and `--out-dir` to override defaults.
+Figures are generated by `src/plot.py`. Default output directory, models directory, and log file are all read from `config.yaml`. All subcommands accept `--config`, `--models-dir`, and `--out-dir` to override defaults.
 
 When running the monitor with `--plot-alerts`, diagnostic plots for alerted files are saved
 automatically into subdirectories, one per file:
@@ -437,11 +435,11 @@ Options for the `log` subcommand:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--log-file` | from config.json (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
-| `--file-alert-n-channels` | from config.json | Number of persistent anomalous channels that marks a file as ALERT — persistence condition (must match the value used in monitor.py) |
-| `--alert-consecutive-n` | from config.json | Consecutive files a channel must be anomalous in to count as persistent (must match the value used in monitor.py) |
-| `--single-file-alert-n-channels` | from config.json | Bulk alert threshold for replayed log colouring (must match the value used in monitor.py). `0` = disabled |
-| `--single-file-alert-max-z` | from config.json | Extreme alert threshold for replayed log colouring (must match the value used in monitor.py). `0.0` = disabled |
+| `--log-file` | from config.yaml (`<logs_dir>/<tag>.csv`) | Anomaly log to read |
+| `--file-alert-n-channels` | from config.yaml | Number of persistent anomalous channels that marks a file as ALERT — persistence condition (must match the value used in monitor.py) |
+| `--alert-consecutive-n` | from config.yaml | Consecutive files a channel must be anomalous in to count as persistent (must match the value used in monitor.py) |
+| `--single-file-alert-n-channels` | from config.yaml | Bulk alert threshold for replayed log colouring (must match the value used in monitor.py). `0` = disabled |
+| `--single-file-alert-max-z` | from config.yaml | Extreme alert threshold for replayed log colouring (must match the value used in monitor.py). `0.0` = disabled |
 
 ---
 
@@ -505,11 +503,13 @@ and IF anomaly score.
 | `--no-trigger` | 35 + 1 (LVDSpin) + 1 (LVDStotal) = **37** |
 | `--no-trigger --no-trigger-LVDS` | **35** |
 
-**`ignore_features`** (set in `config.json`) accepts a list of glob patterns that are
+**`ignore_features`** (set in `config.yaml`) accepts a list of glob patterns that are
 removed from the feature set at training time and automatically excluded at inference:
 
-```json
-"ignore_features": ["TDCRollovers_*", "triggerRate_bit1*"]
+```yaml
+ignore_features:
+  - "TDCRollovers_*"
+  - "triggerRate_bit1*"
 ```
 
 Patterns use standard `fnmatch` syntax (`*` matches anything within a name). The
@@ -608,31 +608,31 @@ Options:
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--config` | `config.json` | Path to JSON configuration file |
-| `--good-list` | from config.json | Run list of good files for training |
-| `--apply-list` | from config.json | Run list of files to apply the trained model to |
-| `--model-tag` | from config.json | Base tag for all outputs. `_noTrigger` and/or `_noLVDS` are appended automatically when the corresponding flags are active, e.g. `myrun_noTrigger_noLVDS` |
-| `--models-dir` | from config.json | Base directory for saved models |
-| `--logs-dir` | from config.json | Base directory for anomaly logs |
-| `--reports-dir` | from config.json | Base directory for reports |
-| `--plots-dir` | from config.json | Base directory for plots |
+| `--config` | `config.yaml` | Path to YAML configuration file |
+| `--good-list` | from config.yaml | Run list of good files for training |
+| `--apply-list` | from config.yaml | Run list of files to apply the trained model to |
+| `--model-tag` | from config.yaml | Base tag for all outputs. `_noTrigger` and/or `_noLVDS` are appended automatically when the corresponding flags are active, e.g. `myrun_noTrigger_noLVDS` |
+| `--models-dir` | from config.yaml | Base directory for saved models |
+| `--logs-dir` | from config.yaml | Base directory for anomaly logs |
+| `--reports-dir` | from config.yaml | Base directory for reports |
+| `--plots-dir` | from config.yaml | Base directory for plots |
 | `--test-train [N]` | off | Sample N training files (default N=50 when flag is given) |
 | `--test-apply [N]` | off | Sample N apply files (default N=50 when flag is given) |
-| `--test-seed` | from config.json | Random seed for reproducible test-mode sampling |
-| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.json) |
-| `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.json) |
-| `--z-threshold` | from config.json | σ threshold for the statistical layer |
-| `--if-contamination` | from config.json | Expected anomaly fraction for Isolation Forest |
-| `--file-alert-n-channels` | from config.json | Number of *persistent* anomalous channels to trigger a file-level ALERT (persistence condition) |
-| `--alert-consecutive-n` | from config.json | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
-| `--single-file-alert-n-channels` | from config.json | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |
-| `--single-file-alert-max-z` | from config.json | Extreme alert: `[ALERT]` when any channel's `max_z` meets or exceeds this value. `0.0` = disabled |
+| `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
+| `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.yaml) |
+| `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.yaml) |
+| `--z-threshold` | from config.yaml | σ threshold for the statistical layer |
+| `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
+| `--file-alert-n-channels` | from config.yaml | Number of *persistent* anomalous channels to trigger a file-level ALERT (persistence condition) |
+| `--alert-consecutive-n` | from config.yaml | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
+| `--single-file-alert-n-channels` | from config.yaml | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |
+| `--single-file-alert-max-z` | from config.yaml | Extreme alert: `[ALERT]` when any channel's `max_z` meets or exceeds this value. `0.0` = disabled |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |
 | `--skip-all-plots` | off | Skip the entire plots step — no `reference_*`, `log_*`, or per-file plots |
 | `--skip-subrun-plots` | off | Skip per-subrun plots only; `reference_*` and `log_*` summary plots are still generated |
-| `--max-subrun-plots` | from config.json | Per category: up to this many random bad subruns (always including the worst) and up to this many random good subruns. `-1` = no limit (plots every file — a loud warning is printed) |
+| `--max-subrun-plots` | from config.yaml | Per category: up to this many random bad subruns (always including the worst) and up to this many random good subruns. `-1` = no limit (plots every file — a loud warning is printed) |
 
 The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so that the plots step can locate the full file paths needed for per-file plots.
 
@@ -646,7 +646,7 @@ sequence for one variant.
 
 ### Prerequisites
 
-1. `config.json` has correct absolute paths for `good_list`, `apply_list`, and the output directories (see [Setup](#setup))
+1. `config.yaml` has correct absolute paths for `good_list`, `apply_list`, and the output directories (see [Setup](#setup))
 2. `INSTALLATION_PATH` in `env.sh` points to the correct `isolation_forest/` directory (only variable it contains)
 3. Dependencies are installed: `bash setup.sh`
 
@@ -659,7 +659,7 @@ condor_submit condor/submit.sub
 
 This submits 4 jobs, one per feature variant:
 
-Feature counts are before `ignore_features` is applied (see `config.json`).
+Feature counts are before `ignore_features` is applied (see `config.yaml`).
 
 | Job | Variant | Flags | Model tag | Features |
 |---|---|---|---|---|
@@ -720,16 +720,16 @@ the top `if_contamination` fraction of points in any new data. At `0.05`, 5% of 
 data will be flagged by the IF regardless of how representative the training set is.
 Lower this first:
 
-```json
-"if_contamination": 0.01
+```yaml
+if_contamination: 0.01
 ```
 
 **Alert thresholds**
 
 `file_alert_n_channels` is the minimum number of *persistent* anomalous channels required to raise an ALERT via the persistence condition. Any anomalous channel below this count prints WARN unless a single-file condition also fires. The default is 2. Raise it if the detector routinely has one or two noisy channels that are not operationally significant:
 
-```json
-"file_alert_n_channels": 5
+```yaml
+file_alert_n_channels: 5
 ```
 
 Two additional single-file conditions can raise ALERT independently, without waiting for persistence:
@@ -737,9 +737,9 @@ Two additional single-file conditions can raise ALERT independently, without wai
 - **`single_file_alert_n_channels`**: fires when ≥ K channels are anomalous in a single file. Targets sudden widespread events (power glitch, noisy run). Set higher than `file_alert_n_channels` (e.g. 5–10) because there is no persistence filter to suppress transient noise. `0` = disabled.
 - **`single_file_alert_max_z`**: fires when any single channel's `max_z` meets or exceeds this value. Targets a catastrophically out-of-range channel (e.g. broken digitizer hardware). `0.0` = disabled.
 
-```json
-"single_file_alert_n_channels": 5,
-"single_file_alert_max_z": 15.0
+```yaml
+single_file_alert_n_channels: 5
+single_file_alert_max_z:      15.0
 ```
 
 **Persistence window (`alert_consecutive_n`)**
@@ -754,8 +754,8 @@ over 3 consecutive subruns escalate to ALERT.
 - **`N = 1`**: disables persistence entirely — every anomaly is immediately ALERT-eligible (original behaviour)
 - **N = 2**: one confirmation file required (fastest escalation with any protection)
 
-```json
-"alert_consecutive_n": 2
+```yaml
+alert_consecutive_n: 2
 ```
 
 Note that `alert_consecutive_n` acts at the *console/alert* level only. The anomaly log
@@ -795,13 +795,13 @@ by broadening the training set, or by adding the unstable features to `ignore_fe
 
 ### Suggested starting point for a detector of this size
 
-```json
-"z_threshold":                    6.0,
-"if_contamination":               0.01,
-"file_alert_n_channels":          2,
-"alert_consecutive_n":            3,
-"single_file_alert_n_channels":   5,
-"single_file_alert_max_z":        15.0
+```yaml
+z_threshold:                  6.0
+if_contamination:             0.01
+file_alert_n_channels:        2
+alert_consecutive_n:          3
+single_file_alert_n_channels: 5
+single_file_alert_max_z:      15.0
 ```
 
 Retrain and reapply to the known-good list after each change, using the frequency plots

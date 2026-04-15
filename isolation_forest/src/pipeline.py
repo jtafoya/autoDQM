@@ -230,7 +230,7 @@ def step_plots(
         print("  WARNING: max_subrun_plots = -1")
         print(f"  This will generate plots for ALL {n_bad} bad and ALL {n_good} good file(s).")
         print("  For large runs this can be very slow and use significant")
-        print("  disk space.  Set  \"max_subrun_plots\": N  in config.json")
+        print("  disk space.  Set  \"max_subrun_plots\": N  in config.yaml")
         print("  (or pass --max-subrun-plots N) to cap the output.")
         print("!" * 60)
         print()
@@ -289,7 +289,7 @@ def step_plots(
 def main() -> None:
     # ── Pre-parse to locate the config file, then load it ────────────────────
     _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.json")
+    _pre.add_argument("--config", default="config.yaml")
     cfg = load_config(_pre.parse_known_args()[0].config)
 
     parser = argparse.ArgumentParser(
@@ -297,8 +297,8 @@ def main() -> None:
     )
 
     # ── Config ──
-    parser.add_argument("--config", default="config.json",
-                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--config", default="config.yaml",
+                        help="Path to YAML configuration file (default: config.yaml)")
 
     # ── Input ──
     parser.add_argument("--good-list",  help="Run list of good files for training")
@@ -447,7 +447,7 @@ def main() -> None:
             ignore_features=tuple(cfg["ignore_features"]),
         )
         # Save a snapshot of the config used for this training run
-        config_snapshot = models_dir / "config.json"
+        config_snapshot = models_dir / "config.yaml"
         shutil.copy2(args.config, config_snapshot)
         print(f"  Config snapshot saved to {config_snapshot}")
     else:

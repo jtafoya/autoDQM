@@ -1,7 +1,7 @@
 """
 Central configuration loader for the autoDQM isolation-forest pipeline.
 
-All scripts read config.json (or a path given via --config) at startup and use
+All scripts read config.yaml (or a path given via --config) at startup and use
 those values as defaults; explicit CLI arguments always override them.
 
 Keys and their roles
@@ -48,12 +48,12 @@ max_subrun_plots     Number of subrun plot sets to generate per category in the
                      warning is printed).
 """
 
-import json
+import yaml
 from pathlib import Path
 
-# Hardcoded fallback defaults — used only when a key is absent from config.json.
+# Hardcoded fallback defaults — used only when a key is absent from config.yaml.
 # These are intentionally conservative relative paths so the code stays runnable
-# without any config file; the real site-specific values live in config.json.
+# without any config file; the real site-specific values live in config.yaml.
 DEFAULTS: dict = {
     "data_path":            "../data",
     "good_list":            "../data/good_run_list_EOS.txt",
@@ -85,7 +85,7 @@ def print_banner(script: str, config_path: str, fields: list[tuple[str, str]]) -
     Parameters
     ----------
     script      : short script name shown in the header, e.g. "pipeline"
-    config_path : path to the JSON config file that was loaded
+    config_path : path to the YAML config file that was loaded
     fields      : list of (label, value) pairs to display
     """
     width = 60
@@ -98,9 +98,9 @@ def print_banner(script: str, config_path: str, fields: list[tuple[str, str]]) -
     print()
 
 
-def load_config(path: str = "config.json") -> dict:
+def load_config(path: str = "config.yaml") -> dict:
     """
-    Load configuration from a JSON file, merged on top of DEFAULTS.
+    Load configuration from a YAML file, merged on top of DEFAULTS.
 
     If the file does not exist, returns a copy of DEFAULTS unchanged.
     Unknown keys in the file are passed through (scripts ignore what they
@@ -110,5 +110,5 @@ def load_config(path: str = "config.json") -> dict:
     p = Path(path)
     if p.exists():
         with open(p) as fh:
-            cfg.update(json.load(fh))
+            cfg.update(yaml.safe_load(fh))
     return cfg

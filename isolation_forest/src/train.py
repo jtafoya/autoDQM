@@ -33,14 +33,14 @@ from .config import load_config
 
 def main() -> None:
     _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.json")
+    _pre.add_argument("--config", default="config.yaml")
     cfg = load_config(_pre.parse_known_args()[0].config)
 
     parser = argparse.ArgumentParser(
         description="Build reference model and train Isolation Forest from a run list."
     )
-    parser.add_argument("--config", default="config.json",
-                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--config", default="config.yaml",
+                        help="Path to YAML configuration file (default: config.yaml)")
     parser.add_argument("--good-list",  help="Path to a text file listing good Digitizer CSV files")
     parser.add_argument("--models-dir", help="Directory to save models")
     parser.add_argument(
@@ -162,7 +162,7 @@ def main() -> None:
     print(f"  Detector saved to {det_path}")
 
     # Save a snapshot of the config used for this training run
-    config_snapshot = models_dir / "config.json"
+    config_snapshot = models_dir / "config.yaml"
     shutil.copy2(args.config, config_snapshot)
     print(f"  Config snapshot saved to {config_snapshot}")
 

@@ -489,14 +489,14 @@ def watch_directory(
 
 def main() -> None:
     _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.json")
+    _pre.add_argument("--config", default="config.yaml")
     cfg = load_config(_pre.parse_known_args()[0].config)
 
     parser = argparse.ArgumentParser(
         description="Monitor a directory for anomalous Digitizer files."
     )
-    parser.add_argument("--config", default="config.json",
-                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--config", default="config.yaml",
+                        help="Path to YAML configuration file (default: config.yaml)")
     parser.add_argument("--watch-dir", help="Directory to watch for new CSVs")
     parser.add_argument(
         "--run-list",

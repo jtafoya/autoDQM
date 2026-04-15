@@ -223,7 +223,7 @@ def write_report(runs: dict, out_dir: Path) -> None:
 
 def main() -> None:
     _pre = argparse.ArgumentParser(add_help=False)
-    _pre.add_argument("--config", default="config.json")
+    _pre.add_argument("--config", default="config.yaml")
     cfg = load_config(_pre.parse_known_args()[0].config)
 
     tag = cfg["model_tag"]
@@ -231,8 +231,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Classify runs from the anomaly log into quality categories."
     )
-    parser.add_argument("--config", default="config.json",
-                        help="Path to JSON configuration file (default: config.json)")
+    parser.add_argument("--config", default="config.yaml",
+                        help="Path to YAML configuration file (default: config.yaml)")
     parser.add_argument(
         "--log-file",
         help="Path to the anomaly log produced by monitor.py",
