@@ -4,7 +4,7 @@ Run the full autoDQM pipeline in a single command:
   1. Train  — build reference model and Isolation Forest from a good run list
   2. Apply  — run the detector over an application run list, log results
   3. Report — classify runs into good / partial / bad
-  4. Plots  — reference statistics, log summary, per-file diagnostics for ALERTs
+  4. Plots  — reference statistics, log summary, per-file diagnostics for a sample of good and bad subruns
 
 Defaults: good-list = ../data/good_run_list_EOS.txt
           apply-list = ../data/all_run_list_EOS.txt
@@ -19,7 +19,7 @@ Usage — custom sample size:
     python3 -m src.pipeline --test-train 100 --test-apply 50
 
 Any step can be skipped with --skip-train / --skip-apply / --skip-report / --skip-all-plots.
-Use --skip-subrun-plots to skip only the per-ALERT subrun plots while still producing
+Use --skip-subrun-plots to skip only the per-subrun plots while still producing
 the reference_* and log_* summary plots.
 """
 
@@ -361,13 +361,13 @@ def main() -> None:
     parser.add_argument("--skip-all-plots",    action="store_true",
                         help="Skip the entire plots step (no reference_*, log_*, or per-file plots)")
     parser.add_argument("--skip-subrun-plots", action="store_true",
-                        help="Skip per-ALERT-file subrun plots; still generates reference_* and log_* summary plots")
+                        help="Skip per-subrun plots; still generates reference_* and log_* summary plots")
     parser.add_argument(
         "--max-subrun-plots",
         type=int,
         metavar="N",
-        help="Maximum number of per-ALERT subrun plot sets to generate, in run/subrun order. "
-             "-1 = no limit (plots all ALERT files — prints a loud warning).",
+        help="Per category: up to N random bad subruns (always including the worst) and up to N random "
+             "good subruns. -1 = no limit (plots every file — prints a loud warning).",
     )
 
     # Apply config as defaults (CLI args override)

@@ -48,7 +48,7 @@ python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
 ```
 
 Runs all four steps in order: train → apply → report → plots.  
-Use `--skip-train`, `--skip-apply`, `--skip-report`, `--skip-plots` to re-run individual steps.
+Use `--skip-train`, `--skip-apply`, `--skip-report`, `--skip-all-plots` to re-run individual steps.
 
 Output directories are controlled by `--model-tag` (default: `default`). The base directories
 are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (set by `env.sh`),
