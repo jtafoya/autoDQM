@@ -30,7 +30,8 @@ import sys
 from pathlib import Path
 
 from .args import (preparse_config, add_config, add_features,
-                   add_model_thresholds, add_alert_thresholds, add_test_mode)
+                   add_model_thresholds, add_alert_thresholds, add_test_mode,
+                   add_full_sample_args, validate_full_sample_args)
 
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
@@ -50,18 +51,41 @@ def step_train(
     use_trigger: bool = True,
     use_lvds: bool = False,
     ignore_features: tuple = (),
+    read_full_sample: bool = False,
+    full_sample_json: str = "",
+    full_sample_slab_dir: str = "",
+    full_sample_quality: str = "",
+    full_sample_fraction: float = 1.0,
+    test_seed: int = 42,
 ) -> None:
-    from .run_list import resolve_run_list
+    from .run_list import resolve_run_list, resolve_full_sample
     from .reference import build_reference
     from .detector import AnomalyDetector
 
     _step("STEP 1 — TRAIN")
 
-    all_csv = resolve_run_list(good_list)
+    if read_full_sample:
+        print(
+            f"  Reading full sample catalogue from {full_sample_json} "
+            f"[quality={full_sample_quality}, fraction={full_sample_fraction}] ..."
+        )
+        all_csv = resolve_full_sample(
+            json_path  = full_sample_json,
+            slab_dir   = full_sample_slab_dir,
+            quality    = full_sample_quality,
+            fraction   = full_sample_fraction,
+            seed       = test_seed,
+        )
+    else:
+        all_csv = resolve_run_list(good_list)
+
     if not all_csv:
         print("ERROR: good run list resolved to zero files.", file=sys.stderr)
         sys.exit(1)
-    print(f"  {len(all_csv)} good file(s) found.")
+
+    if not read_full_sample:
+        # resolve_full_sample already prints its own count summary
+        print(f"  {len(all_csv)} good file(s) found.")
     print(f"  Trigger features: {'enabled' if use_trigger else 'disabled'}")
     print(f"  LVDS features:    {'enabled' if use_lvds else 'disabled'}")
 
@@ -258,6 +282,7 @@ def main() -> None:
     parser.add_argument("--test-apply", type=int, nargs="?", const=50, default=None, metavar="N",
                         help="Test mode: sample N apply files (default N=50 when flag is given)")
     add_test_mode(parser, cfg)
+    add_full_sample_args(parser, cfg)
 
     # ── Skip flags ──
     parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
@@ -288,6 +313,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    validate_full_sample_args(parser, args)
 
     random.seed(args.test_seed)
 
@@ -297,6 +323,8 @@ def main() -> None:
 
     # Auto-append feature-set suffix to the tag so outputs are self-documenting
     tag = args.model_tag
+    if args.read_full_sample:
+        tag += f"_{args.full_sample_train_quality}"
     if not use_trigger:
         tag += "_noTrigger"
     if not use_lvds:
@@ -308,10 +336,38 @@ def main() -> None:
     plots_dir   = Path(args.plots_dir)   / tag
 
     from .config import print_banner
+
+    if args.read_full_sample:
+        train_source = (
+            f"{cfg['full_sample_json']} "
+            f"[quality={args.full_sample_train_quality}, "
+            f"fraction={args.full_sample_train_fraction}]"
+        )
+    else:
+        train_source = args.good_list
+
+    if args.share_full_sample_lists:
+        apply_source = (
+            f"{cfg['full_sample_json']} "
+            f"[quality={args.full_sample_train_quality}, "
+            f"fraction={args.full_sample_train_fraction}] "
+            f"[shared with training]"
+        )
+    elif args.read_full_sample_apply:
+        apply_source = (
+            f"{cfg['full_sample_json']} "
+            f"[quality={args.full_sample_apply_quality}, "
+            f"fraction={args.full_sample_apply_fraction}]"
+        )
+    else:
+        apply_source = args.apply_list
+
     print_banner("pipeline", args.config, [
         ("model tag",            tag),
-        ("good list",            args.good_list),
-        ("apply list",           args.apply_list),
+        ("train source",         train_source),
+        ("full sample train",    "yes" if args.read_full_sample else "no"),
+        ("apply source",         apply_source),
+        ("full sample apply",    "yes" if args.read_full_sample_apply else "no"),
         ("models dir",           str(models_dir)),
         ("log file",             str(log_file)),
         ("reports dir",          str(reports_dir)),
@@ -343,6 +399,12 @@ def main() -> None:
             use_trigger=use_trigger,
             use_lvds=use_lvds,
             ignore_features=tuple(cfg["ignore_features"]),
+            read_full_sample     = args.read_full_sample,
+            full_sample_json     = cfg["full_sample_json"],
+            full_sample_slab_dir = cfg["full_sample_slab_dir"],
+            full_sample_quality  = args.full_sample_train_quality,
+            full_sample_fraction = args.full_sample_train_fraction,
+            test_seed            = args.test_seed,
         )
         # Save a snapshot of the config used for this training run
         config_snapshot = models_dir / "config.yaml"
@@ -358,8 +420,36 @@ def main() -> None:
     # ── Step 2: Apply ──────────────────────────────────────────────────────
     if not args.skip_apply:
         # Write a path cache alongside the log so step_plots can find full paths
-        from .run_list import resolve_run_list
-        all_apply = resolve_run_list(args.apply_list)
+        from .run_list import resolve_run_list, resolve_full_sample
+        if args.share_full_sample_lists:
+            print(
+                f"  [--share-full-sample-lists] Resolving apply list from same "
+                f"catalogue params as training "
+                f"[quality={args.full_sample_train_quality}, "
+                f"fraction={args.full_sample_train_fraction}] ..."
+            )
+            all_apply = resolve_full_sample(
+                json_path  = cfg["full_sample_json"],
+                slab_dir   = cfg["full_sample_slab_dir"],
+                quality    = args.full_sample_train_quality,
+                fraction   = args.full_sample_train_fraction,
+                seed       = args.test_seed,
+            )
+        elif args.read_full_sample_apply:
+            print(
+                f"  Reading full sample catalogue from {cfg['full_sample_json']} "
+                f"[quality={args.full_sample_apply_quality}, "
+                f"fraction={args.full_sample_apply_fraction}] ..."
+            )
+            all_apply = resolve_full_sample(
+                json_path  = cfg["full_sample_json"],
+                slab_dir   = cfg["full_sample_slab_dir"],
+                quality    = args.full_sample_apply_quality,
+                fraction   = args.full_sample_apply_fraction,
+                seed       = args.test_seed,
+            )
+        else:
+            all_apply = resolve_run_list(args.apply_list)
         if args.test_apply:
             all_apply = random.sample(all_apply, min(args.test_apply, len(all_apply)))
 

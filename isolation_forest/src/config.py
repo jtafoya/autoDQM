@@ -46,6 +46,33 @@ max_subrun_plots     Number of subrun plot sets to generate per category in the
                      file_alert_n_channels). -1 = no limit (plots every file —
                      can be very slow and disk-heavy for large runs; a prominent
                      warning is printed).
+
+Full-sample training (--read-full-sample mode)
+----------------------------------------------
+These keys control training on the complete slab dataset stored on EOS.
+
+full_sample_slab_dir  Root directory of the slab dataset on EOS.  Files are
+                      organised in sub-directories named by the floor-100 of the
+                      run number (e.g. run 1214 → .../slab/1200/).
+full_sample_json      Path to the JSON good-runs catalogue
+                      (goodRunsListSlab.json).  The file must contain a top-level
+                      "data" list whose rows follow the column order:
+                      [run, file, goodRunLoose, goodRunMedium, goodRunTight,
+                       goodSingleTrigger, tag].
+full_sample_train_quality  Default quality level for training when --read-full-sample
+                           is active.  Accepted values: Loose, Medium, Tight, All
+                           (OR of the three quality columns).  Can be overridden at
+                           runtime with --full-sample-train-quality.
+full_sample_train_fraction Fraction of the quality-filtered catalogue to use for
+                           training (0 < value ≤ 1).  A value < 1 draws a random
+                           sub-sample; set to 1.0 to use all matching entries.
+full_sample_apply_quality  Default quality level for the apply step when
+                           --read-full-sample-apply is active.  Same accepted values
+                           as full_sample_train_quality.  Can be overridden at runtime
+                           with --full-sample-apply-quality.
+full_sample_apply_fraction Fraction of the quality-filtered catalogue to use for the
+                           apply step (0 < value ≤ 1).  Defaults to 1.0 (score all
+                           matching files).
 """
 
 import yaml
@@ -58,23 +85,43 @@ DEFAULTS: dict = {
     "data_path":            "../data",
     "good_list":            "../data/good_run_list_EOS.txt",
     "apply_list":           "../data/all_run_list_EOS.txt",
+    #
+    ### Training tag
     "model_tag":            "default",
+    #
+    ### Outputs
     "models_dir":           "models",
     "logs_dir":             "logs",
     "reports_dir":          "reports",
     "plots_dir":            "plots",
-    "use_trigger":          True,
-    "use_lvds":             True,
+    "max_subrun_plots":     10,
+    #
+    ### Inference training and anomaly identification
     "z_threshold":          5.0,
     "if_contamination":     0.05,
     "file_alert_n_channels": 2,
     "alert_consecutive_n":  1,
     "single_file_alert_n_channels": 0,
     "single_file_alert_max_z":      0.0,
+    "use_trigger":          True,
+    "use_lvds":             True,
+    "ignore_features":      [],
+    #
+    #
     "poll_interval":        5.0,
     "test_seed":            42,
-    "ignore_features":      [],
-    "max_subrun_plots":     10,
+    #
+    ### Full-sample training
+    "full_sample_slab_dir":  "/eos/experiment/milliqan/run3_MilliMon/slab",
+    "full_sample_json":      "../data/goodRunsListSlab.json",
+    #"full_sample_train_quality":   "Loose",
+    "full_sample_train_quality":   "Medium",
+    #"full_sample_train_quality":   "Tight",
+    #"full_sample_train_quality":   "All",
+    "full_sample_train_fraction":  0.01,
+    #"full_sample_train_fraction":  1.0,
+    "full_sample_apply_quality":   "Medium",
+    "full_sample_apply_fraction":  1.0,
 }
 
 

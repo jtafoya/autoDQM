@@ -70,9 +70,11 @@ isolation_forest/
   setup.sh           — install Python dependencies (sources env.sh)
   diagram.md         — Mermaid architecture diagram of the full framework
   ../data/
-    good_run_list_EOS.txt  — known-good files used for training (default --good-list)
-    bad_run_list_EOS.txt   — known-bad files (for reference and validation)
-    all_run_list_EOS.txt   — all classified runs combined (good + bad); default --apply-list
+    good_run_list_EOS.txt    — known-good files used for training (default --good-list)
+    bad_run_list_EOS.txt     — known-bad files (for reference and validation)
+    all_run_list_EOS.txt     — all classified runs combined (good + bad); default --apply-list
+    goodRunsListSlab.json    — full good-runs catalogue for the slab dataset on EOS
+                               (used by --read-full-sample; path set by full_sample_json in config)
   requirements.txt   — Python dependencies
 ```
 
@@ -180,7 +182,7 @@ python3 -m src.train --test
 # Custom sample size
 python3 -m src.train --test 100
 
-# Full training (all files)
+# Full training (all files from the default good run list)
 python3 -m src.train
 
 # Digitizer-only mode (no TriggerBoard features)
@@ -189,6 +191,33 @@ python3 -m src.train --no-trigger
 # Disable LVDS pin count features
 python3 -m src.train --no-trigger-LVDS
 ```
+
+#### Full-sample training (complete slab dataset on EOS)
+
+Use `--read-full-sample` to train on the complete slab dataset instead of the
+default text run list.  The good-run catalogue `goodRunsListSlab.json` is read
+automatically (path set by `full_sample_json` in `config.yaml`).
+
+The quality level and fraction are read from `config.yaml` (`full_sample_train_quality`
+and `full_sample_train_fraction`) — no extra flags are required at the command line.
+Both can be overridden per-run with `--full-sample-train-quality` and
+`--full-sample-train-fraction`:
+
+```bash
+# Train using the quality and fraction defined in config.yaml (default: Medium, 1.0)
+python3 -m src.train --read-full-sample
+
+# Override quality for this run only
+python3 -m src.train --read-full-sample --full-sample-train-quality Loose
+python3 -m src.train --read-full-sample --full-sample-train-quality Tight
+python3 -m src.train --read-full-sample --full-sample-train-quality All
+
+# Use only a random 20 % of the catalogue (reproducible via --test-seed)
+python3 -m src.train --read-full-sample --full-sample-train-fraction 0.2
+```
+
+Statistics about the catalogue (total entries, unique runs, per-quality counts,
+post-filter counts, and post-sampling counts) are printed at startup.
 
 This creates:
 - `models/reference.npz` — per-channel Welford statistics (mean, variance, count)
@@ -213,6 +242,9 @@ Options:
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
 | `--test [N]` | off | Test mode: randomly sample N files (default N=50 when flag is given) |
 | `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
+| `--read-full-sample` | off | Train on the complete slab dataset on EOS instead of the default good run list |
+| `--full-sample-train-quality` | from config.yaml | Quality filter: `Loose`, `Medium`, `Tight`, or `All` (OR of all three). Override the config default for a single run |
+| `--full-sample-train-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use (0 < F ≤ 1). `1.0` = use all entries |
 
 ### 3. Monitor
 
@@ -603,6 +635,19 @@ python3 -m src.pipeline --test-train --test-apply --no-trigger
 
 # Disable LVDS pin count features
 python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
+
+# Train on full slab dataset (quality and fraction from config.yaml), apply to default apply list
+python3 -m src.pipeline --read-full-sample --test-apply
+
+# Override quality or fraction for a single run
+python3 -m src.pipeline --read-full-sample --full-sample-train-quality Tight --test-apply
+python3 -m src.pipeline --read-full-sample --full-sample-train-fraction 0.1 --test-apply
+
+# Train and apply on the full slab dataset (independent quality/fraction per step)
+python3 -m src.pipeline --read-full-sample --read-full-sample-apply
+
+# Train and apply on exactly the same files (guaranteed identical list)
+python3 -m src.pipeline --read-full-sample --share-full-sample-lists
 ```
 
 Options:
@@ -612,7 +657,7 @@ Options:
 | `--config` | `config.yaml` | Path to YAML configuration file |
 | `--good-list` | from config.yaml | Run list of good files for training |
 | `--apply-list` | from config.yaml | Run list of files to apply the trained model to |
-| `--model-tag` | from config.yaml | Base tag for all outputs. `_noTrigger` and/or `_noLVDS` are appended automatically when the corresponding flags are active, e.g. `myrun_noTrigger_noLVDS` |
+| `--model-tag` | from config.yaml | Base tag for all outputs. `_<Quality>` is appended when `--read-full-sample` is active; `_noTrigger` and/or `_noLVDS` are appended when the corresponding flags are active, e.g. `myrun_Tight_noLVDS` |
 | `--models-dir` | from config.yaml | Base directory for saved models |
 | `--logs-dir` | from config.yaml | Base directory for anomaly logs |
 | `--reports-dir` | from config.yaml | Base directory for reports |
@@ -628,6 +673,13 @@ Options:
 | `--alert-consecutive-n` | from config.yaml | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
 | `--single-file-alert-n-channels` | from config.yaml | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |
 | `--single-file-alert-max-z` | from config.yaml | Extreme alert: `[ALERT]` when any channel's `max_z` meets or exceeds this value. `0.0` = disabled |
+| `--read-full-sample` | off | Train on the complete slab dataset on EOS instead of the default good run list. Appends `_<Quality>` to the model tag |
+| `--full-sample-train-quality` | from config.yaml | Quality filter for training: `Loose`, `Medium`, `Tight`, or `All` (OR of all three) |
+| `--full-sample-train-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use for training (0 < F ≤ 1) |
+| `--read-full-sample-apply` | off | Score files from the slab catalogue instead of the default apply list |
+| `--full-sample-apply-quality` | from config.yaml | Quality filter for the apply step: `Loose`, `Medium`, `Tight`, or `All` |
+| `--full-sample-apply-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to score (0 < F ≤ 1) |
+| `--share-full-sample-lists` | off | Apply on exactly the same files used for training (same quality, fraction, seed). Requires `--read-full-sample`. Overrides apply-side quality/fraction flags |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
 | `--skip-report` | off | Skip report generation |

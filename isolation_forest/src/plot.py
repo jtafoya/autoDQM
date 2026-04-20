@@ -711,10 +711,11 @@ def plot_log(
     # ── 3c. Feature trigger frequency ───────────────────────────────────────
     triggered = (df["triggered_features"]
                    .dropna()
+                   .astype(str)
                    .str.split(";")
                    .explode()
                    .str.strip())
-    triggered = triggered[triggered != ""]
+    triggered = triggered[(triggered != "") & (triggered != "nan")]
     if triggered.empty:
         print("  No triggered features in log — skipping feature frequency plot.")
     else:

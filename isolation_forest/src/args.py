@@ -10,7 +10,9 @@ Typical usage in every script::
 
     import argparse
     from .args import (preparse_config, add_config, add_features,
-                       add_model_thresholds, add_alert_thresholds, add_test_mode)
+                       add_model_thresholds, add_alert_thresholds,
+                       add_test_mode, add_full_sample_args,
+                       validate_full_sample_args)
     from .config import print_banner
 
     _, cfg = preparse_config()
@@ -20,13 +22,16 @@ Typical usage in every script::
     add_model_thresholds(parser, cfg)
     add_alert_thresholds(parser, cfg)
     add_test_mode(parser, cfg)
+    add_full_sample_args(parser, cfg)   # defaults from config; no required CLI args
     # ... script-specific arguments ...
     args = parser.parse_args()
+    validate_full_sample_args(parser, args)  # range-checks fractions; validates --share-full-sample-lists
 """
 
 import argparse
 
 from .config import load_config
+from .run_list import QUALITY_ALL_CHOICES
 
 
 def preparse_config(argv=None) -> tuple:
@@ -140,3 +145,131 @@ def add_test_mode(parser: argparse.ArgumentParser, cfg: dict) -> None:
         help="Random seed for reproducible test-mode file sampling",
     )
     parser.set_defaults(test_seed=cfg["test_seed"])
+
+
+def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
+    """
+    Add arguments for full-sample training and apply modes.
+
+    Training (--read-full-sample)
+        Reads the complete slab catalogue instead of the default text run list.
+        Defaults for quality and fraction come from config.yaml
+        (full_sample_train_quality / full_sample_train_fraction).
+
+    Apply (--read-full-sample-apply)
+        Mirrors the training mode for the apply step: scores all catalogue files
+        that pass the chosen quality filter instead of the default apply list.
+        Defaults come from config.yaml
+        (full_sample_apply_quality / full_sample_apply_fraction).
+
+    All options default to config values; none are required at the command line.
+    Per-run overrides are available via --full-sample-train-quality,
+    --full-sample-train-fraction, --full-sample-apply-quality,
+    --full-sample-apply-fraction, and --share-full-sample-lists.
+    """
+    # ── Training ──────────────────────────────────────────────────────────────
+    trn = parser.add_argument_group(
+        "full-sample training",
+        "Use the complete slab dataset on EOS for training instead of the default "
+        "good run list.  Defaults for quality and fraction come from config.yaml.",
+    )
+    trn.add_argument(
+        "--read-full-sample",
+        action="store_true",
+        help="Enable full-sample training: resolve files from the slab catalogue "
+             "on EOS instead of the default good run list.",
+    )
+    trn.add_argument(
+        "--full-sample-train-quality",
+        choices=QUALITY_ALL_CHOICES,
+        metavar="{" + ",".join(QUALITY_ALL_CHOICES) + "}",
+        help="Quality filter for training. "
+             "'All' selects entries passing at least one criterion (OR). "
+             "(default: %(default)s)",
+    )
+    trn.add_argument(
+        "--full-sample-train-fraction",
+        type=float,
+        metavar="F",
+        help="Fraction of the quality-filtered catalogue to use for training "
+             "(0 < F ≤ 1).  A random sub-sample is drawn when F < 1. "
+             "(default: %(default)s)",
+    )
+
+    # ── Apply ─────────────────────────────────────────────────────────────────
+    apl = parser.add_argument_group(
+        "full-sample apply",
+        "Use the complete slab dataset on EOS for the apply step instead of the "
+        "default apply list.  Defaults for quality and fraction come from config.yaml.",
+    )
+    apl.add_argument(
+        "--read-full-sample-apply",
+        action="store_true",
+        help="Enable full-sample apply: score files resolved from the slab "
+             "catalogue on EOS instead of the default apply list.",
+    )
+    apl.add_argument(
+        "--full-sample-apply-quality",
+        choices=QUALITY_ALL_CHOICES,
+        metavar="{" + ",".join(QUALITY_ALL_CHOICES) + "}",
+        help="Quality filter for the apply step. "
+             "'All' selects entries passing at least one criterion (OR). "
+             "(default: %(default)s)",
+    )
+    apl.add_argument(
+        "--full-sample-apply-fraction",
+        type=float,
+        metavar="F",
+        help="Fraction of the quality-filtered catalogue to score "
+             "(0 < F ≤ 1).  A random sub-sample is drawn when F < 1. "
+             "(default: %(default)s)",
+    )
+    apl.add_argument(
+        "--share-full-sample-lists",
+        action="store_true",
+        help="Apply the model to exactly the same files used for training "
+             "(same quality filter, fraction, and seed).  Requires "
+             "--read-full-sample.  Overrides --read-full-sample-apply, "
+             "--full-sample-apply-quality, and --full-sample-apply-fraction.",
+    )
+
+    parser.set_defaults(
+        read_full_sample             = False,
+        full_sample_train_quality    = cfg["full_sample_train_quality"],
+        full_sample_train_fraction   = cfg["full_sample_train_fraction"],
+        read_full_sample_apply       = False,
+        full_sample_apply_quality    = cfg["full_sample_apply_quality"],
+        full_sample_apply_fraction   = cfg["full_sample_apply_fraction"],
+        share_full_sample_lists      = False,
+    )
+
+
+def validate_full_sample_args(
+    parser: argparse.ArgumentParser,
+    args: argparse.Namespace,
+) -> None:
+    """
+    Validate full-sample arguments after parser.parse_args().
+
+    Checks:
+    - fraction values are in (0, 1] when the corresponding mode is active
+    - --share-full-sample-lists requires --read-full-sample
+
+    Call this immediately after parser.parse_args() in every script that uses
+    add_full_sample_args().
+    """
+    if args.read_full_sample:
+        if not (0 < args.full_sample_train_fraction <= 1.0):
+            parser.error(
+                f"--full-sample-train-fraction must be in (0, 1]; "
+                f"got {args.full_sample_train_fraction}"
+            )
+    if getattr(args, "share_full_sample_lists", False):
+        if not args.read_full_sample:
+            parser.error("--share-full-sample-lists requires --read-full-sample")
+    if getattr(args, "read_full_sample_apply", False):
+        if not (0 < args.full_sample_apply_fraction <= 1.0):
+            parser.error(
+                f"--full-sample-apply-fraction must be in (0, 1]; "
+                f"got {args.full_sample_apply_fraction}"
+            )

@@ -12,6 +12,13 @@ Usage — custom sample size:
 Usage — full training (all files):
     python -m src.train
 
+Usage — full training on the complete slab dataset from EOS:
+    python -m src.train --read-full-sample
+
+Usage — override quality or fraction for a single run:
+    python -m src.train --read-full-sample --full-sample-train-quality Tight
+    python -m src.train --read-full-sample --full-sample-train-fraction 0.2
+
 Usage — incremental update after collecting more good runs:
     python -m src.train --update
     (adds only files not yet seen; the Isolation Forest is always fully retrained)
@@ -25,10 +32,12 @@ import shutil
 import sys
 from pathlib import Path
 
-from .run_list import resolve_run_list
+from .run_list import resolve_run_list, resolve_full_sample
 from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
-from .args import preparse_config, add_config, add_features, add_model_thresholds, add_test_mode
+from .args import (preparse_config, add_config, add_features,
+                   add_model_thresholds, add_test_mode,
+                   add_full_sample_args, validate_full_sample_args)
 
 
 def main() -> None:
@@ -57,6 +66,7 @@ def main() -> None:
         help="Test mode: randomly sample N files (default N=50 when flag is given, omit for full run)",
     )
     add_test_mode(parser, cfg)
+    add_full_sample_args(parser, cfg)
 
     parser.set_defaults(
         good_list  = cfg["good_list"],
@@ -64,15 +74,27 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    validate_full_sample_args(parser, args)
     use_trigger = cfg["use_trigger"] and not args.no_trigger
     use_lvds    = cfg["use_lvds"]    and not args.no_trigger_lvds
 
     models_dir = Path(args.models_dir)
 
     from .config import print_banner
+
+    if args.read_full_sample:
+        input_source = (
+            f"{cfg['full_sample_json']} "
+            f"[quality={args.full_sample_train_quality}, "
+            f"fraction={args.full_sample_train_fraction}]"
+        )
+    else:
+        input_source = args.good_list
+
     print_banner("train", args.config, [
         ("models dir",       str(models_dir)),
-        ("good list",        args.good_list),
+        ("input source",     input_source),
+        ("full sample mode", "yes" if args.read_full_sample else "no"),
         ("trigger features", "yes" if use_trigger else "no"),
         ("LVDS features",    "yes" if use_lvds else "no"),
         ("ignore features",  str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
@@ -89,13 +111,30 @@ def main() -> None:
     seen_path = models_dir / "seen_files.json"
 
     # ---- Resolve file list ----
-    print(f"Reading good run list from {args.good_list} ...")
-    all_csv = resolve_run_list(args.good_list)
+    if args.read_full_sample:
+        print(
+            f"Reading full sample catalogue from {cfg['full_sample_json']} "
+            f"[quality={args.full_sample_train_quality}, "
+            f"fraction={args.full_sample_train_fraction}] ..."
+        )
+        all_csv = resolve_full_sample(
+            json_path  = cfg["full_sample_json"],
+            slab_dir   = cfg["full_sample_slab_dir"],
+            quality    = args.full_sample_train_quality,
+            fraction   = args.full_sample_train_fraction,
+            seed       = args.test_seed,
+        )
+    else:
+        print(f"Reading good run list from {args.good_list} ...")
+        all_csv = resolve_run_list(args.good_list)
+
     if not all_csv:
         print("ERROR: Run list resolved to zero files. Check patterns in the list file.",
               file=sys.stderr)
         sys.exit(1)
-    print(f"  {len(all_csv)} file(s) found.")
+    if not args.read_full_sample:
+        # resolve_full_sample already prints its own count summary
+        print(f"  {len(all_csv)} file(s) found.")
 
     # ---- Test mode: subsample ----
     if args.test:
