@@ -47,6 +47,7 @@ Setting `alert_consecutive_n = 1` disables the persistence check and restores si
 isolation_forest/
   src/
     config.py        — central config loader (load_config, DEFAULTS)
+    args.py          — shared argparse helpers (preparse_config, add_* argument groups)
     features.py      — per-channel feature extraction from Digitizer + TriggerBoard CSVs
     reference.py     — Welford online reference model (incremental, scalable)
     detector.py      — two-layer anomaly detector (z-score + Isolation Forest)
@@ -105,12 +106,12 @@ for `cd` and `PYTHONPATH` setup. If you move the installation, update
 bash setup.sh
 ```
 
-This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, and `watchdog` into your user
+This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, `watchdog`, and `pyyaml` into your user
 site-packages (`--user`, no root needed). Works on lxplus/AFS.
 
 Verify:
 ```bash
-python3 -c "import pandas, sklearn, numpy, scipy, watchdog; print('OK')"
+python3 -c "import pandas, sklearn, numpy, scipy, watchdog, yaml; print('OK')"
 ```
 
 ---

@@ -13,7 +13,7 @@ Typical usage in every script::
                        add_model_thresholds, add_alert_thresholds, add_test_mode)
     from .config import print_banner
 
-    config_path, cfg = preparse_config()
+    _, cfg = preparse_config()
     parser = argparse.ArgumentParser(description="...")
     add_config(parser)
     add_features(parser, cfg)

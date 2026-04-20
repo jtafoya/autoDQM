@@ -20,8 +20,9 @@ $PYTHON -m pip install --user \
     "scikit-learn>=1.0" \
     "numpy>=1.23" \
     "scipy>=1.9" \
-    "watchdog>=3.0"
+    "watchdog>=3.0" \
+    "pyyaml>=6.0"
 
 echo ""
 echo "Dependencies installed. Verify with:"
-echo "  $PYTHON -c \"import pandas, sklearn, numpy, scipy, watchdog; print('OK')\""
+echo "  $PYTHON -c \"import pandas, sklearn, numpy, scipy, watchdog, yaml; print('OK')\""
