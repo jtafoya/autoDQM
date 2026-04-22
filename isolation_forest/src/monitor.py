@@ -84,6 +84,12 @@ LOG_FIELDS = [
 ]
 
 
+def _step(name: str) -> None:
+    print(f"\n{'='*60}")
+    print(f"  {name}")
+    print(f"{'='*60}\n")
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -532,6 +538,52 @@ def process_files_batch(
         run_file_index += 1
         if progress_every and i % progress_every == 0:
             print(f"  --- {i}/{len(files)} files processed ---")
+
+
+def step_apply(
+    all_files: list,
+    models_dir: Path,
+    log_file: Path,
+    file_alert_n_channels: int,
+    alert_consecutive_n: int,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
+) -> bool:
+    _step("STEP 2 — APPLY")
+
+    if log_file.exists():
+        print(f"[AUTO-SKIP] Apply — {log_file} already exists.")
+        try:
+            import csv as _csv
+            with open(log_file, newline="") as fh:
+                rows = list(_csv.DictReader(fh))
+            n_files = len({r["filename"] for r in rows})
+            n_rows  = len(rows)
+            print(f"  log contains : {n_rows} entries across {n_files} file(s)")
+        except Exception:
+            pass
+        print(f"  Delete {log_file} to re-apply.")
+        return False
+    ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
+    detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
+    print(f"  Reference: {len(ref.known_channels())} channels  |  Z-threshold: {detector.z_threshold}σ")
+    print(f"  {len(all_files)} file(s) to process.")
+
+    path_cache = log_file.parent / (log_file.stem + "_paths.txt")
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    path_cache.write_text("\n".join(str(f) for f in all_files))
+
+    all_sorted = sorted(all_files, key=_sort_key)
+    log_file.unlink(missing_ok=True)
+    process_files_batch(
+        all_sorted, detector, str(log_file),
+        file_alert_n_channels=file_alert_n_channels,
+        alert_consecutive_n=alert_consecutive_n,
+        single_file_alert_n_channels=single_file_alert_n_channels,
+        single_file_alert_max_z=single_file_alert_max_z,
+    )
+    print(f"\n  Log written → {log_file}")
+    return True
 
 
 def main() -> None:

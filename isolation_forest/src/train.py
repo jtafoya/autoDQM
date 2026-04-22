@@ -24,6 +24,19 @@ Usage — incremental update after collecting more good runs:
     (adds only files not yet seen; the Isolation Forest is always fully retrained)
 
 Models are saved to --models-dir (default: models/).
+
+Overwrite protection
+--------------------
+If models already exist in the target directory, the script stops with an
+error.  Use --update to extend the reference incrementally, or delete the
+directory to retrain from scratch.
+
+Training metadata
+-----------------
+Each run saves <models-dir>/training_metadata.json containing the full
+resolved configuration, the exact command, a timestamp, and an explicit
+record of any values overridden on the command line relative to the config
+file.  A copy of the config file is also saved as <models-dir>/config.yaml.
 """
 
 import argparse
@@ -64,9 +77,29 @@ def step_train(
     update: bool = False,
     config_path: str = "",
     training_metadata: "dict | None" = None,
-) -> None:
+) -> bool:
 
     _step("STEP 1 — TRAIN")
+
+    if (models_dir / "detector.pkl").exists() and not update:
+        print(f"[AUTO-SKIP] Training — models already exist in {models_dir}/")
+        meta_path = models_dir / "training_metadata.json"
+        if meta_path.exists():
+            meta = json.loads(meta_path.read_text())
+            ec   = meta.get("effective_config", {})
+            ovr  = meta.get("cli_overrides", {})
+            ovr_str = (", ".join(
+                f"{k}: {v['config_value']} → {v['cli_value']}"
+                for k, v in ovr.items()
+            )) if ovr else "none"
+            print(f"  trained      : {meta.get('timestamp', 'unknown')}")
+            print(f"  z_threshold  : {ec.get('z_threshold', '?')}")
+            print(f"  contamination: {ec.get('if_contamination', '?')}")
+            print(f"  trigger      : {ec.get('use_trigger', '?')}  |  lvds: {ec.get('use_lvds', '?')}")
+            print(f"  CLI overrides: {ovr_str}")
+        print(f"  Pass --update to extend the reference incrementally,")
+        print(f"  or delete {models_dir}/ to retrain from scratch.")
+        return False
 
     # ---- Resolve file list ----
     if read_full_sample:
@@ -165,6 +198,8 @@ def step_train(
         meta_path.write_text(json.dumps(training_metadata, indent=2))
         print(f"  Training metadata saved → {meta_path}")
 
+    return True
+
 
 def main() -> None:
     _, cfg = preparse_config()
@@ -247,7 +282,7 @@ def main() -> None:
     }
     metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
 
-    step_train(
+    if not step_train(
         args.good_list, models_dir,
         args.z_threshold, args.if_contamination,
         args.test,
@@ -263,7 +298,8 @@ def main() -> None:
         update               = args.update,
         config_path          = args.config,
         training_metadata    = metadata,
-    )
+    ):
+        sys.exit(1)
 
     print("\nDone. Next step: run  python -m src.monitor --watch-dir <live-dir>")
 

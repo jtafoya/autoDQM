@@ -18,9 +18,42 @@ Usage — full run (all files):
 Usage — custom sample size:
     python3 -m src.pipeline --test-train 100 --test-apply 50
 
-Any step can be skipped with --skip-train / --skip-apply / --skip-report / --skip-all-plots.
-Use --skip-subrun-plots to skip only the per-subrun plots while still producing
-the reference_* and log_* summary plots.
+Usage — full training on the complete slab dataset from EOS:
+    python3 -m src.pipeline --read-full-sample --full-sample-train-quality Tight
+
+Usage — apply the same files used for training:
+    python3 -m src.pipeline --read-full-sample --share-full-sample-lists
+
+Resuming an interrupted run
+----------------------------
+Steps whose outputs already exist are skipped automatically — the pipeline
+resumes from the first incomplete step.  To force a step to re-run, delete
+its output:
+  - Training : delete  models/<tag>/
+  - Apply    : delete  logs/<tag>.csv
+  - Report   : delete  reports/<tag>/
+  - Plots    : delete  plots/<tag>/
+
+Any step can also be skipped manually with --skip-train / --skip-apply /
+--skip-report / --skip-all-plots.  Use --skip-subrun-plots to skip only the
+per-file plots while still producing the reference_* and log_* summaries.
+
+Training metadata
+-----------------
+Each training run saves models/<tag>/training_metadata.json containing the
+full resolved configuration, the exact command used, a timestamp, and an
+explicit record of any values that were overridden on the command line
+relative to the config file.  A copy of the config file itself is saved as
+models/<tag>/config.yaml.
+
+Deleting a model tag
+--------------------
+To remove all outputs for a given tag at once:
+    python3 -m src.pipeline --delete-model-tag <tag>
+
+This deletes models/<tag>/, logs/<tag>.csv, logs/<tag>_paths.txt,
+reports/<tag>/, and plots/<tag>/.  A confirmation prompt requires typing YES
+before anything is removed.  Cannot be combined with any other argument.
 """
 
 import argparse
@@ -32,6 +65,7 @@ from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
                    add_full_sample_args, validate_full_sample_args)
 from .train import step_train
+from .monitor import step_apply
 
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
@@ -42,16 +76,22 @@ def _step(name: str) -> None:
     print(f"{'='*60}\n")
 
 
-def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> None:
-    from .report import classify_runs, write_report
-
+def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> bool:
     _step("STEP 3 — REPORT")
+
+    if (reports_dir / "run_summary.csv").exists():
+        print(f"[AUTO-SKIP] Report — {reports_dir}/run_summary.csv already exists.")
+        print(f"            Delete {reports_dir}/ to regenerate.")
+        return False
+
+    from .report import classify_runs, write_report
 
     runs = classify_runs(str(log_file), file_alert_n_channels)
     if not runs:
         print("  No runs found in log — skipping report.")
-        return
+        return True
     write_report(runs, reports_dir)
+    return True
 
 
 def step_plots(
@@ -64,13 +104,18 @@ def step_plots(
     single_file_alert_max_z: float = 0.0,
     skip_subrun_plots: bool = False,
     max_subrun_plots: int = 10,
-) -> None:
+) -> bool:
+    _step("STEP 4 — PLOTS")
+
+    if (plots_dir / "reference_means.png").exists():
+        print(f"[AUTO-SKIP] Plots — {plots_dir}/reference_means.png already exists.")
+        print(f"            Delete {plots_dir}/ to regenerate.")
+        return False
+
     import pandas as pd
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
     from .plot import plot_reference, plot_file, plot_log
-
-    _step("STEP 4 — PLOTS")
 
     ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
     detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
@@ -166,6 +211,7 @@ def step_plots(
 
     print(f"\n  {n_plotted}/{len(plot_names)} file(s) plotted ({len(plot_bad)} bad, {len(plot_good)} good).")
     print(f"  All plots saved → {plots_dir}/")
+    return True
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -209,6 +255,15 @@ def main() -> None:
     add_test_mode(parser, cfg)
     add_full_sample_args(parser, cfg)
 
+    # ── Destructive operations ──
+    parser.add_argument(
+        "--delete-model-tag",
+        metavar="NAME",
+        default=None,
+        help="Delete ALL outputs (models, log, reports, plots) for the exact tag NAME and exit. "
+             "Cannot be combined with any other argument.",
+    )
+
     # ── Skip flags ──
     parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
     parser.add_argument("--skip-apply",  action="store_true", help="Skip apply step")
@@ -238,6 +293,56 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    # ── --delete-model-tag: must be the only operation ────────────────────
+    if args.delete_model_tag is not None:
+        allowed_flags = {"--delete-model-tag", "--config"}
+        extra_flags = [
+            a for a in sys.argv[1:]
+            if a.startswith("--") and a.split("=")[0] not in allowed_flags
+        ]
+        if extra_flags:
+            print(
+                f"ERROR: --delete-model-tag cannot be combined with other arguments.\n"
+                f"  Unexpected: {', '.join(extra_flags)}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        tag = args.delete_model_tag
+        candidates = [
+            Path(args.models_dir)  / tag,
+            Path(args.logs_dir)    / f"{tag}.csv",
+            Path(args.logs_dir)    / f"{tag}_paths.txt",
+            Path(args.reports_dir) / tag,
+            Path(args.plots_dir)   / tag,
+        ]
+        to_delete = [p for p in candidates if p.exists()]
+
+        if not to_delete:
+            print(f"Nothing found for tag '{tag}' — no outputs to delete.")
+            sys.exit(0)
+
+        print(f"\nWARNING: The following will be permanently deleted for tag '{tag}':\n")
+        for p in to_delete:
+            label = "dir " if p.is_dir() else "file"
+            print(f"  [{label}]  {p}")
+
+        print("\nType YES and press Enter to confirm, or anything else to abort: ", end="", flush=True)
+        if input().strip() != "YES":
+            print("Aborted — nothing was deleted.")
+            sys.exit(0)
+
+        import shutil
+        for p in to_delete:
+            if p.is_dir():
+                shutil.rmtree(p)
+            else:
+                p.unlink()
+            print(f"  Deleted: {p}")
+        print(f"\nAll outputs for tag '{tag}' removed.")
+        sys.exit(0)
+
     validate_full_sample_args(parser, args)
 
     random.seed(args.test_seed)
@@ -356,7 +461,6 @@ def main() -> None:
 
     # ── Step 2: Apply ──────────────────────────────────────────────────────
     if not args.skip_apply:
-        # Write a path cache alongside the log so step_plots can find full paths
         from .run_list import resolve_run_list, resolve_full_sample
         if args.share_full_sample_lists:
             print(
@@ -388,34 +492,15 @@ def main() -> None:
         else:
             all_apply = resolve_run_list(args.apply_list)
         if args.test_apply:
+            print(f"  [TEST MODE] {len(all_apply)} file(s) to sample for apply.\n")
             all_apply = random.sample(all_apply, min(args.test_apply, len(all_apply)))
-
-        path_cache = log_file.parent / (log_file.stem + "_paths.txt")
-        log_file.parent.mkdir(parents=True, exist_ok=True)
-        path_cache.write_text("\n".join(all_apply))
-
-        from .reference import ReferenceModel
-        from .detector import AnomalyDetector
-        from .monitor import _sort_key, process_files_batch
-
-        _step("STEP 2 — APPLY")
-        ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
-        detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
-        print(f"  Reference: {len(ref.known_channels())} channels  |  Z-threshold: {detector.z_threshold}σ")
-        print(f"  {len(all_apply)} file(s) to process.")
-        if args.test_apply:
-            print(f"  [TEST MODE] {len(all_apply)} randomly sampled file(s).\n")
-
-        all_apply = sorted(all_apply, key=_sort_key)
-        log_file.unlink(missing_ok=True)
-        process_files_batch(
-            all_apply, detector, str(log_file),
+        step_apply(
+            all_apply, models_dir, log_file,
             file_alert_n_channels=args.file_alert_n_channels,
             alert_consecutive_n=args.alert_consecutive_n,
             single_file_alert_n_channels=args.single_file_alert_n_channels,
             single_file_alert_max_z=args.single_file_alert_max_z,
         )
-        print(f"\n  Log written → {log_file}")
     else:
         print("[SKIP] Apply")
         if not log_file.exists():
