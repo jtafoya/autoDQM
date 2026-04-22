@@ -40,6 +40,132 @@ from .args import (preparse_config, add_config, add_features,
                    add_full_sample_args, validate_full_sample_args)
 
 
+def _step(name: str) -> None:
+    print(f"\n{'='*60}")
+    print(f"  {name}")
+    print(f"{'='*60}\n")
+
+
+def step_train(
+    good_list: str,
+    models_dir: Path,
+    z_threshold: float,
+    if_contamination: float,
+    test_n: int,
+    use_trigger: bool = True,
+    use_lvds: bool = False,
+    ignore_features: tuple = (),
+    read_full_sample: bool = False,
+    full_sample_json: str = "",
+    full_sample_slab_dir: str = "",
+    full_sample_quality: str = "",
+    full_sample_fraction: float = 1.0,
+    test_seed: int = 42,
+    update: bool = False,
+    config_path: str = "",
+    training_metadata: "dict | None" = None,
+) -> None:
+
+    _step("STEP 1 — TRAIN")
+
+    # ---- Resolve file list ----
+    if read_full_sample:
+        print(
+            f"  Reading full sample catalogue from {full_sample_json} "
+            f"[quality={full_sample_quality}, fraction={full_sample_fraction}] ..."
+        )
+        all_csv = resolve_full_sample(
+            json_path  = full_sample_json,
+            slab_dir   = full_sample_slab_dir,
+            quality    = full_sample_quality,
+            fraction   = full_sample_fraction,
+            seed       = test_seed,
+        )
+    else:
+        print(f"  Reading good run list from {good_list} ...")
+        all_csv = resolve_run_list(good_list)
+
+    if not all_csv:
+        print("ERROR: good run list resolved to zero files. Check patterns in the list file.",
+              file=sys.stderr)
+        sys.exit(1)
+
+    if not read_full_sample:
+        # resolve_full_sample already prints its own count summary
+        print(f"  {len(all_csv)} good file(s) found.")
+    print(f"  Trigger features: {'enabled' if use_trigger else 'disabled'}")
+    print(f"  LVDS features:    {'enabled' if use_lvds else 'disabled'}")
+
+    # ---- Test mode: subsample ----
+    if test_n:
+        import random
+        random.seed(test_seed)
+        n = min(test_n, len(all_csv))
+        all_csv = random.sample(all_csv, n)
+        print(f"  [TEST MODE] Using {n} randomly sampled file(s).")
+
+    if ignore_features:
+        print(f"  Ignored features: {list(ignore_features)}")
+
+    # ---- Build or update reference ----
+    ref_path  = models_dir / "reference.npz"
+    seen_path = models_dir / "seen_files.json"
+    features_cache = None
+
+    if update and ref_path.exists():
+        print("Loading existing reference (incremental update)...")
+        ref = ReferenceModel.load(str(ref_path))
+        seen = set(json.loads(seen_path.read_text())) if seen_path.exists() else set()
+
+        new_files = [f for f in all_csv if Path(f).name not in seen]
+        if not new_files:
+            print("  No new files to add.")
+        else:
+            from .features import extract_features
+            for f in new_files:
+                print(f"  [{Path(f).name}] adding to reference...")
+                ref.update(extract_features(str(f), use_trigger=ref._use_trigger, use_lvds=ref._use_lvds))
+                seen.add(Path(f).name)
+            print(f"  Added {len(new_files)} file(s). "
+                  f"Reference now covers {len(ref.known_channels())} channels.")
+    else:
+        print("Building reference from scratch...")
+        ref, features_cache = build_reference(
+            all_csv,
+            use_trigger=use_trigger,
+            use_lvds=use_lvds,
+            ignore_features=ignore_features,
+        )
+        seen = {Path(f).name for f in all_csv}
+
+    ref.save(str(ref_path))
+    seen_path.write_text(json.dumps(sorted(seen), indent=2))
+    print(f"  Reference saved → {ref_path}")
+
+    # ---- Train Isolation Forest ----
+    print("Training Isolation Forest...")
+    detector = AnomalyDetector(ref, z_threshold=z_threshold, if_contamination=if_contamination)
+    # In incremental mode features_cache is None; re-read all files from disk.
+    detector.train_isolation_forest(all_csv, features_cache=features_cache)
+    detector.save(str(models_dir / "detector.pkl"))
+    print(f"  Detector saved  → {models_dir}/detector.pkl")
+
+    # ---- Mean feature table ----
+    from .plot import plot_mean_table
+    print("Saving mean feature table...")
+    plot_mean_table(ref, models_dir)
+    print(f"  Mean table saved → {models_dir}/reference_mean_table.png")
+
+    # ---- Config snapshot and training metadata ----
+    if config_path:
+        shutil.copy2(config_path, models_dir / "config.yaml")
+        print(f"  Config snapshot saved → {models_dir}/config.yaml")
+    if training_metadata is not None:
+        meta_path = models_dir / "training_metadata.json"
+        meta_path.write_text(json.dumps(training_metadata, indent=2))
+        print(f"  Training metadata saved → {meta_path}")
+
+
 def main() -> None:
     _, cfg = preparse_config()
 
@@ -80,7 +206,7 @@ def main() -> None:
 
     models_dir = Path(args.models_dir)
 
-    from .config import print_banner
+    from .config import print_banner, build_training_metadata
 
     if args.read_full_sample:
         input_source = (
@@ -106,92 +232,38 @@ def main() -> None:
     ])
 
     models_dir.mkdir(parents=True, exist_ok=True)
-    ref_path = models_dir / "reference.npz"
-    det_path = models_dir / "detector.pkl"
-    seen_path = models_dir / "seen_files.json"
 
-    # ---- Resolve file list ----
-    if args.read_full_sample:
-        print(
-            f"Reading full sample catalogue from {cfg['full_sample_json']} "
-            f"[quality={args.full_sample_train_quality}, "
-            f"fraction={args.full_sample_train_fraction}] ..."
-        )
-        all_csv = resolve_full_sample(
-            json_path  = cfg["full_sample_json"],
-            slab_dir   = cfg["full_sample_slab_dir"],
-            quality    = args.full_sample_train_quality,
-            fraction   = args.full_sample_train_fraction,
-            seed       = args.test_seed,
-        )
-    else:
-        print(f"Reading good run list from {args.good_list} ...")
-        all_csv = resolve_run_list(args.good_list)
+    effective = {
+        "good_list":                  args.good_list,
+        "models_dir":                 args.models_dir,
+        "z_threshold":                args.z_threshold,
+        "if_contamination":           args.if_contamination,
+        "use_trigger":                use_trigger,
+        "use_lvds":                   use_lvds,
+        "ignore_features":            list(cfg["ignore_features"]),
+        "full_sample_train_quality":  args.full_sample_train_quality,
+        "full_sample_train_fraction": args.full_sample_train_fraction,
+        "test_seed":                  args.test_seed,
+    }
+    metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
 
-    if not all_csv:
-        print("ERROR: Run list resolved to zero files. Check patterns in the list file.",
-              file=sys.stderr)
-        sys.exit(1)
-    if not args.read_full_sample:
-        # resolve_full_sample already prints its own count summary
-        print(f"  {len(all_csv)} file(s) found.")
-
-    # ---- Test mode: subsample ----
-    if args.test:
-        import random
-        random.seed(args.test_seed)
-        n = min(args.test, len(all_csv))
-        all_csv = random.sample(all_csv, n)
-        print(f"  [TEST MODE] Randomly selected {n} file(s) for training.")
-
-    # ---- Build or update reference ----
-    if args.update and ref_path.exists():
-        print("Loading existing reference (incremental update)...")
-        ref = ReferenceModel.load(str(ref_path))
-        seen = set(json.loads(seen_path.read_text())) if seen_path.exists() else set()
-
-        new_files = [f for f in all_csv if Path(f).name not in seen]
-        if not new_files:
-            print("  No new files to add.")
-        else:
-            from .features import extract_features
-            for f in new_files:
-                print(f"  [{Path(f).name}] adding to reference...")
-                ref.update(extract_features(str(f), use_trigger=ref._use_trigger, use_lvds=ref._use_lvds))
-                seen.add(Path(f).name)
-            print(f"  Added {len(new_files)} file(s). "
-                  f"Reference now covers {len(ref.known_channels())} channels.")
-    else:
-        print("Building reference from scratch...")
-        ignore_features = tuple(cfg["ignore_features"])
-        if ignore_features:
-            print(f"  Ignored features: {list(ignore_features)}")
-        ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds,
-                                              ignore_features=ignore_features)
-        seen = {Path(f).name for f in all_csv}
-
-    ref.save(str(ref_path))
-    seen_path.write_text(json.dumps(sorted(seen), indent=2))
-    print(f"  Reference saved to {ref_path}")
-
-    # ---- Train Isolation Forest ----
-    print("Training Isolation Forest...")
-    detector = AnomalyDetector(
-        ref,
-        z_threshold=args.z_threshold,
-        if_contamination=args.if_contamination,
+    step_train(
+        args.good_list, models_dir,
+        args.z_threshold, args.if_contamination,
+        args.test,
+        use_trigger=use_trigger,
+        use_lvds=use_lvds,
+        ignore_features=tuple(cfg["ignore_features"]),
+        read_full_sample     = args.read_full_sample,
+        full_sample_json     = cfg["full_sample_json"],
+        full_sample_slab_dir = cfg["full_sample_slab_dir"],
+        full_sample_quality  = args.full_sample_train_quality,
+        full_sample_fraction = args.full_sample_train_fraction,
+        test_seed            = args.test_seed,
+        update               = args.update,
+        config_path          = args.config,
+        training_metadata    = metadata,
     )
-    # Pass the cached features to avoid re-reading every file from disk.
-    # In incremental mode there is no cache, so fall back to re-reading.
-    cache = features_cache if not (args.update and ref_path.exists()) else None
-    detector.train_isolation_forest(all_csv, features_cache=cache)
-    detector.save(str(det_path))
-    print(f"  Detector saved to {det_path}")
-
-    # Save a snapshot of the config used for this training run
-    config_snapshot = models_dir / "config.yaml"
-    shutil.copy2(args.config, config_snapshot)
-    print(f"  Config snapshot saved to {config_snapshot}")
 
     print("\nDone. Next step: run  python -m src.monitor --watch-dir <live-dir>")
 

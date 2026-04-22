@@ -487,6 +487,53 @@ def watch_directory(
         print("\nMonitor stopped.")
 
 
+def process_files_batch(
+    files: list,
+    detector,
+    log_file: str,
+    file_alert_n_channels: int,
+    alert_consecutive_n: int,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
+    plot_alerts: bool = False,
+    plots_dir: str = "",
+    progress_every: int = 100,
+) -> None:
+    """
+    Process an ordered list of files through the detector, maintaining per-run
+    channel history across the batch.
+
+    Files must be pre-sorted in run/subrun order so that channel history
+    accumulates correctly.  The log is appended to (not cleared) — callers
+    are responsible for removing a stale log before the call if needed.
+    """
+    channel_history: dict     = {}
+    current_run:     "int | None" = None
+    run_file_index:  int        = 0
+    for i, f in enumerate(files, 1):
+        run = _run_number(f)
+        if run != current_run:
+            if current_run is not None:
+                print(f"  [run {run}] New run — channel history reset")
+            current_run     = run
+            run_file_index  = 0
+            channel_history = {}
+        process_file(
+            str(f), detector, log_file,
+            file_alert_n_channels=file_alert_n_channels,
+            alert_consecutive_n=alert_consecutive_n,
+            channel_history=channel_history,
+            plot_alerts=plot_alerts,
+            plots_dir=plots_dir,
+            single_file_alert_n_channels=single_file_alert_n_channels,
+            single_file_alert_max_z=single_file_alert_max_z,
+            run_file_index=run_file_index,
+        )
+        run_file_index += 1
+        if progress_every and i % progress_every == 0:
+            print(f"  --- {i}/{len(files)} files processed ---")
+
+
 def main() -> None:
     _, cfg = preparse_config()
 
@@ -584,33 +631,18 @@ def main() -> None:
         random.seed(args.test_seed)
         from .run_list import resolve_run_list
         all_files = sorted(resolve_run_list(args.run_list), key=_sort_key)
-        sample = random.sample(all_files, min(args.test, len(all_files)))
-        # Process in run/subrun order so history is meaningful
-        sample = sorted(sample, key=_sort_key)
+        sample = sorted(random.sample(all_files, min(args.test, len(all_files))), key=_sort_key)
         print(f"[TEST MODE] {len(sample)} file(s) sampled from {args.run_list}\n")
-        channel_history: dict      = {}
-        current_run:     "int | None" = None
-        run_file_index:  int          = 0
-        for f in sample:
-            run = _run_number(f)
-            if run != current_run:
-                if current_run is not None:
-                    print(f"  [run {run}] New run — channel history reset")
-                current_run     = run
-                run_file_index  = 0
-                channel_history = {}
-            process_file(
-                f, detector, args.log_file,
-                file_alert_n_channels=args.file_alert_n_channels,
-                alert_consecutive_n=args.alert_consecutive_n,
-                channel_history=channel_history,
-                plot_alerts=args.plot_alerts,
-                plots_dir=args.plots_dir,
-                single_file_alert_n_channels=args.single_file_alert_n_channels,
-                single_file_alert_max_z=args.single_file_alert_max_z,
-                run_file_index=run_file_index,
-            )
-            run_file_index += 1
+        process_files_batch(
+            sample, detector, args.log_file,
+            file_alert_n_channels=args.file_alert_n_channels,
+            alert_consecutive_n=args.alert_consecutive_n,
+            single_file_alert_n_channels=args.single_file_alert_n_channels,
+            single_file_alert_max_z=args.single_file_alert_max_z,
+            plot_alerts=args.plot_alerts,
+            plots_dir=args.plots_dir,
+            progress_every=0,
+        )
         print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
         return
 

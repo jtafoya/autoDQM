@@ -25,13 +25,13 @@ the reference_* and log_* summary plots.
 
 import argparse
 import random
-import shutil
 import sys
 from pathlib import Path
 
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
                    add_full_sample_args, validate_full_sample_args)
+from .train import step_train
 
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
@@ -40,81 +40,6 @@ def _step(name: str) -> None:
     print(f"\n{'='*60}")
     print(f"  {name}")
     print(f"{'='*60}\n")
-
-
-def step_train(
-    good_list: str,
-    models_dir: Path,
-    z_threshold: float,
-    if_contamination: float,
-    test_n: int,
-    use_trigger: bool = True,
-    use_lvds: bool = False,
-    ignore_features: tuple = (),
-    read_full_sample: bool = False,
-    full_sample_json: str = "",
-    full_sample_slab_dir: str = "",
-    full_sample_quality: str = "",
-    full_sample_fraction: float = 1.0,
-    test_seed: int = 42,
-) -> None:
-    from .run_list import resolve_run_list, resolve_full_sample
-    from .reference import build_reference
-    from .detector import AnomalyDetector
-
-    _step("STEP 1 — TRAIN")
-
-    if read_full_sample:
-        print(
-            f"  Reading full sample catalogue from {full_sample_json} "
-            f"[quality={full_sample_quality}, fraction={full_sample_fraction}] ..."
-        )
-        all_csv = resolve_full_sample(
-            json_path  = full_sample_json,
-            slab_dir   = full_sample_slab_dir,
-            quality    = full_sample_quality,
-            fraction   = full_sample_fraction,
-            seed       = test_seed,
-        )
-    else:
-        all_csv = resolve_run_list(good_list)
-
-    if not all_csv:
-        print("ERROR: good run list resolved to zero files.", file=sys.stderr)
-        sys.exit(1)
-
-    if not read_full_sample:
-        # resolve_full_sample already prints its own count summary
-        print(f"  {len(all_csv)} good file(s) found.")
-    print(f"  Trigger features: {'enabled' if use_trigger else 'disabled'}")
-    print(f"  LVDS features:    {'enabled' if use_lvds else 'disabled'}")
-
-    if test_n:
-        n = min(test_n, len(all_csv))
-        all_csv = random.sample(all_csv, n)
-        print(f"  [TEST MODE] Using {n} randomly sampled file(s).")
-
-    if ignore_features:
-        print(f"  Ignored features: {list(ignore_features)}")
-    ref, features_cache = build_reference(all_csv, use_trigger=use_trigger, use_lvds=use_lvds,
-                                          ignore_features=ignore_features)
-    ref.save(str(models_dir / "reference.npz"))
-
-    import json
-    seen = {Path(f).name for f in all_csv}
-    (models_dir / "seen_files.json").write_text(json.dumps(sorted(seen), indent=2))
-    print(f"  Reference saved → {models_dir}/reference.npz")
-
-    print("Training Isolation Forest...")
-    detector = AnomalyDetector(ref, z_threshold=z_threshold, if_contamination=if_contamination)
-    detector.train_isolation_forest(all_csv, features_cache=features_cache)
-    detector.save(str(models_dir / "detector.pkl"))
-    print(f"  Detector saved  → {models_dir}/detector.pkl")
-
-    from .plot import plot_mean_table
-    print("Saving mean feature table...")
-    plot_mean_table(ref, models_dir)
-    print(f"  Mean table saved → {models_dir}/reference_mean_table.png")
 
 
 def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> None:
@@ -392,6 +317,20 @@ def main() -> None:
 
     # ── Step 1: Train ──────────────────────────────────────────────────────
     if not args.skip_train:
+        from .config import build_training_metadata
+        effective = {
+            "good_list":                  args.good_list,
+            "models_dir":                 args.models_dir,
+            "z_threshold":                args.z_threshold,
+            "if_contamination":           args.if_contamination,
+            "use_trigger":                use_trigger,
+            "use_lvds":                   use_lvds,
+            "ignore_features":            list(cfg["ignore_features"]),
+            "full_sample_train_quality":  args.full_sample_train_quality,
+            "full_sample_train_fraction": args.full_sample_train_fraction,
+            "test_seed":                  args.test_seed,
+        }
+        metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
         step_train(
             args.good_list, models_dir,
             args.z_threshold, args.if_contamination,
@@ -405,11 +344,9 @@ def main() -> None:
             full_sample_quality  = args.full_sample_train_quality,
             full_sample_fraction = args.full_sample_train_fraction,
             test_seed            = args.test_seed,
+            config_path          = args.config,
+            training_metadata    = metadata,
         )
-        # Save a snapshot of the config used for this training run
-        config_snapshot = models_dir / "config.yaml"
-        shutil.copy2(args.config, config_snapshot)
-        print(f"  Config snapshot saved to {config_snapshot}")
     else:
         print("[SKIP] Training")
         if not (models_dir / "reference.npz").exists():
@@ -459,7 +396,7 @@ def main() -> None:
 
         from .reference import ReferenceModel
         from .detector import AnomalyDetector
-        from .monitor import process_file, _sort_key, _run_number
+        from .monitor import _sort_key, process_files_batch
 
         _step("STEP 2 — APPLY")
         ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
@@ -469,31 +406,15 @@ def main() -> None:
         if args.test_apply:
             print(f"  [TEST MODE] {len(all_apply)} randomly sampled file(s).\n")
 
-        # Sort by run/subrun so channel history accumulates in chronological order
         all_apply = sorted(all_apply, key=_sort_key)
-
         log_file.unlink(missing_ok=True)
-        channel_history: dict      = {}
-        current_run:     "int | None" = None
-        run_file_index:  int          = 0
-        for i, f in enumerate(all_apply, 1):
-            run = _run_number(f)
-            if run != current_run:
-                if current_run is not None:
-                    print(f"  [run {run}] New run — channel history reset")
-                current_run     = run
-                run_file_index  = 0
-                channel_history = {}
-            process_file(str(f), detector, str(log_file),
-                         file_alert_n_channels=args.file_alert_n_channels,
-                         alert_consecutive_n=args.alert_consecutive_n,
-                         channel_history=channel_history,
-                         single_file_alert_n_channels=args.single_file_alert_n_channels,
-                         single_file_alert_max_z=args.single_file_alert_max_z,
-                         run_file_index=run_file_index)
-            run_file_index += 1
-            if i % 100 == 0:
-                print(f"  --- {i}/{len(all_apply)} files processed ---")
+        process_files_batch(
+            all_apply, detector, str(log_file),
+            file_alert_n_channels=args.file_alert_n_channels,
+            alert_consecutive_n=args.alert_consecutive_n,
+            single_file_alert_n_channels=args.single_file_alert_n_channels,
+            single_file_alert_max_z=args.single_file_alert_max_z,
+        )
         print(f"\n  Log written → {log_file}")
     else:
         print("[SKIP] Apply")

@@ -159,3 +159,49 @@ def load_config(path: str = "config.yaml") -> dict:
         with open(p) as fh:
             cfg.update(yaml.safe_load(fh))
     return cfg
+
+
+def build_training_metadata(
+    cfg: dict,
+    effective: dict,
+    config_path: str,
+    argv: list,
+) -> dict:
+    """
+    Build a metadata dict capturing the complete state of a training run.
+
+    Parameters
+    ----------
+    cfg         : full resolved config (DEFAULTS merged with YAML), before any
+                  CLI overrides.  Provides the baseline for override detection.
+    effective   : training parameters as actually used (after CLI overrides and
+                  any derived computations such as use_trigger).  Keys must be
+                  a subset of cfg keys.
+    config_path : path to the YAML config file that was loaded (args.config).
+    argv        : sys.argv at the time of the call.
+
+    Returns a dict with:
+      timestamp       — ISO-8601 wall-clock time of the training run.
+      command         — full command line, showing exactly what was invoked.
+      config_file     — config file path.
+      effective_config — cfg updated with every value in effective, giving the
+                        complete resolved configuration that governed training.
+      cli_overrides   — keys where the effective value differs from the config
+                        file value, explicitly flagging CLI-driven changes.
+                        Format: {key: {config_value: …, cli_value: …}}.
+    """
+    from datetime import datetime
+
+    cli_overrides = {
+        k: {"config_value": cfg[k], "cli_value": v}
+        for k, v in effective.items()
+        if k in cfg and cfg[k] != v
+    }
+
+    return {
+        "timestamp":        datetime.now().isoformat(timespec="seconds"),
+        "command":          " ".join(argv),
+        "config_file":      config_path,
+        "effective_config": {**cfg, **effective},
+        "cli_overrides":    cli_overrides,
+    }
