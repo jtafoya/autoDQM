@@ -355,7 +355,12 @@ Options:
 ### 5. Evaluate (TP/FP/TN/FN against ground truth)
 
 Compare the detector's per-subrun predictions against the goodRunsListSlab.json catalogue
-to measure false positive and detection rates:
+to measure false positive and detection rates.  In the pipeline, the evaluate step runs
+automatically after apply when `--train-goodRunList` is set, using `--train-goodRunList-quality`
+as the ground truth level (Loose/Medium/Tight).  It is silently skipped when
+`--train-goodRunList` is not active.
+
+The standalone CLI accepts an explicit quality flag:
 
 ```bash
 python3 -m src.evaluate \
@@ -794,8 +799,7 @@ Options:
 | `--override-outputs` | off | Delete all existing outputs for the resolved model tag (models, log, reports, plots) with a confirmation prompt, then re-run the pipeline immediately. Unlike `--delete-model-tag`, does not exit after deletion |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
-| `--skip-evaluate` | off | Skip the evaluate step (TP/FP/TN/FN against goodRunsListSlab.json) |
-| `--evaluate-quality` | `Tight` | Quality level used as "known good" ground truth in the evaluate step |
+| `--skip-evaluate` | off | Skip the evaluate step (TP/FP/TN/FN against goodRunsListSlab.json). Evaluate is automatically skipped unless `--train-goodRunList` is set, since the training quality level is used as the ground truth |
 | `--skip-report` | off | Skip report generation |
 | `--skip-all-plots` | off | Skip the entire plots step — no `reference_*`, `log_*`, or per-file plots |
 | `--skip-subrun-plots` | off | Skip per-subrun plots only; `reference_*` and `log_*` summary plots are still generated |

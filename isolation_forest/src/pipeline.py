@@ -302,17 +302,6 @@ def main() -> None:
     add_full_sample_args(parser, cfg)
     add_specific_run_args(parser)
 
-    # ── Evaluate ──
-    from .run_list import QUALITY_ALL_CHOICES as _EVAL_Q_CHOICES
-    parser.add_argument(
-        "--evaluate-quality",
-        choices=_EVAL_Q_CHOICES,
-        metavar="{" + ",".join(_EVAL_Q_CHOICES) + "}",
-        default="Tight",
-        help="Quality level used as 'known good' ground truth in the evaluate step "
-             "(default: Tight)",
-    )
-
     # ── Destructive operations ──
     parser.add_argument(
         "--delete-model-tag",
@@ -547,7 +536,6 @@ def main() -> None:
                                      if args.single_file_alert_n_channels else "disabled"),
         ("single-file extreme alert",f"z≥{args.single_file_alert_max_z}"
                                      if args.single_file_alert_max_z else "disabled"),
-        ("evaluate quality",         args.evaluate_quality),
         ("max subrun plots",         "ALL (WARNING)" if args.max_subrun_plots == -1
                                      else str(args.max_subrun_plots)),
         ("test seed",                str(args.test_seed)),
@@ -677,12 +665,21 @@ def main() -> None:
         )
     else:
         print("[SKIP] Apply")
-        if not log_file.exists():
+        downstream_needs_log = (
+            not args.skip_evaluate
+            or not args.skip_report
+            or not args.skip_all_plots
+        )
+        if downstream_needs_log and not log_file.exists():
             print(f"ERROR: --skip-apply set but log not found: {log_file}", file=sys.stderr)
             sys.exit(1)
 
     # ── Step 3: Evaluate ───────────────────────────────────────────────────
-    if not args.skip_evaluate:
+    if args.apply_specific_run is not None:
+        print("[SKIP] Evaluate (per-run mode — combine outputs first, then re-run without --apply-specific-run)")
+    elif not args.train_goodRunList:
+        print("[SKIP] Evaluate (requires --train-goodRunList so the quality level is known)")
+    elif not args.skip_evaluate:
         _step("STEP 3 — EVALUATE")
         step_evaluate(
             log_file                     = log_file,
@@ -693,7 +690,7 @@ def main() -> None:
             alert_consecutive_n          = args.alert_consecutive_n,
             single_file_alert_n_channels = args.single_file_alert_n_channels,
             single_file_alert_max_z      = args.single_file_alert_max_z,
-            gt_quality                   = args.evaluate_quality,
+            gt_quality                   = args.train_goodRunList_quality,
         )
     else:
         print("[SKIP] Evaluate")
