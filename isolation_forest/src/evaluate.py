@@ -22,7 +22,8 @@ goodRunsListSlab.json catalogue to compute:
 
 Outputs:
   <out_dir>/eval_summary.txt         — printed evaluation table
-  <plots_dir>/eval_confusion.png     — stacked bar chart by ground-truth category
+  <out_dir>/eval_confusion_data.json — counts/totals serialised for the confusion plot
+                                       (rendered by the plots step via src.plot)
   <out_dir>/framework_good_runs.json — JSON in goodRunsListSlab format listing
                                        subruns with their framework quality flags
 
@@ -37,7 +38,6 @@ Usage:
         --log-file logs/myrun_Tight.csv \\
         --json-path /path/to/goodRunsListSlab.json \\
         --out-dir reports/myrun_Tight/ \\
-        --plots-dir plots/myrun_Tight/ \\
         --gt-quality Tight
 """
 
@@ -49,9 +49,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from .run_list import (
@@ -61,29 +58,16 @@ from .run_list import (
 )
 
 
-_FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
+_FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)  # extracts run/subrun from filenames
 
-_PREDICT_COLORS = {
-    "ok":    "steelblue",
-    "warn":  "darkorange",
-    "pend":  "lightsteelblue",
-    "alert": "tomato",
-}
-
-_STAT_ORDER = ["ok", "warn", "pend", "alert"]
-
-_GT_ORDER = ["known_good", "not_certified", "unknown"]
-
-_GT_DISPLAY = {
-    "known_good":    "Known good",
-    "not_certified": "Not certified\ngood",
-    "unknown":       "Unknown\n(not in catalogue)",
-}
+_STAT_ORDER = ["ok", "warn", "pend", "alert"]          # canonical predicted-status ordering
+_GT_ORDER   = ["known_good", "not_certified", "unknown"]  # canonical ground-truth category ordering
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _parse_run_subrun(filename: str):
+    """Return (run, subrun) ints from a Digitizer filename, or (None, None) if unparseable."""
     m = _FILENAME_RE.search(str(filename))
     return (int(m.group(1)), int(m.group(2))) if m else (None, None)
 
@@ -113,7 +97,6 @@ def step_evaluate(
     log_file: Path,
     json_path: str,
     out_dir: Path,
-    plots_dir: Path,
     file_alert_n_channels: int = 2,
     alert_consecutive_n: int = 1,
     single_file_alert_n_channels: int = 0,
@@ -130,9 +113,8 @@ def step_evaluate(
     json_path : str
         Path to goodRunsListSlab.json.
     out_dir : Path
-        Directory for eval_summary.txt and framework_good_runs.json.
-    plots_dir : Path
-        Directory for eval_confusion.png.
+        Directory for eval_summary.txt, eval_confusion_data.json, and
+        framework_good_runs.json.
     file_alert_n_channels : int
         Persistent alert threshold (channels).
     alert_consecutive_n : int
@@ -167,7 +149,6 @@ def step_evaluate(
         return True
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    plots_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(str(log_file))
     if df.empty:
@@ -277,83 +258,23 @@ def step_evaluate(
     eval_summary_path.write_text(summary_text.lstrip("\n"))
     print(f"\n  Evaluation summary → {eval_summary_path}")
 
-    # ── Plot and JSON ──────────────────────────────────────────────────────────
-    _plot_eval_confusion(
-        counts, totals, gt_quality,
-        plots_dir / "eval_confusion.png",
-    )
+    # ── Confusion data + framework JSON ───────────────────────────────────────
+    confusion_path = out_dir / "eval_confusion_data.json"
+    with open(confusion_path, "w") as fh:
+        json.dump(
+            {
+                "gt_quality": gt_quality,
+                "counts":     {g: dict(counts[g]) for g in _GT_ORDER},
+                "totals":     totals,
+            },
+            fh,
+            indent=2,
+        )
+    print(f"  Confusion data → {confusion_path}")
+
     _write_framework_json(eval_df, out_dir)
 
     return True
-
-
-# ── Plot ──────────────────────────────────────────────────────────────────────
-
-def _plot_eval_confusion(
-    counts: dict,
-    totals: dict,
-    gt_quality: str,
-    out_path: Path,
-) -> None:
-    """Stacked bar chart of predicted status per ground-truth category."""
-    active = [g for g in _GT_ORDER if totals[g] > 0]
-    gt_display_active = {
-        "known_good":    f"Known good\n({gt_quality})",
-        "not_certified": "Not certified\ngood",
-        "unknown":       "Unknown\n(not in catalogue)",
-    }
-
-    fig, ax = plt.subplots(figsize=(max(6, len(active) * 2.5), 5))
-    bottom = [0] * len(active)
-
-    for s in _STAT_ORDER:
-        vals = [counts[g][s] for g in active]
-        ax.bar(
-            range(len(active)), vals,
-            bottom=bottom,
-            label=s.upper(),
-            color=_PREDICT_COLORS[s],
-            width=0.55,
-            edgecolor="white",
-            linewidth=0.5,
-        )
-        for i, (v, b) in enumerate(zip(vals, bottom)):
-            tot = totals[active[i]]
-            if tot > 0:
-                pct = v / tot * 100
-                if pct >= 3:
-                    ax.text(
-                        i, b + v / 2,
-                        f"{v}\n({pct:.0f}%)",
-                        ha="center", va="center",
-                        fontsize=8,
-                        color="white" if s in ("ok", "alert") else "black",
-                        fontweight="bold",
-                    )
-        bottom = [b + v for b, v in zip(bottom, vals)]
-
-    # Annotate total count above each bar
-    for i, g in enumerate(active):
-        ax.text(
-            i, bottom[i] + max(bottom) * 0.01,
-            f"N={totals[g]}",
-            ha="center", va="bottom",
-            fontsize=8, color="black",
-        )
-
-    ax.set_xticks(range(len(active)))
-    ax.set_xticklabels([gt_display_active[g] for g in active], fontsize=10)
-    ax.set_ylabel("Subruns (count)", fontsize=10)
-    ax.set_title(
-        f"Predicted status vs. ground-truth category\n"
-        f"(ground truth: {gt_quality} quality from goodRunsListSlab.json)",
-        fontsize=10,
-    )
-    ax.legend(loc="upper right", fontsize=9, title="Predicted", title_fontsize=9)
-    fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", dpi=150)
-    plt.close(fig)
-    print(f"    {out_path.name}")
 
 
 # ── JSON writer ───────────────────────────────────────────────────────────────
@@ -407,8 +328,7 @@ def main() -> None:
     add_config(parser)
     parser.add_argument("--log-file",  help="Anomaly log produced by the apply step")
     parser.add_argument("--json-path", help="Path to goodRunsListSlab.json")
-    parser.add_argument("--out-dir",   help="Directory for eval_summary.txt and framework_good_runs.json")
-    parser.add_argument("--plots-dir", help="Directory for eval_confusion.png")
+    parser.add_argument("--out-dir",   help="Directory for eval_summary.txt, eval_confusion_data.json, and framework_good_runs.json")
     parser.add_argument(
         "--gt-quality",
         choices=QUALITY_ALL_CHOICES,
@@ -421,7 +341,6 @@ def main() -> None:
         log_file   = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
         json_path  = cfg.get("full_sample_json", ""),
         out_dir    = str(Path(cfg["reports_dir"]) / tag),
-        plots_dir  = str(Path(cfg["plots_dir"])   / tag),
         gt_quality = "Tight",
     )
 
@@ -432,7 +351,6 @@ def main() -> None:
         ("log file",             args.log_file),
         ("catalogue",            args.json_path),
         ("out dir",              args.out_dir),
-        ("plots dir",            args.plots_dir),
         ("gt quality",           args.gt_quality),
         ("alert threshold",      f"{args.file_alert_n_channels} channels"),
         ("alert window",         f"{args.alert_consecutive_n} consecutive file(s)"),
@@ -446,7 +364,6 @@ def main() -> None:
         log_file                     = Path(args.log_file),
         json_path                    = args.json_path,
         out_dir                      = Path(args.out_dir),
-        plots_dir                    = Path(args.plots_dir),
         file_alert_n_channels        = args.file_alert_n_channels,
         alert_consecutive_n          = args.alert_consecutive_n,
         single_file_alert_n_channels = args.single_file_alert_n_channels,

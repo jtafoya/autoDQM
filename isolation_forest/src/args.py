@@ -12,7 +12,8 @@ Typical usage in every script::
     from .args import (preparse_config, add_config, add_features,
                        add_model_thresholds, add_alert_thresholds,
                        add_test_mode, add_full_sample_args,
-                       add_specific_run_args, validate_full_sample_args)
+                       add_specific_run_args, add_plot_format,
+                       validate_full_sample_args)
     from .config import print_banner
 
     _, cfg = preparse_config()
@@ -24,6 +25,7 @@ Typical usage in every script::
     add_test_mode(parser, cfg)
     add_full_sample_args(parser, cfg)   # defaults from config; no required CLI args
     add_specific_run_args(parser)       # per-run apply and combine modes
+    add_plot_format(parser, cfg)        # --plot-format png/pdf/svg (default from config)
     # ... script-specific arguments ...
     args = parser.parse_args()
     validate_full_sample_args(parser, args)  # range-checks fractions; validates --apply-to-training-list
@@ -300,6 +302,16 @@ def add_specific_run_args(parser: argparse.ArgumentParser) -> None:
              "logs/<tag>.csv. Accepts shell wildcards (e.g. '*', '100?'). "
              "Exits after combining.",
     )
+
+
+def add_plot_format(parser: argparse.ArgumentParser, cfg: dict) -> None:
+    """Add --plot-format (png / pdf / svg) with default from config."""
+    parser.add_argument(
+        "--plot-format",
+        choices=["png", "pdf", "svg"],
+        help="Output format for all figures (default: %(default)s)",
+    )
+    parser.set_defaults(plot_format=cfg.get("plot_format", "png"))
 
 
 def validate_full_sample_args(

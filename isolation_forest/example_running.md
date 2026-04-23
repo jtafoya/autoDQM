@@ -189,9 +189,14 @@ python3 -m src.plot file /eos/user/t/tafoyava/autoDQM/data/Digitizer_run2068_sub
 
 # Summary of the anomaly log (4 plots, sorted by run/subrun)
 python3 -m src.plot log
+
+# Save all figures as PDF (vector, lossless zoom) instead of the default PNG
+python3 -m src.plot --plot-format pdf reference
+python3 -m src.plot --plot-format pdf log
 ```
 
 All figures are saved to `plots/` by default. Use `--out-dir` to change the output directory.
+`--plot-format` accepts `png` (default), `pdf`, or `svg`; the default can also be set with `plot_format` in `config.yaml`.
 
 ## Validate against separate good / bad run lists
 
@@ -245,9 +250,17 @@ python3 -m src.monitor \
   --watch-dir /eos/experiment/milliqan/run3/slab/live/ \
   --plot-alerts \
   --refresh-log-plots-every 50
+
+# Same, but save all figures as PDF for lossless zooming
+python3 -m src.monitor \
+  --watch-dir /eos/experiment/milliqan/run3/slab/live/ \
+  --plot-alerts \
+  --refresh-log-plots-every 50 \
+  --plot-format pdf
 ```
 
-Alert plots are saved to `plots/alerts/<stem>/`, one subdirectory per flagged file:
+Alert plots are saved to `plots/alerts/<stem>/`, one subdirectory per flagged file.
+File extensions match the chosen `--plot-format` (default `png`):
 
 ```
 plots/

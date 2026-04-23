@@ -95,6 +95,7 @@ DEFAULTS: dict = {
     "reports_dir":          "reports",
     "plots_dir":            "plots",
     "max_subrun_plots":     10,
+    "plot_format":          "png",
     #
     ### Inference training and anomaly identification
     "z_threshold":          5.0,

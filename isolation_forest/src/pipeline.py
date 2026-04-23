@@ -4,9 +4,9 @@ Run the full autoDQM pipeline in a single command:
   1. Train    — build reference model and Isolation Forest from a good run list
   2. Apply    — run the detector over an application run list, log results
   3. Evaluate — compare predicted status against goodRunsListSlab.json ground truth
-                (TP/FP/TN/FN summary, confusion plot, framework_good_runs.json)
+                (TP/FP/TN/FN summary, eval_confusion_data.json, framework_good_runs.json)
   4. Report   — classify runs into good / partial / bad
-  5. Plots    — reference statistics, log summary, per-file diagnostics for a sample of good and bad subruns
+  5. Plots    — reference statistics, log summary, eval confusion chart (if evaluate ran), per-file diagnostics for a sample of good and bad subruns
 
 Defaults: good-list = ../data/good_run_list_EOS.txt
           apply-list = ../data/all_run_list_EOS.txt
@@ -74,6 +74,14 @@ Any step can also be skipped manually with --skip-train / --skip-apply /
 to skip only the per-file plots while still producing the reference_* and
 log_* summaries.
 
+Plot format
+-----------
+All figures (reference stats, log summary, per-file diagnostics, confusion
+matrix) are saved in the format chosen with --plot-format (png / pdf / svg).
+Default: png.  Use --plot-format pdf for vector output suitable for
+publication or lossless zooming.  The default can also be set in config.yaml
+under the key ``plot_format``.
+
 Training metadata
 -----------------
 Each training run saves models/<tag>/training_metadata.json containing the
@@ -107,7 +115,7 @@ from pathlib import Path
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
                    add_full_sample_args, add_specific_run_args,
-                   validate_full_sample_args)
+                   validate_full_sample_args, add_plot_format)
 from .train import step_train
 from .monitor import step_apply
 from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
@@ -117,12 +125,19 @@ from .evaluate import step_evaluate
 # ── Step helpers ─────────────────────────────────────────────────────────────
 
 def _step(name: str) -> None:
+    """Print a prominent section header for a pipeline step."""
     print(f"\n{'='*60}")
     print(f"  {name}")
     print(f"{'='*60}\n")
 
 
 def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> bool:
+    """
+    Classify runs as good / partial / bad and write run_summary.csv to reports_dir.
+
+    Returns True when the step ran, False when auto-skipped because run_summary.csv
+    already exists.
+    """
     _step("STEP 4 — REPORT")
 
     if (reports_dir / "run_summary.csv").exists():
@@ -146,22 +161,66 @@ def step_plots(
     plots_dir: Path,
     file_alert_n_channels: int,
     alert_consecutive_n: int,
+    reports_dir: Path = None,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
     skip_subrun_plots: bool = False,
     max_subrun_plots: int = 10,
+    fmt: str = "png",
 ) -> bool:
+    """
+    Generate all diagnostic plots for one pipeline run.
+
+    Produces reference model plots, anomaly log summary plots, and (if
+    reports_dir contains eval_confusion_data.json) the evaluation confusion
+    chart.  Unless skip_subrun_plots is True, also generates per-file
+    diagnostic plots for a sample of bad and good subruns.
+
+    Parameters
+    ----------
+    log_file : Path
+        Anomaly log CSV produced by the apply step.
+    models_dir : Path
+        Directory containing reference.npz and detector.pkl.
+    plots_dir : Path
+        Destination directory for all figures.
+    file_alert_n_channels : int
+        Persistent alert threshold used to colour bars and select bad subruns.
+    alert_consecutive_n : int
+        Persistence window used by the status replay logic.
+    reports_dir : Path, optional
+        If provided, checked for eval_confusion_data.json; when found the
+        evaluation confusion chart is rendered into plots_dir.
+    single_file_alert_n_channels : int
+        Bulk single-file alert threshold forwarded to plot_log and plot_file.
+    single_file_alert_max_z : float
+        Extreme single-file alert threshold forwarded to plot_log and plot_file.
+    skip_subrun_plots : bool
+        When True, skip per-file diagnostic plots (reference + log still run).
+    max_subrun_plots : int
+        Per category cap on per-file plots: worst bad + N-1 random bad, N random
+        good.  Pass -1 to plot every file (prints a loud warning).
+    fmt : str
+        Output format for all figures (png / pdf / svg).
+
+    Returns
+    -------
+    bool
+        True when plots were generated, False when auto-skipped because
+        reference_means.<fmt> already exists in plots_dir.
+    """
     _step("STEP 5 — PLOTS")
 
-    if (plots_dir / "reference_means.png").exists():
-        print(f"[AUTO-SKIP] Plots — {plots_dir}/reference_means.png already exists.")
+    _sentinel = next(plots_dir.glob("reference_means.*"), None)
+    if _sentinel is not None:
+        print(f"[AUTO-SKIP] Plots — {_sentinel} already exists.")
         print(f"            Delete {plots_dir}/ to regenerate.")
         return False
 
     import pandas as pd
     from .reference import ReferenceModel
     from .detector import AnomalyDetector
-    from .plot import plot_reference, plot_file, plot_log
+    from .plot import plot_reference, plot_file, plot_log, plot_eval_confusion
 
     ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
     detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
@@ -169,14 +228,21 @@ def step_plots(
     plots_dir.mkdir(parents=True, exist_ok=True)
 
     print("Reference plots...")
-    plot_reference(ref, plots_dir)
+    plot_reference(ref, plots_dir, fmt=fmt)
 
     print("Log summary plots...")
     plot_log(str(log_file), plots_dir,
              file_alert_n_channels=file_alert_n_channels,
              alert_consecutive_n=alert_consecutive_n,
              single_file_alert_n_channels=single_file_alert_n_channels,
-             single_file_alert_max_z=single_file_alert_max_z)
+             single_file_alert_max_z=single_file_alert_max_z,
+             fmt=fmt)
+
+    if reports_dir is not None:
+        confusion_data = reports_dir / "eval_confusion_data.json"
+        if confusion_data.exists():
+            print("Evaluation confusion plot...")
+            plot_eval_confusion(confusion_data, plots_dir, fmt=fmt)
 
     if skip_subrun_plots:
         print("[SKIP] Per-file subrun plots (--skip-subrun-plots)")
@@ -250,7 +316,8 @@ def step_plots(
         try:
             plot_file(full_path, detector, out,
                       single_file_alert_n_channels=single_file_alert_n_channels,
-                      single_file_alert_max_z=single_file_alert_max_z)
+                      single_file_alert_max_z=single_file_alert_max_z,
+                      fmt=fmt)
             n_plotted += 1
         except Exception as exc:
             print(f"    [ERROR] {exc}", file=sys.stderr)
@@ -337,6 +404,9 @@ def main() -> None:
         help="Per category: up to N random bad subruns (always including the worst) and up to N random "
              "good subruns. -1 = no limit (plots every file — prints a loud warning).",
     )
+
+    # ── Plot format ──
+    add_plot_format(parser, cfg)
 
     # Apply config as defaults (CLI args override)
     parser.set_defaults(
@@ -538,6 +608,7 @@ def main() -> None:
                                      if args.single_file_alert_max_z else "disabled"),
         ("max subrun plots",         "ALL (WARNING)" if args.max_subrun_plots == -1
                                      else str(args.max_subrun_plots)),
+        ("plot format",              args.plot_format),
         ("test seed",                str(args.test_seed)),
     ])
 
@@ -574,6 +645,7 @@ def main() -> None:
             test_seed            = args.test_seed,
             config_path          = args.config,
             training_metadata    = metadata,
+            fmt                  = args.plot_format,
         )
     else:
         print("[SKIP] Training")
@@ -688,7 +760,6 @@ def main() -> None:
             log_file                     = log_file,
             json_path                    = cfg.get("full_sample_json", ""),
             out_dir                      = reports_dir,
-            plots_dir                    = plots_dir,
             file_alert_n_channels        = args.file_alert_n_channels,
             alert_consecutive_n          = args.alert_consecutive_n,
             single_file_alert_n_channels = args.single_file_alert_n_channels,
@@ -712,10 +783,12 @@ def main() -> None:
     elif not args.skip_all_plots:
         step_plots(log_file, models_dir, plots_dir,
                    args.file_alert_n_channels, args.alert_consecutive_n,
+                   reports_dir=reports_dir,
                    single_file_alert_n_channels=args.single_file_alert_n_channels,
                    single_file_alert_max_z=args.single_file_alert_max_z,
                    skip_subrun_plots=args.skip_subrun_plots,
-                   max_subrun_plots=args.max_subrun_plots)
+                   max_subrun_plots=args.max_subrun_plots,
+                   fmt=args.plot_format)
     else:
         print("[SKIP] Plots")
 

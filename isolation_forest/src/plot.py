@@ -6,7 +6,18 @@ Subcommands:
     python3 -m src.plot file <csv_path>        — per-channel anomaly analysis of one file
     python3 -m src.plot log [--log-file ...]   — summary of the anomaly log over time
 
-All figures are saved to --out-dir (default: plots/).
+All figures are saved to --out-dir (default: plots/).  The output format is
+controlled by --plot-format (png / pdf / svg; default: png).  Pass --plot-format pdf
+to produce vector figures suitable for publication or lossless zooming.
+
+All public plot functions accept a ``fmt`` keyword argument (default "png") that
+is forwarded to the internal ``_save`` helper, which replaces the path suffix
+automatically — callers always construct paths with a .png extension and the
+actual extension is substituted at save time.
+
+The eval confusion plot (eval_confusion.<fmt>) is generated here from the
+eval_confusion_data.json written by the evaluate step, so that --skip-all-plots
+suppresses it consistently with every other plot.
 """
 
 import argparse
@@ -20,7 +31,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
-from .args import preparse_config, add_config
+from .args import preparse_config, add_config, add_plot_format
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .features import extract_features, METRIC_COLS
@@ -66,7 +77,7 @@ def _channel_order(index, pseudo_trigger, pseudo_lvds):
 # 1.  REFERENCE PLOTS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
+def plot_reference(ref: ReferenceModel, out_dir: Path, fmt: str = "png") -> None:
     """Three figures summarising the trained reference model."""
     from .features import PSEUDO_TRIGGER, PSEUDO_LVDS
     channels  = _channel_order(ref.known_channels(), PSEUDO_TRIGGER, PSEUDO_LVDS)
@@ -92,7 +103,7 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     ax.set_title("Reference means (column-normalised z-score)")
     fig.colorbar(im, ax=ax, label="z-score relative to feature mean")
     fig.tight_layout()
-    _save(fig, out_dir / "reference_means.png")
+    _save(fig, out_dir / "reference_means.png", fmt)
 
     # ── 1b. Reference std heatmap ────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(18, 6))
@@ -108,7 +119,7 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
     ax.set_title("Reference uncertainty — log(1 + σ / median_σ per feature)")
     fig.colorbar(im, ax=ax, label="log-normalised std")
     fig.tight_layout()
-    _save(fig, out_dir / "reference_stds.png")
+    _save(fig, out_dir / "reference_stds.png", fmt)
 
     # ── 1c. Training coverage ────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(12, 3))
@@ -122,12 +133,12 @@ def plot_reference(ref: ReferenceModel, out_dir: Path) -> None:
                label=f"mean = {np.mean(counts):.1f}")
     ax.legend(fontsize=8)
     fig.tight_layout()
-    _save(fig, out_dir / "reference_coverage.png")
+    _save(fig, out_dir / "reference_coverage.png", fmt)
 
     print(f"  Reference plots saved to {out_dir}/")
 
 
-def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
+def plot_mean_table(ref: ReferenceModel, out_dir: Path, fmt: str = "png") -> None:
     """
     Heatmap table of per-channel reference mean feature values.
 
@@ -212,7 +223,7 @@ def plot_mean_table(ref: ReferenceModel, out_dir: Path) -> None:
     fig.colorbar(im, ax=ax, label="Relative value within feature (0=min, 1=max)",
                  shrink=0.4, pad=0.01)
     fig.tight_layout()
-    _save(fig, out_dir / "reference_mean_table.png")
+    _save(fig, out_dir / "reference_mean_table.png", fmt)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -280,6 +291,7 @@ def plot_file(
     out_dir: Path,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
+    fmt: str = "png",
 ) -> None:
     """
     Four diagnostic figures for the anomaly analysis of one Digitizer CSV file.
@@ -377,7 +389,7 @@ def plot_file(
                  f"(clamped at 50σ;  red row = ALERT  ·  yellow = WARN)")
     fig.colorbar(im, ax=ax, label="|z-score|", shrink=0.4, pad=0.01)
     fig.tight_layout()
-    _save(fig, out_dir / f"{stem}_zscore_heatmap.png")
+    _save(fig, out_dir / f"{stem}_zscore_heatmap.png", fmt)
 
     # ── 2b. Max |z| per channel ──────────────────────────────────────────────
     max_z      = results.loc[channels, "max_z"].fillna(0).values
@@ -406,7 +418,7 @@ def plot_file(
                  f"(red = ALERT  ·  yellow = WARN  ·  blue = OK)")
     ax.set_yscale("symlog", linthresh=10)
     fig.tight_layout()
-    _save(fig, out_dir / f"{stem}_max_zscore.png")
+    _save(fig, out_dir / f"{stem}_max_zscore.png", fmt)
 
     # ── 2c. Isolation Forest score per channel ───────────────────────────────
     if_scores = results.loc[channels, "if_score"].values
@@ -420,7 +432,7 @@ def plot_file(
         ax.set_title(f"Isolation Forest anomaly score per channel — {stem}\n"
                      f"(more negative = more anomalous;  red = ALERT  ·  yellow = WARN  ·  blue = OK)")
         fig.tight_layout()
-        _save(fig, out_dir / f"{stem}_if_scores.png")
+        _save(fig, out_dir / f"{stem}_if_scores.png", fmt)
 
     # ── 2d. Detector geometry map ────────────────────────────────────────────
     geom = geom[geom["channel"].isin(channels)].copy()
@@ -494,7 +506,7 @@ def plot_file(
                  f"(colour = max |z|  ·  green ring = OK  ·  yellow = WARN  ·  red = ALERT)",
                  y=1.01)
     fig.tight_layout(rect=[0, 0.06, 1, 1])
-    _save(fig, out_dir / f"{stem}_geometry.png")
+    _save(fig, out_dir / f"{stem}_geometry.png", fmt)
 
     print(f"  File plots saved to {out_dir}/")
 
@@ -627,8 +639,18 @@ def plot_log(
     alert_consecutive_n: int = 1,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
+    fmt: str = "png",
 ) -> None:
-    """Six figures summarising the anomaly log (four raw-count plots + two persistence plots)."""
+    """
+    Up to six figures summarising the anomaly log.
+
+    3a  log_anomaly_rate             — anomalous channel count per file, coloured by alert status
+    3b  log_channel_frequency        — top-40 most frequently anomalous channels (skipped if none)
+    3c  log_feature_frequency        — top-20 most triggered features (skipped if none)
+    3d  log_run_summary              — per-run good-subrun fraction (raw status)
+    3e  log_persistence_subrun_grid  — heatmap of persistence-aware status per run × subrun
+    3f  log_persistence_run_summary  — bar chart of persistence-aware run quality
+    """
     df = pd.read_csv(log_path)
     if df.empty:
         print("ERROR: Log file is empty.", file=sys.stderr)
@@ -688,7 +710,7 @@ def plot_log(
                  "(red = ALERT · orange = WARN · light blue = PEND · blue = OK)")
     ax.legend(fontsize=8)
     fig.tight_layout()
-    _save(fig, out_dir / "log_anomaly_rate.png")
+    _save(fig, out_dir / "log_anomaly_rate.png", fmt)
 
     # ── 3b. Most frequently anomalous channels ───────────────────────────────
     anomalous_df = df[df["anomalous"]]
@@ -706,7 +728,7 @@ def plot_log(
         ax.set_xticklabels(ch_counts.index, fontsize=8, rotation=90)
         ax.set_title("Most frequently anomalous channels (top 40)")
         fig.tight_layout()
-        _save(fig, out_dir / "log_channel_frequency.png")
+        _save(fig, out_dir / "log_channel_frequency.png", fmt)
 
     # ── 3c. Feature trigger frequency ───────────────────────────────────────
     triggered = (df["triggered_features"]
@@ -728,7 +750,7 @@ def plot_log(
         ax.set_xlabel("Times triggered")
         ax.set_title("Most frequently triggered features (top 20)")
         fig.tight_layout()
-        _save(fig, out_dir / "log_feature_frequency.png")
+        _save(fig, out_dir / "log_feature_frequency.png", fmt)
 
     # ── 3d. Per-run good-subrun fraction (raw, non-persistence-aware) ─────────
     per_file["_run"]    = per_file["filename"].apply(lambda f: _run_subrun_key(f)[0])
@@ -790,16 +812,16 @@ def plot_log(
             + ")\nblue = all OK · light blue = unconfirmed (PEND) · orange = partial · red = all ALERT"
         )
         fig.tight_layout()
-        _save(fig, out_dir / "log_run_summary.png")
+        _save(fig, out_dir / "log_run_summary.png", fmt)
 
     # ── 3e & 3f. Persistence-aware subrun grid and run summary ───────────────
     # status_df already computed at the top of this function
     _plot_persistence_subrun_grid(status_df, out_dir, alert_consecutive_n,
                                   file_alert_n_channels, single_file_alert_n_channels,
-                                  single_file_alert_max_z)
+                                  single_file_alert_max_z, fmt=fmt)
     _plot_persistence_run_summary(status_df, out_dir, alert_consecutive_n,
                                   file_alert_n_channels, single_file_alert_n_channels,
-                                  single_file_alert_max_z)
+                                  single_file_alert_max_z, fmt=fmt)
 
     print(f"  Log plots saved to {out_dir}/")
 
@@ -826,6 +848,7 @@ def _plot_persistence_subrun_grid(
     file_alert_n_channels: int,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
+    fmt: str = "png",
 ) -> None:
     """
     Heatmap grid: rows = run numbers, columns = subrun numbers.
@@ -904,7 +927,7 @@ def _plot_persistence_subrun_grid(
               framealpha=0.85, bbox_to_anchor=(1.0, 1.0))
 
     fig.tight_layout()
-    _save(fig, out_dir / "log_persistence_subrun_grid.png")
+    _save(fig, out_dir / "log_persistence_subrun_grid.png", fmt)
 
 
 def _plot_persistence_run_summary(
@@ -914,6 +937,7 @@ def _plot_persistence_run_summary(
     file_alert_n_channels: int,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
+    fmt: str = "png",
 ) -> None:
     """
     Bar chart of run quality using persistence-aware subrun classification.
@@ -988,20 +1012,126 @@ def _plot_persistence_run_summary(
         fontsize=9,
     )
     fig.tight_layout()
-    _save(fig, out_dir / "log_persistence_run_summary.png")
+    _save(fig, out_dir / "log_persistence_run_summary.png", fmt)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5.  EVAL CONFUSION PLOT  (data written by evaluate.py, rendered here)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_EVAL_PREDICT_COLORS = {   # bar fill colours keyed by predicted status
+    "ok":    "steelblue",
+    "warn":  "darkorange",
+    "pend":  "lightsteelblue",
+    "alert": "tomato",
+}
+_EVAL_STAT_ORDER = ["ok", "warn", "pend", "alert"]           # bar stack order (bottom → top)
+_EVAL_GT_ORDER   = ["known_good", "not_certified", "unknown"] # x-axis bar order
+
+
+def plot_eval_confusion(
+    confusion_data_path: Path,
+    plots_dir: Path,
+    fmt: str = "png",
+) -> None:
+    """
+    Render the evaluation confusion bar chart from eval_confusion_data.json.
+
+    The JSON is written by evaluate.step_evaluate; this function is called by
+    step_plots so the plot is produced alongside every other plot and respects
+    --skip-all-plots / --plot-format.
+    """
+    import json as _json
+
+    with open(confusion_data_path) as fh:
+        data = _json.load(fh)
+
+    gt_quality = data["gt_quality"]
+    totals     = data["totals"]
+    counts     = data["counts"]
+
+    _plot_eval_confusion(counts, totals, gt_quality, plots_dir / "eval_confusion.png", fmt=fmt)
+
+
+def _plot_eval_confusion(
+    counts: dict,
+    totals: dict,
+    gt_quality: str,
+    out_path: Path,
+    fmt: str = "png",
+) -> None:
+    """Stacked bar chart of predicted status per ground-truth category."""
+    active = [g for g in _EVAL_GT_ORDER if totals.get(g, 0) > 0]
+    gt_display_active = {
+        "known_good":    f"Known good\n({gt_quality})",
+        "not_certified": "Not certified\ngood",
+        "unknown":       "Unknown\n(not in catalogue)",
+    }
+
+    fig, ax = plt.subplots(figsize=(max(6, len(active) * 2.5), 5))
+    bottom = [0] * len(active)
+
+    for s in _EVAL_STAT_ORDER:
+        vals = [counts[g].get(s, 0) for g in active]
+        ax.bar(
+            range(len(active)), vals,
+            bottom=bottom,
+            label=s.upper(),
+            color=_EVAL_PREDICT_COLORS[s],
+            width=0.55,
+            edgecolor="white",
+            linewidth=0.5,
+        )
+        for i, (v, b) in enumerate(zip(vals, bottom)):
+            tot = totals[active[i]]
+            if tot > 0:
+                pct = v / tot * 100
+                if pct >= 3:
+                    ax.text(
+                        i, b + v / 2,
+                        f"{v}\n({pct:.0f}%)",
+                        ha="center", va="center",
+                        fontsize=8,
+                        color="white" if s in ("ok", "alert") else "black",
+                        fontweight="bold",
+                    )
+        bottom = [b + v for b, v in zip(bottom, vals)]
+
+    for i, g in enumerate(active):
+        ax.text(
+            i, bottom[i] + max(bottom) * 0.01,
+            f"N={totals[g]}",
+            ha="center", va="bottom",
+            fontsize=8, color="black",
+        )
+
+    ax.set_xticks(range(len(active)))
+    ax.set_xticklabels([gt_display_active[g] for g in active], fontsize=10)
+    ax.set_ylabel("Subruns (count)", fontsize=10)
+    ax.set_title(
+        f"Predicted status vs. ground-truth category\n"
+        f"(ground truth: {gt_quality} quality from goodRunsListSlab.json)",
+        fontsize=10,
+    )
+    ax.legend(loc="upper right", fontsize=9, title="Predicted", title_fontsize=9)
+    fig.tight_layout()
+    _save(fig, out_path, fmt)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Helpers
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _save(fig: plt.Figure, path: Path) -> None:
+def _save(fig: plt.Figure, path: Path, fmt: str = "png") -> None:
+    """Save fig to path with the suffix replaced by fmt, then close it."""
+    path = Path(path).with_suffix(f".{fmt}")
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
     print(f"    {path.name}")
 
 
-def _load_models(models_dir: str):
+def _load_models(models_dir: str) -> AnomalyDetector:
+    """Load and return the AnomalyDetector from models_dir; exit with an error if missing."""
     models_path = Path(models_dir)
     ref_path = models_path / "reference.npz"
     det_path = models_path / "detector.pkl"
@@ -1029,6 +1159,7 @@ def main() -> None:
     add_config(parser)
     parser.add_argument("--models-dir", help="Directory with saved models")
     parser.add_argument("--out-dir",    help="Directory to save figures")
+    add_plot_format(parser, cfg)
 
     parser.set_defaults(
         models_dir = str(Path(cfg["models_dir"]) / tag),
@@ -1080,13 +1211,14 @@ def main() -> None:
 
     if args.command == "reference":
         detector = _load_models(args.models_dir)
-        plot_reference(detector.reference, out_dir)
+        plot_reference(detector.reference, out_dir, fmt=args.plot_format)
 
     elif args.command == "file":
         detector = _load_models(args.models_dir)
         plot_file(args.csv, detector, out_dir,
                   single_file_alert_n_channels=args.single_file_alert_n_channels,
-                  single_file_alert_max_z=args.single_file_alert_max_z)
+                  single_file_alert_max_z=args.single_file_alert_max_z,
+                  fmt=args.plot_format)
 
     elif args.command == "log":
         if not Path(args.log_file).exists():
@@ -1096,7 +1228,8 @@ def main() -> None:
                  file_alert_n_channels=args.file_alert_n_channels,
                  alert_consecutive_n=args.alert_consecutive_n,
                  single_file_alert_n_channels=args.single_file_alert_n_channels,
-                 single_file_alert_max_z=args.single_file_alert_max_z)
+                 single_file_alert_max_z=args.single_file_alert_max_z,
+                 fmt=args.plot_format)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,8 @@ Usage — incremental update after collecting more good runs:
     (adds only files not yet seen; the Isolation Forest is always fully retrained)
 
 Models are saved to --models-dir (default: models/).
+The mean feature table figure format is set by --plot-format (png/pdf/svg,
+default png; also configurable via ``plot_format`` in config.yaml).
 
 Overwrite protection
 --------------------
@@ -50,7 +52,7 @@ from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_test_mode,
-                   add_full_sample_args, validate_full_sample_args)
+                   add_full_sample_args, validate_full_sample_args, add_plot_format)
 
 
 def _step(name: str) -> None:
@@ -77,6 +79,7 @@ def step_train(
     update: bool = False,
     config_path: str = "",
     training_metadata: "dict | None" = None,
+    fmt: str = "png",
 ) -> bool:
 
     _step("STEP 1 — TRAIN")
@@ -186,8 +189,8 @@ def step_train(
     # ---- Mean feature table ----
     from .plot import plot_mean_table
     print("Saving mean feature table...")
-    plot_mean_table(ref, models_dir)
-    print(f"  Mean table saved → {models_dir}/reference_mean_table.png")
+    plot_mean_table(ref, models_dir, fmt=fmt)
+    print(f"  Mean table saved → {models_dir}/reference_mean_table.{fmt}")
 
     # ---- Config snapshot and training metadata ----
     if config_path:
@@ -228,6 +231,7 @@ def main() -> None:
     )
     add_test_mode(parser, cfg)
     add_full_sample_args(parser, cfg)
+    add_plot_format(parser, cfg)
 
     parser.set_defaults(
         good_list  = cfg["good_list"],
@@ -298,6 +302,7 @@ def main() -> None:
         update               = args.update,
         config_path          = args.config,
         training_metadata    = metadata,
+        fmt                  = args.plot_format,
     ):
         sys.exit(1)
 
