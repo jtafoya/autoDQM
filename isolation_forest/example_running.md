@@ -2,6 +2,48 @@
 
 All commands are run from `isolation_forest/`.
 
+## HTCondor — per-run apply array jobs over the full sample
+
+To process the complete slab catalogue in parallel (one Condor job per run).
+`--apply-specific-run` combined with `--train-goodRunList` scans the slab directory
+on disk for all subruns of the requested run (catalogue-independent — any run can be
+targeted regardless of quality).  Use `--apply-specific-run-fraction` to score a
+random subset of the run's files (default 1.0 = all files), decoupled from
+`--train-goodRunList-fraction`.  No `--read-full-sample-apply` flag is needed.
+
+```bash
+# 1. Train once on 0.1 % of Tight-quality files
+python3 -m src.pipeline \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-apply --skip-evaluate --skip-report --skip-all-plots
+
+# 2. Submit one job per run — applies to all files of that run on disk
+#    (wire RUN_NUMBER from a Condor job-array variable or similar)
+#    Use --apply-specific-run-fraction to score a fraction of the run's files
+python3 -m src.pipeline \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-train --apply-specific-run $RUN_NUMBER
+
+# 3. Combine all per-run outputs when every job is done
+#    Quote '*' to prevent shell expansion
+python3 -m src.pipeline --train-goodRunList --combine-specific-run-outputs '*'
+
+# Combine only a subset (shell wildcard on the run number; absent files are silently skipped)
+python3 -m src.pipeline --train-goodRunList --combine-specific-run-outputs '100?'
+
+# 4. Generate global evaluate, report, and plots from the combined log
+python3 -m src.pipeline --train-goodRunList --skip-train --skip-apply
+```
+
+The pipeline refuses to produce global plots if uncombined per-run files exist
+(i.e. any `<tag>_run*.csv` newer than the combined `<tag>.csv`).
+
+---
+
 ## HTCondor — all 4 feature variants in parallel (production)
 
 Before submitting, verify `config.yaml` has correct absolute paths and that
@@ -47,8 +89,8 @@ python3 -m src.pipeline --test-train --test-apply --no-trigger
 python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
 ```
 
-Runs all four steps in order: train → apply → report → plots.  
-Use `--skip-train`, `--skip-apply`, `--skip-report`, `--skip-all-plots` to re-run individual steps.
+Runs all five steps in order: train → apply → evaluate → report → plots.  
+Use `--skip-train`, `--skip-apply`, `--skip-evaluate`, `--skip-report`, `--skip-all-plots` to skip individual steps.
 
 Output directories are controlled by `--model-tag` (default: `default`). The base directories
 are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (set by `env.sh`),

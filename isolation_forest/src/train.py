@@ -13,11 +13,11 @@ Usage — full training (all files):
     python -m src.train
 
 Usage — full training on the complete slab dataset from EOS:
-    python -m src.train --read-full-sample
+    python -m src.train --train-goodRunList
 
 Usage — override quality or fraction for a single run:
-    python -m src.train --read-full-sample --full-sample-train-quality Tight
-    python -m src.train --read-full-sample --full-sample-train-fraction 0.2
+    python -m src.train --train-goodRunList --train-goodRunList-quality Tight
+    python -m src.train --train-goodRunList --train-goodRunList-fraction 0.2
 
 Usage — incremental update after collecting more good runs:
     python -m src.train --update
@@ -243,11 +243,11 @@ def main() -> None:
 
     from .config import print_banner, build_training_metadata
 
-    if args.read_full_sample:
+    if args.train_goodRunList:
         input_source = (
             f"{cfg['full_sample_json']} "
-            f"[quality={args.full_sample_train_quality}, "
-            f"fraction={args.full_sample_train_fraction}]"
+            f"[quality={args.train_goodRunList_quality}, "
+            f"fraction={args.train_goodRunList_fraction}]"
         )
     else:
         input_source = args.good_list
@@ -255,7 +255,7 @@ def main() -> None:
     print_banner("train", args.config, [
         ("models dir",       str(models_dir)),
         ("input source",     input_source),
-        ("full sample mode", "yes" if args.read_full_sample else "no"),
+        ("train goodRunList", "yes" if args.train_goodRunList else "no"),
         ("trigger features", "yes" if use_trigger else "no"),
         ("LVDS features",    "yes" if use_lvds else "no"),
         ("ignore features",  str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
@@ -276,8 +276,8 @@ def main() -> None:
         "use_trigger":                use_trigger,
         "use_lvds":                   use_lvds,
         "ignore_features":            list(cfg["ignore_features"]),
-        "full_sample_train_quality":  args.full_sample_train_quality,
-        "full_sample_train_fraction": args.full_sample_train_fraction,
+        "train_goodRunList_quality":  args.train_goodRunList_quality,
+        "train_goodRunList_fraction": args.train_goodRunList_fraction,
         "test_seed":                  args.test_seed,
     }
     metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
@@ -289,11 +289,11 @@ def main() -> None:
         use_trigger=use_trigger,
         use_lvds=use_lvds,
         ignore_features=tuple(cfg["ignore_features"]),
-        read_full_sample     = args.read_full_sample,
+        read_full_sample     = args.train_goodRunList,
         full_sample_json     = cfg["full_sample_json"],
         full_sample_slab_dir = cfg["full_sample_slab_dir"],
-        full_sample_quality  = args.full_sample_train_quality,
-        full_sample_fraction = args.full_sample_train_fraction,
+        full_sample_quality  = args.train_goodRunList_quality,
+        full_sample_fraction = args.train_goodRunList_fraction,
         test_seed            = args.test_seed,
         update               = args.update,
         config_path          = args.config,

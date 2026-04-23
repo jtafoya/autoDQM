@@ -51,12 +51,14 @@ isolation_forest/
     features.py      — per-channel feature extraction from Digitizer + TriggerBoard CSVs
     reference.py     — Welford online reference model (incremental, scalable)
     detector.py      — two-layer anomaly detector (z-score + Isolation Forest)
-    run_list.py      — run list file parser (glob expansion)
+    run_list.py      — run list file parser and filename utilities (glob expansion, extract_run_number)
     train.py         — CLI: build/update reference and train Isolation Forest
     monitor.py       — CLI: watch a directory for new files and log anomalies
+    combine.py       — combine per-run apply outputs into a single log (--combine-specific-run-outputs)
     report.py        — CLI: classify runs from the anomaly log (good / partial / bad)
     plot.py          — CLI: generate diagnostic plots for training and detection output
-    pipeline.py      — CLI: run the full pipeline (train → apply → report → plots) in one command
+    evaluate.py      — CLI: evaluate TP/FP/TN/FN against goodRunsListSlab.json; writes framework_good_runs.json
+    pipeline.py      — CLI: run the full pipeline (train → apply → evaluate → report → plots) in one command
   condor/
     submit.sub       — HTCondor job description (4 feature-variant jobs)
     run_pipeline.sh  — worker-node entry point (sources env.sh, calls pipeline.py)
@@ -74,7 +76,7 @@ isolation_forest/
     bad_run_list_EOS.txt     — known-bad files (for reference and validation)
     all_run_list_EOS.txt     — all classified runs combined (good + bad); default --apply-list
     goodRunsListSlab.json    — full good-runs catalogue for the slab dataset on EOS
-                               (used by --read-full-sample; path set by full_sample_json in config)
+                               (used by --train-goodRunList; path set by full_sample_json in config)
   requirements.txt   — Python dependencies
 ```
 
@@ -194,26 +196,26 @@ python3 -m src.train --no-trigger-LVDS
 
 #### Full-sample training (complete slab dataset on EOS)
 
-Use `--read-full-sample` to train on the complete slab dataset instead of the
+Use `--train-goodRunList` to train on the complete slab dataset instead of the
 default text run list.  The good-run catalogue `goodRunsListSlab.json` is read
 automatically (path set by `full_sample_json` in `config.yaml`).
 
-The quality level and fraction are read from `config.yaml` (`full_sample_train_quality`
-and `full_sample_train_fraction`) — no extra flags are required at the command line.
-Both can be overridden per-run with `--full-sample-train-quality` and
-`--full-sample-train-fraction`:
+The quality level and fraction are read from `config.yaml` (`train_goodRunList_quality`
+and `train_goodRunList_fraction`) — no extra flags are required at the command line.
+Both can be overridden per-run with `--train-goodRunList-quality` and
+`--train-goodRunList-fraction`:
 
 ```bash
 # Train using the quality and fraction defined in config.yaml (default: Medium, 1.0)
-python3 -m src.train --read-full-sample
+python3 -m src.train --train-goodRunList
 
 # Override quality for this run only
-python3 -m src.train --read-full-sample --full-sample-train-quality Loose
-python3 -m src.train --read-full-sample --full-sample-train-quality Tight
-python3 -m src.train --read-full-sample --full-sample-train-quality All
+python3 -m src.train --train-goodRunList --train-goodRunList-quality Loose
+python3 -m src.train --train-goodRunList --train-goodRunList-quality Tight
+python3 -m src.train --train-goodRunList --train-goodRunList-quality All
 
 # Use only a random 20 % of the catalogue (reproducible via --test-seed)
-python3 -m src.train --read-full-sample --full-sample-train-fraction 0.2
+python3 -m src.train --train-goodRunList --train-goodRunList-fraction 0.2
 ```
 
 Statistics about the catalogue (total entries, unique runs, per-quality counts,
@@ -242,9 +244,9 @@ Options:
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
 | `--test [N]` | off | Test mode: randomly sample N files (default N=50 when flag is given) |
 | `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
-| `--read-full-sample` | off | Train on the complete slab dataset on EOS instead of the default good run list |
-| `--full-sample-train-quality` | from config.yaml | Quality filter: `Loose`, `Medium`, `Tight`, or `All` (OR of all three). Override the config default for a single run |
-| `--full-sample-train-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use (0 < F ≤ 1). `1.0` = use all entries |
+| `--train-goodRunList` | off | Train on the complete slab dataset on EOS instead of the default good run list |
+| `--train-goodRunList-quality` | from config.yaml | Quality filter: `Loose`, `Medium`, `Tight`, or `All` (OR of all three). Override the config default for a single run |
+| `--train-goodRunList-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use (0 < F ≤ 1). `1.0` = use all entries |
 
 ### 3. Monitor
 
@@ -350,7 +352,63 @@ Options:
 | `--out-dir` | from config.yaml (`<reports_dir>/<tag>`) | Directory to write output files |
 | `--file-alert-n-channels` | from config.yaml | Number of anomalous channels that marks a subrun as bad (must match the value used in monitor.py) |
 
-### 5. Plot
+### 5. Evaluate (TP/FP/TN/FN against ground truth)
+
+Compare the detector's per-subrun predictions against the goodRunsListSlab.json catalogue
+to measure false positive and detection rates:
+
+```bash
+python3 -m src.evaluate \
+    --log-file logs/myrun_Tight.csv \
+    --json-path /path/to/goodRunsListSlab.json \
+    --out-dir reports/myrun_Tight/ \
+    --plots-dir plots/myrun_Tight/ \
+    --gt-quality Tight
+```
+
+Each subrun in the log is looked up in the catalogue and assigned a ground-truth category:
+
+| Category | Meaning |
+|---|---|
+| `known_good` | In catalogue with at least one quality flag set at the chosen level |
+| `not_certified` | In catalogue but all quality flags = 0 (not certified good or bad) |
+| `unknown` | Not found in catalogue at all |
+
+Predicted status comes from replaying the full alert logic (persistence + bulk + extreme)
+on the log. Combining ground truth and prediction yields:
+
+| | predicted ok | predicted warn | predicted pend | predicted alert |
+|---|---|---|---|---|
+| known good | TN ✓ | mild anomaly | unconfirmed | FP ✗ |
+| not certified | possible FN | mild | unconfirmed | possible TP |
+| unknown | (shown separately) | | | |
+
+Outputs written to `<out_dir>/` and `<plots_dir>/`:
+
+| File | Description |
+|---|---|
+| `eval_summary.txt` | Printed table of counts and rates per ground-truth category |
+| `eval_confusion.png` | Stacked bar chart: predicted status (ok/warn/pend/alert) per ground-truth category |
+| `framework_good_runs.json` | JSON in `goodRunsListSlab` column order — every subrun in the log with framework quality flags: Tight=ok only, Medium=ok+warn, Loose=ok+warn+pend, 0/0/0=alert |
+
+The `framework_good_runs.json` can be loaded directly by the same `resolve_full_sample` function
+used for training, treating the framework's prediction as an alternative quality catalogue.
+
+Options:
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--log-file` | from config.yaml | Anomaly log to read |
+| `--json-path` | from config.yaml (`full_sample_json`) | Path to goodRunsListSlab.json |
+| `--out-dir` | from config.yaml | Directory for `eval_summary.txt` and `framework_good_runs.json` |
+| `--plots-dir` | from config.yaml | Directory for `eval_confusion.png` |
+| `--gt-quality` | `Tight` | Quality level used to define "known good" ground truth |
+| `--file-alert-n-channels` | from config.yaml | Persistent alert threshold |
+| `--alert-consecutive-n` | from config.yaml | Persistence window |
+| `--single-file-alert-n-channels` | from config.yaml | Bulk alert threshold |
+| `--single-file-alert-max-z` | from config.yaml | Extreme alert threshold |
+
+### 6. Plot
 
 Generate diagnostic figures after training or after processing files:
 
@@ -617,7 +675,7 @@ is fixed at O(channels × features) regardless of how many files have been proce
 
 ## Pipeline
 
-`src/pipeline.py` runs all four steps — train, apply, report, plots — in sequence with a single command.
+`src/pipeline.py` runs all five steps — train, apply, evaluate, report, plots — in sequence with a single command.
 Both `--good-list` and `--apply-list` default to the standard EOS run lists.
 
 ```bash
@@ -637,18 +695,68 @@ python3 -m src.pipeline --test-train --test-apply --no-trigger
 python3 -m src.pipeline --test-train --test-apply --no-trigger-LVDS
 
 # Train on full slab dataset (quality and fraction from config.yaml), apply to default apply list
-python3 -m src.pipeline --read-full-sample --test-apply
+python3 -m src.pipeline --train-goodRunList --test-apply
 
 # Override quality or fraction for a single run
-python3 -m src.pipeline --read-full-sample --full-sample-train-quality Tight --test-apply
-python3 -m src.pipeline --read-full-sample --full-sample-train-fraction 0.1 --test-apply
+python3 -m src.pipeline --train-goodRunList --train-goodRunList-quality Tight --test-apply
+python3 -m src.pipeline --train-goodRunList --train-goodRunList-fraction 0.1 --test-apply
 
 # Train and apply on the full slab dataset (independent quality/fraction per step)
-python3 -m src.pipeline --read-full-sample --read-full-sample-apply
+python3 -m src.pipeline --train-goodRunList --read-full-sample-apply
 
 # Train and apply on exactly the same files (guaranteed identical list)
-python3 -m src.pipeline --read-full-sample --share-full-sample-lists
+python3 -m src.pipeline --train-goodRunList --apply-to-training-list
 ```
+
+### Per-run apply mode (Condor array jobs over the full sample)
+
+When the full-sample catalogue is too large to apply in a single job, each run can be
+processed independently and the outputs combined afterwards.
+
+`--apply-specific-run` combined with `--train-goodRunList` scans the slab directory on
+disk for **every subrun** of the requested run (catalogue-independent — any run can be
+targeted regardless of quality).  Use `--apply-specific-run-fraction` to score a random
+fraction of that run's files (default 1.0 = all files); this is decoupled from
+`--train-goodRunList-fraction`.  No `--read-full-sample-apply` flag is needed.
+
+**Step 1 — train** (one job, as usual):
+```bash
+python3 -m src.pipeline \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-apply --skip-evaluate --skip-report --skip-all-plots
+```
+
+**Step 2 — apply per run** (one Condor job per run number, e.g. via a job array):
+```bash
+python3 -m src.pipeline \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-train --apply-specific-run $RUN_NUMBER
+```
+Each job scans the slab directory for all subruns of `$RUN_NUMBER` on disk and writes
+`logs/<tag>_run<N>.csv` and `logs/<tag>_run<N>_paths.txt`.  No report or plots are produced.
+
+**Step 3 — combine** (once all per-run jobs are done):
+```bash
+# Combine every per-run output
+python3 -m src.pipeline --train-goodRunList --combine-specific-run-outputs '*'
+
+# Or combine a subset (wildcards apply to the run number; missing files are skipped)
+python3 -m src.pipeline --train-goodRunList --combine-specific-run-outputs '100?'
+```
+Writes `logs/<tag>.csv` and merges the companion `_paths.txt` caches.
+The combined log's modification time is used as a watermark: any per-run file
+newer than it is treated as uncombined.
+
+**Step 4 — global evaluate, report, and plots** (after combining):
+```bash
+python3 -m src.pipeline --train-goodRunList --skip-train --skip-apply
+```
+If uncombined per-run files exist when this runs, the pipeline refuses to continue
+and prints a message asking for the combine step to be run first.
 
 Options:
 
@@ -657,7 +765,7 @@ Options:
 | `--config` | `config.yaml` | Path to YAML configuration file |
 | `--good-list` | from config.yaml | Run list of good files for training |
 | `--apply-list` | from config.yaml | Run list of files to apply the trained model to |
-| `--model-tag` | from config.yaml | Base tag for all outputs. `_<Quality>` is appended when `--read-full-sample` is active; `_noTrigger` and/or `_noLVDS` are appended when the corresponding flags are active, e.g. `myrun_Tight_noLVDS` |
+| `--model-tag` | from config.yaml | Base tag for all outputs. `_<Quality>` is appended when `--train-goodRunList` is active; `_noTrigger` and/or `_noLVDS` are appended when the corresponding flags are active, e.g. `myrun_Tight_noLVDS` |
 | `--models-dir` | from config.yaml | Base directory for saved models |
 | `--logs-dir` | from config.yaml | Base directory for anomaly logs |
 | `--reports-dir` | from config.yaml | Base directory for reports |
@@ -673,15 +781,21 @@ Options:
 | `--alert-consecutive-n` | from config.yaml | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
 | `--single-file-alert-n-channels` | from config.yaml | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |
 | `--single-file-alert-max-z` | from config.yaml | Extreme alert: `[ALERT]` when any channel's `max_z` meets or exceeds this value. `0.0` = disabled |
-| `--read-full-sample` | off | Train on the complete slab dataset on EOS instead of the default good run list. Appends `_<Quality>` to the model tag |
-| `--full-sample-train-quality` | from config.yaml | Quality filter for training: `Loose`, `Medium`, `Tight`, or `All` (OR of all three) |
-| `--full-sample-train-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use for training (0 < F ≤ 1) |
+| `--train-goodRunList` | off | Train on the complete slab dataset on EOS instead of the default good run list. Appends `_<Quality>` to the model tag |
+| `--train-goodRunList-quality` | from config.yaml | Quality filter for training: `Loose`, `Medium`, `Tight`, or `All` (OR of all three) |
+| `--train-goodRunList-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use for training (0 < F ≤ 1) |
 | `--read-full-sample-apply` | off | Score files from the slab catalogue instead of the default apply list |
 | `--full-sample-apply-quality` | from config.yaml | Quality filter for the apply step: `Loose`, `Medium`, `Tight`, or `All` |
 | `--full-sample-apply-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to score (0 < F ≤ 1) |
-| `--share-full-sample-lists` | off | Apply on exactly the same files used for training (same quality, fraction, seed). Requires `--read-full-sample`. Overrides apply-side quality/fraction flags |
+| `--apply-to-training-list` | off | Apply on exactly the same files used for training (same quality, fraction, seed). Requires `--train-goodRunList`. Overrides apply-side quality/fraction flags |
+| `--apply-specific-run RUN` | off | Scan the slab directory on disk for all subruns of run RUN (catalogue-independent — any run can be targeted; requires `--train-goodRunList`). Writes output to `logs/<tag>_run<RUN>.csv`. No report or plots produced. Cannot be combined with `--apply-to-training-list` |
+| `--apply-specific-run-fraction F` | `1.0` | Fraction of the run's files to score when `--apply-specific-run` is set (0 < F ≤ 1). Decoupled from `--train-goodRunList-fraction` |
+| `--combine-specific-run-outputs PATTERN` | off | Combine per-run CSVs matching `logs/<tag>_run<PATTERN>.csv` into `logs/<tag>.csv`. Accepts shell wildcards (e.g. `'*'` for all, `'100?'` for runs 1000–1009). Exits after combining |
+| `--override-outputs` | off | Delete all existing outputs for the resolved model tag (models, log, reports, plots) with a confirmation prompt, then re-run the pipeline immediately. Unlike `--delete-model-tag`, does not exit after deletion |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |
+| `--skip-evaluate` | off | Skip the evaluate step (TP/FP/TN/FN against goodRunsListSlab.json) |
+| `--evaluate-quality` | `Tight` | Quality level used as "known good" ground truth in the evaluate step |
 | `--skip-report` | off | Skip report generation |
 | `--skip-all-plots` | off | Skip the entire plots step — no `reference_*`, `log_*`, or per-file plots |
 | `--skip-subrun-plots` | off | Skip per-subrun plots only; `reference_*` and `log_*` summary plots are still generated |
@@ -694,8 +808,8 @@ The pipeline also writes a path cache (`<tag>_paths.txt`) alongside the log so t
 ## HTCondor
 
 The full pipeline can be submitted to the CERN HTCondor batch system to run all four
-feature variants in parallel. Each job runs the complete train → apply → report → plots
-sequence for one variant.
+feature variants in parallel. Each job runs the complete
+train → apply → evaluate → report → plots sequence for one variant.
 
 ### Prerequisites
 
@@ -859,6 +973,63 @@ single_file_alert_max_z:      15.0
 
 Retrain and reapply to the known-good list after each change, using the frequency plots
 to verify the false positive rate is dropping rather than just masking real anomalies.
+
+---
+
+---
+
+## Per-run apply workflow (goodRunList → per-run jobs → combine → report)
+
+The standard workflow for processing the complete slab dataset via Condor array jobs.
+
+```bash
+# ── Step 1: train once ──────────────────────────────────────────────────────
+python3 -m src.pipeline \
+  --model-tag my_tag \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-apply --skip-evaluate --skip-report --skip-all-plots
+
+# ── Step 2: apply per run (one job per RUN_NUMBER) ───────────────────────────
+# Apply to all files of the run on disk; use --apply-specific-run-fraction
+# to score a random subset (default 1.0 = all files, decoupled from training fraction)
+python3 -m src.pipeline \
+  --model-tag my_tag \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --train-goodRunList-fraction 0.001 \
+  --skip-train \
+  --apply-specific-run $RUN_NUMBER \
+  --apply-specific-run-fraction 1.0
+
+# ── Step 3: combine once all per-run jobs are done ───────────────────────────
+# '*' is a wildcard on the run-number part — quote it to prevent shell expansion
+python3 -m src.pipeline \
+  --model-tag my_tag \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --combine-specific-run-outputs '*'
+
+# Combine a subset only (e.g. runs 1340–1349)
+python3 -m src.pipeline \
+  --model-tag my_tag \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --combine-specific-run-outputs '134?'
+
+# ── Step 4: global evaluate, report, and plots ──────────────────────────────
+python3 -m src.pipeline \
+  --model-tag my_tag \
+  --train-goodRunList \
+  --train-goodRunList-quality Tight \
+  --skip-train --skip-apply
+```
+
+**Notes:**
+- The pipeline blocks step 4 if any `<tag>_run*.csv` files are newer than the combined log, forcing you to combine first.
+- To re-run a tag from scratch: `python3 -m src.pipeline --model-tag my_tag --train-goodRunList --train-goodRunList-quality Tight --override-outputs` (prompts for confirmation before deleting).
+- Per-run log files (`<tag>_run<N>.csv`) are kept on disk after combining so partial re-combines are possible.
 
 ---
 

@@ -548,8 +548,10 @@ def step_apply(
     alert_consecutive_n: int,
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
+    show_banner: bool = True,
 ) -> bool:
-    _step("STEP 2 — APPLY")
+    if show_banner:
+        _step("STEP 2 — APPLY")
 
     if log_file.exists():
         print(f"[AUTO-SKIP] Apply — {log_file} already exists.")

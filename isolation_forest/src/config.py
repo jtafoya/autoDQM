@@ -47,28 +47,28 @@ max_subrun_plots     Number of subrun plot sets to generate per category in the
                      can be very slow and disk-heavy for large runs; a prominent
                      warning is printed).
 
-Full-sample training (--read-full-sample mode)
-----------------------------------------------
+Full-sample training (--train-goodRunList mode)
+-----------------------------------------------
 These keys control training on the complete slab dataset stored on EOS.
 
-full_sample_slab_dir  Root directory of the slab dataset on EOS.  Files are
-                      organised in sub-directories named by the floor-100 of the
-                      run number (e.g. run 1214 → .../slab/1200/).
-full_sample_json      Path to the JSON good-runs catalogue
-                      (goodRunsListSlab.json).  The file must contain a top-level
-                      "data" list whose rows follow the column order:
-                      [run, file, goodRunLoose, goodRunMedium, goodRunTight,
-                       goodSingleTrigger, tag].
-full_sample_train_quality  Default quality level for training when --read-full-sample
+full_sample_slab_dir   Root directory of the slab dataset on EOS.  Files are
+                       organised in sub-directories named by the floor-100 of the
+                       run number (e.g. run 1214 → .../slab/1200/).
+full_sample_json       Path to the JSON good-runs catalogue
+                       (goodRunsListSlab.json).  The file must contain a top-level
+                       "data" list whose rows follow the column order:
+                       [run, file, goodRunLoose, goodRunMedium, goodRunTight,
+                        goodSingleTrigger, tag].
+train_goodRunList_quality  Default quality level for training when --train-goodRunList
                            is active.  Accepted values: Loose, Medium, Tight, All
                            (OR of the three quality columns).  Can be overridden at
-                           runtime with --full-sample-train-quality.
-full_sample_train_fraction Fraction of the quality-filtered catalogue to use for
+                           runtime with --train-goodRunList-quality.
+train_goodRunList_fraction Fraction of the quality-filtered catalogue to use for
                            training (0 < value ≤ 1).  A value < 1 draws a random
                            sub-sample; set to 1.0 to use all matching entries.
 full_sample_apply_quality  Default quality level for the apply step when
                            --read-full-sample-apply is active.  Same accepted values
-                           as full_sample_train_quality.  Can be overridden at runtime
+                           as train_goodRunList_quality.  Can be overridden at runtime
                            with --full-sample-apply-quality.
 full_sample_apply_fraction Fraction of the quality-filtered catalogue to use for the
                            apply step (0 < value ≤ 1).  Defaults to 1.0 (score all
@@ -114,12 +114,12 @@ DEFAULTS: dict = {
     ### Full-sample training
     "full_sample_slab_dir":  "/eos/experiment/milliqan/run3_MilliMon/slab",
     "full_sample_json":      "../data/goodRunsListSlab.json",
-    #"full_sample_train_quality":   "Loose",
-    "full_sample_train_quality":   "Medium",
-    #"full_sample_train_quality":   "Tight",
-    #"full_sample_train_quality":   "All",
-    "full_sample_train_fraction":  0.01,
-    #"full_sample_train_fraction":  1.0,
+    #"train_goodRunList_quality":   "Loose",
+    "train_goodRunList_quality":   "Medium",
+    #"train_goodRunList_quality":   "Tight",
+    #"train_goodRunList_quality":   "All",
+    "train_goodRunList_fraction":  0.01,
+    #"train_goodRunList_fraction":  1.0,
     "full_sample_apply_quality":   "Medium",
     "full_sample_apply_fraction":  1.0,
 }

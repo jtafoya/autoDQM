@@ -122,6 +122,23 @@ flowchart TD
         timestamp · filename · channel
         anomalous · method · max_z · if_score
         triggered_features")]
+        RUNCSV[("<tag>_run&lt;N&gt;.csv  (per-run, --apply-specific-run)
+        same schema as anomalies.csv
+        one file per run, combined by combine.py")]
+    end
+
+    %% ── Combine ──────────────────────────────────────────────────────────────
+    subgraph COMBINE["🔗  combine.py  —  Per-run Output Combine"]
+        direction TB
+        COMB_F["step_combine_specific_runs(pattern)
+        shell-wildcard match on run number
+        e.g. '*' for all, '100?' for 1000-1009"]
+        COMB_G["check_no_uncombined_run_outputs()
+        guard: refuse global plots if any
+        per-run file is newer than combined log"]
+        COMB_OUT[("<tag>.csv  (combined log)
+        + <tag>_paths.txt  (merged path cache)")]
+        COMB_F --> COMB_OUT
     end
 
     %% ── Reporting ────────────────────────────────────────────────────────────
@@ -210,8 +227,13 @@ flowchart TD
     CSV    --> PL
     ALT    -->|"per-file"| PF
 
+    RUNCSV -->|"--combine-specific-run-outputs"| COMB_F
+    COMB_OUT --> CL
+    COMB_OUT --> PL
+
     PIPE -->|"orchestrates"| TRAIN
     PIPE -->|"orchestrates"| APPLY
+    PIPE -->|"orchestrates"| COMBINE
     PIPE -->|"orchestrates"| REPORT
     PIPE -->|"orchestrates"| PLOTS
 ```

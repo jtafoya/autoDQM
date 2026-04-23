@@ -12,7 +12,7 @@ Typical usage in every script::
     from .args import (preparse_config, add_config, add_features,
                        add_model_thresholds, add_alert_thresholds,
                        add_test_mode, add_full_sample_args,
-                       validate_full_sample_args)
+                       add_specific_run_args, validate_full_sample_args)
     from .config import print_banner
 
     _, cfg = preparse_config()
@@ -23,9 +23,10 @@ Typical usage in every script::
     add_alert_thresholds(parser, cfg)
     add_test_mode(parser, cfg)
     add_full_sample_args(parser, cfg)   # defaults from config; no required CLI args
+    add_specific_run_args(parser)       # per-run apply and combine modes
     # ... script-specific arguments ...
     args = parser.parse_args()
-    validate_full_sample_args(parser, args)  # range-checks fractions; validates --share-full-sample-lists
+    validate_full_sample_args(parser, args)  # range-checks fractions; validates --apply-to-training-list
 """
 
 import argparse
@@ -151,10 +152,10 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
     """
     Add arguments for full-sample training and apply modes.
 
-    Training (--read-full-sample)
+    Training (--train-goodRunList)
         Reads the complete slab catalogue instead of the default text run list.
         Defaults for quality and fraction come from config.yaml
-        (full_sample_train_quality / full_sample_train_fraction).
+        (train_goodRunList_quality / train_goodRunList_fraction).
 
     Apply (--read-full-sample-apply)
         Mirrors the training mode for the apply step: scores all catalogue files
@@ -163,24 +164,24 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
         (full_sample_apply_quality / full_sample_apply_fraction).
 
     All options default to config values; none are required at the command line.
-    Per-run overrides are available via --full-sample-train-quality,
-    --full-sample-train-fraction, --full-sample-apply-quality,
-    --full-sample-apply-fraction, and --share-full-sample-lists.
+    Per-run overrides are available via --train-goodRunList-quality,
+    --train-goodRunList-fraction, --full-sample-apply-quality,
+    --full-sample-apply-fraction, and --apply-to-training-list.
     """
     # ── Training ──────────────────────────────────────────────────────────────
     trn = parser.add_argument_group(
-        "full-sample training",
+        "goodRunList training",
         "Use the complete slab dataset on EOS for training instead of the default "
         "good run list.  Defaults for quality and fraction come from config.yaml.",
     )
     trn.add_argument(
-        "--read-full-sample",
+        "--train-goodRunList",
         action="store_true",
-        help="Enable full-sample training: resolve files from the slab catalogue "
+        help="Enable goodRunList training: resolve files from the slab catalogue "
              "on EOS instead of the default good run list.",
     )
     trn.add_argument(
-        "--full-sample-train-quality",
+        "--train-goodRunList-quality",
         choices=QUALITY_ALL_CHOICES,
         metavar="{" + ",".join(QUALITY_ALL_CHOICES) + "}",
         help="Quality filter for training. "
@@ -188,7 +189,7 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
              "(default: %(default)s)",
     )
     trn.add_argument(
-        "--full-sample-train-fraction",
+        "--train-goodRunList-fraction",
         type=float,
         metavar="F",
         help="Fraction of the quality-filtered catalogue to use for training "
@@ -225,22 +226,79 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
              "(default: %(default)s)",
     )
     apl.add_argument(
-        "--share-full-sample-lists",
+        "--apply-to-training-list",
         action="store_true",
         help="Apply the model to exactly the same files used for training "
              "(same quality filter, fraction, and seed).  Requires "
-             "--read-full-sample.  Overrides --read-full-sample-apply, "
+             "--train-goodRunList.  Overrides --read-full-sample-apply, "
              "--full-sample-apply-quality, and --full-sample-apply-fraction.",
     )
 
     parser.set_defaults(
-        read_full_sample             = False,
-        full_sample_train_quality    = cfg["full_sample_train_quality"],
-        full_sample_train_fraction   = cfg["full_sample_train_fraction"],
+        train_goodRunList            = False,
+        train_goodRunList_quality    = cfg["train_goodRunList_quality"],
+        train_goodRunList_fraction   = cfg["train_goodRunList_fraction"],
         read_full_sample_apply       = False,
         full_sample_apply_quality    = cfg["full_sample_apply_quality"],
         full_sample_apply_fraction   = cfg["full_sample_apply_fraction"],
-        share_full_sample_lists      = False,
+        apply_to_training_list       = False,
+    )
+
+
+def add_specific_run_args(parser: argparse.ArgumentParser) -> None:
+    """
+    Add arguments for per-run apply mode and the combine step.
+
+    --apply-specific-run RUN
+        Requires --train-goodRunList.  Scans the slab directory on disk for
+        every subrun of run RUN (catalogue-independent — any run can be
+        targeted regardless of quality).  The fraction of files to score is
+        controlled by --apply-specific-run-fraction (default 1.0), which is
+        fully decoupled from --train-goodRunList-fraction.  Output is written
+        to logs/<tag>_run<RUN>.csv; no report or plots are produced.  The
+        text-based apply list is ignored entirely in per-run mode.  Cannot be
+        combined with --apply-to-training-list.  Designed for Condor array jobs.
+
+    --apply-specific-run-fraction F
+        Fraction of the run's files to score (0 < F ≤ 1).  Applies only when
+        --apply-specific-run is set.  Default: 1.0 (all files of the run).
+
+    --combine-specific-run-outputs PATTERN
+        Combine per-run CSVs matching logs/<tag>_run<PATTERN>.csv into the
+        main logs/<tag>.csv.  PATTERN accepts shell wildcards (e.g. '*' for
+        all runs, '100?' for runs 1000–1009).  Files not present on disk are
+        silently skipped.  This is a standalone operation: it exits after
+        combining.
+    """
+    grp = parser.add_argument_group(
+        "specific-run apply / combine",
+        "Per-run apply mode for Condor array jobs, and the corresponding combine step.",
+    )
+    grp.add_argument(
+        "--apply-specific-run",
+        type=int,
+        metavar="RUN",
+        default=None,
+        help="Apply model to all subruns of RUN found on disk in the slab directory "
+             "(catalogue-independent; any run can be targeted; requires --train-goodRunList). "
+             "Output saved to logs/<tag>_run<RUN>.csv; no report or plots produced.",
+    )
+    grp.add_argument(
+        "--apply-specific-run-fraction",
+        type=float,
+        metavar="F",
+        default=1.0,
+        help="Fraction of the run's files to score when --apply-specific-run is set "
+             "(0 < F ≤ 1).  Decoupled from --train-goodRunList-fraction. "
+             "(default: 1.0 — apply to all files of the run)",
+    )
+    grp.add_argument(
+        "--combine-specific-run-outputs",
+        metavar="PATTERN",
+        default=None,
+        help="Combine per-run CSVs matching logs/<tag>_run<PATTERN>.csv into "
+             "logs/<tag>.csv. Accepts shell wildcards (e.g. '*', '100?'). "
+             "Exits after combining.",
     )
 
 
@@ -253,23 +311,36 @@ def validate_full_sample_args(
 
     Checks:
     - fraction values are in (0, 1] when the corresponding mode is active
-    - --share-full-sample-lists requires --read-full-sample
+    - --apply-to-training-list requires --train-goodRunList
+    - --apply-to-training-list and --apply-specific-run are mutually exclusive
 
     Call this immediately after parser.parse_args() in every script that uses
     add_full_sample_args().
     """
-    if args.read_full_sample:
-        if not (0 < args.full_sample_train_fraction <= 1.0):
+    if args.train_goodRunList:
+        if not (0 < args.train_goodRunList_fraction <= 1.0):
             parser.error(
-                f"--full-sample-train-fraction must be in (0, 1]; "
-                f"got {args.full_sample_train_fraction}"
+                f"--train-goodRunList-fraction must be in (0, 1]; "
+                f"got {args.train_goodRunList_fraction}"
             )
-    if getattr(args, "share_full_sample_lists", False):
-        if not args.read_full_sample:
-            parser.error("--share-full-sample-lists requires --read-full-sample")
+    if getattr(args, "apply_to_training_list", False):
+        if not args.train_goodRunList:
+            parser.error("--apply-to-training-list requires --train-goodRunList")
+        if getattr(args, "apply_specific_run", None) is not None:
+            parser.error(
+                "--apply-to-training-list and --apply-specific-run cannot be combined. "
+                "Use --read-full-sample-apply so the apply catalogue is resolved "
+                "independently of the training sub-sample."
+            )
     if getattr(args, "read_full_sample_apply", False):
         if not (0 < args.full_sample_apply_fraction <= 1.0):
             parser.error(
                 f"--full-sample-apply-fraction must be in (0, 1]; "
                 f"got {args.full_sample_apply_fraction}"
+            )
+    if getattr(args, "apply_specific_run_fraction", 1.0) != 1.0:
+        if not (0 < args.apply_specific_run_fraction <= 1.0):
+            parser.error(
+                f"--apply-specific-run-fraction must be in (0, 1]; "
+                f"got {args.apply_specific_run_fraction}"
             )

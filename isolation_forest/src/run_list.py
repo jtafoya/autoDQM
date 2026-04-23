@@ -1,9 +1,14 @@
 """
-Run list parser.
+Run list parser and filename utilities.
 
-Two modes are supported:
+Three functions are provided:
 
-1. Text-based run list (resolve_run_list)
+1. extract_run_number(path)
+   Parse the run number from a Digitizer filename (e.g. "Digitizer_run1234_subrun5.csv"
+   → 1234).  Returns None if the pattern is absent.  Used by the per-run apply mode
+   (--apply-specific-run) and by the combine guard in combine.py.
+
+2. resolve_run_list(list_file) — text-based run list
    A plain text file where each non-empty, non-comment line is a glob pattern
    that expands to one or more Digitizer CSV file paths.
 
@@ -18,17 +23,21 @@ Two modes are supported:
    Lines starting with '#' and blank lines are ignored.
    Patterns are resolved relative to the current working directory.
 
-2. Full-sample mode (resolve_full_sample)
+3. resolve_full_sample(json_path, slab_dir, quality, ...) — full-sample mode
    Reads the goodRunsListSlab.json catalogue and builds file paths directly
    from the slab directory on EOS.  Requires a quality level to be specified
    (Loose, Medium, Tight, or All) and an optional fraction for sub-sampling
-   the catalogue.  Statistics about the catalogue are printed at runtime.
+   the catalogue.  Prints catalogue-level counts (total entries, tags, quality
+   breakdowns), post-quality-filter counts, and post-fraction counts.  The
+   pre-filter unique-run total is intentionally omitted to avoid confusion
+   with the run count actually used by the caller.
    "All" selects entries that pass at least one quality criterion (OR logic).
 """
 
 import glob
 import json
 import random
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -51,6 +60,24 @@ QUALITY_CHOICES: dict[str, int] = {
 
 # Full set of accepted quality values (includes the synthetic "All" option)
 QUALITY_ALL_CHOICES: list[str] = [*QUALITY_CHOICES, "All"]
+
+
+def extract_run_number(path: str) -> "int | None":
+    """Extract the run number from a Digitizer filename, or None if not parseable."""
+    m = re.search(r"run(\d+)", Path(path).name, re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
+def resolve_run_files(slab_dir: str, run: int) -> list:
+    """
+    Return all Digitizer CSV files on disk for a given run number.
+
+    Scans <slab_dir>/<floor100>/ directly — not catalogue-filtered — so every
+    subrun present on disk is returned, regardless of run quality.
+    """
+    subdir = (run // 100) * 100
+    pattern = str(Path(slab_dir) / str(subdir) / f"Digitizer_run{run}_subrun*.csv")
+    return sorted(glob.glob(pattern))
 
 
 def resolve_run_list(list_file: str) -> list:
@@ -89,6 +116,7 @@ def resolve_full_sample(
     quality: str,
     fraction: float = 1.0,
     seed: int = 42,
+    print_stats: bool = True,
 ) -> list:
     """
     Build a list of Digitizer CSV paths from the goodRunsListSlab.json catalogue.
@@ -118,6 +146,10 @@ def resolve_full_sample(
         A random sub-sample is drawn when fraction < 1.
     seed : int
         Random seed for reproducible sub-sampling.
+    print_stats : bool
+        If False, suppress the quality-filter and fraction-sample counts
+        (useful in the apply-specific-run path where those counts describe the
+        full catalogue, not the single targeted run).
 
     Returns
     -------
@@ -141,21 +173,20 @@ def resolve_full_sample(
     all_rows = catalogue["data"]
 
     # ── Statistics ────────────────────────────────────────────────────────────
-    total_entries  = len(all_rows)
-    total_runs     = len(set(r[_COL_RUN] for r in all_rows))
-    tag_counts     = Counter(r[_COL_TAG] for r in all_rows)
-    loose_count    = sum(1 for r in all_rows if r[_COL_GOOD_RUN_LOOSE])
-    medium_count   = sum(1 for r in all_rows if r[_COL_GOOD_RUN_MEDIUM])
-    tight_count    = sum(1 for r in all_rows if r[_COL_GOOD_RUN_TIGHT])
+    if print_stats:
+        total_entries = len(all_rows)
+        tag_counts    = Counter(r[_COL_TAG] for r in all_rows)
+        loose_count   = sum(1 for r in all_rows if r[_COL_GOOD_RUN_LOOSE])
+        medium_count  = sum(1 for r in all_rows if r[_COL_GOOD_RUN_MEDIUM])
+        tight_count   = sum(1 for r in all_rows if r[_COL_GOOD_RUN_TIGHT])
 
-    print()
-    print("  ── goodRunsListSlab.json statistics ────────────────────────")
-    print(f"     Total entries (run+subrun pairs) : {total_entries:>8,}")
-    print(f"     Unique runs                      : {total_runs:>8,}")
-    print(f"     Tags                             : {dict(tag_counts)}")
-    print(f"     Loose                            : {loose_count:>8,}")
-    print(f"     Medium                           : {medium_count:>8,}")
-    print(f"     Tight                            : {tight_count:>8,}")
+        print()
+        print("  ── goodRunsListSlab.json statistics ────────────────────────")
+        print(f"     Total entries (run+subrun pairs) : {total_entries:>8,}")
+        print(f"     Tags                             : {dict(tag_counts)}")
+        print(f"     Loose                            : {loose_count:>8,}")
+        print(f"     Medium                           : {medium_count:>8,}")
+        print(f"     Tight                            : {tight_count:>8,}")
 
     # ── Filter by quality ─────────────────────────────────────────────────────
     if quality == "All":
@@ -167,22 +198,26 @@ def resolve_full_sample(
     else:
         quality_col = QUALITY_CHOICES[quality]
         filtered = [r for r in all_rows if r[quality_col]]
-    filtered_runs = len(set(r[_COL_RUN] for r in filtered))
-    print(f"  ── After quality filter ({quality})")
-    print(f"     Matching entries                 : {len(filtered):>8,}")
-    print(f"     Unique runs                      : {filtered_runs:>8,}")
+
+    if print_stats:
+        filtered_runs = len(set(r[_COL_RUN] for r in filtered))
+        print(f"  ── After quality filter ({quality})")
+        print(f"     Matching entries                 : {len(filtered):>8,}")
+        print(f"     Unique runs                      : {filtered_runs:>8,}")
 
     # ── Sub-sample by fraction ────────────────────────────────────────────────
     if fraction < 1.0:
         rng = random.Random(seed)
         n_sample = max(1, int(round(len(filtered) * fraction)))
         filtered = rng.sample(filtered, n_sample)
-        sampled_runs = len(set(r[_COL_RUN] for r in filtered))
-        print(f"  ── After fraction sub-sample (fraction={fraction}, seed={seed})")
-        print(f"     Sampled entries                  : {len(filtered):>8,}")
-        print(f"     Unique runs in sample            : {sampled_runs:>8,}")
+        if print_stats:
+            sampled_runs = len(set(r[_COL_RUN] for r in filtered))
+            print(f"  ── After fraction sub-sample (fraction={fraction}, seed={seed})")
+            print(f"     Sampled entries                  : {len(filtered):>8,}")
+            print(f"     Unique runs in sample            : {sampled_runs:>8,}")
 
-    print()
+    if print_stats:
+        print()
 
     # ── Build and validate paths ──────────────────────────────────────────────
     slab_root = Path(slab_dir)

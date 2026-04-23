@@ -1,10 +1,12 @@
 """
 Run the full autoDQM pipeline in a single command:
 
-  1. Train  — build reference model and Isolation Forest from a good run list
-  2. Apply  — run the detector over an application run list, log results
-  3. Report — classify runs into good / partial / bad
-  4. Plots  — reference statistics, log summary, per-file diagnostics for a sample of good and bad subruns
+  1. Train    — build reference model and Isolation Forest from a good run list
+  2. Apply    — run the detector over an application run list, log results
+  3. Evaluate — compare predicted status against goodRunsListSlab.json ground truth
+                (TP/FP/TN/FN summary, confusion plot, framework_good_runs.json)
+  4. Report   — classify runs into good / partial / bad
+  5. Plots    — reference statistics, log summary, per-file diagnostics for a sample of good and bad subruns
 
 Defaults: good-list = ../data/good_run_list_EOS.txt
           apply-list = ../data/all_run_list_EOS.txt
@@ -19,10 +21,42 @@ Usage — custom sample size:
     python3 -m src.pipeline --test-train 100 --test-apply 50
 
 Usage — full training on the complete slab dataset from EOS:
-    python3 -m src.pipeline --read-full-sample --full-sample-train-quality Tight
+    python3 -m src.pipeline --train-goodRunList --train-goodRunList-quality Tight
 
 Usage — apply the same files used for training:
-    python3 -m src.pipeline --read-full-sample --share-full-sample-lists
+    python3 -m src.pipeline --train-goodRunList --apply-to-training-list
+
+Per-run apply mode (Condor array jobs)
+--------------------------------------
+Apply the model to one run at a time and save results to run-specific files.
+Combining --train-goodRunList with --apply-specific-run makes the apply step
+self-contained: it scans the slab directory on disk for every subrun of the
+requested run (catalogue-independent, so any run can be targeted regardless
+of quality).  The fraction of files to score is set by
+--apply-specific-run-fraction (default 1.0), which is fully decoupled from
+--train-goodRunList-fraction.  No --read-full-sample-apply flag is needed.
+
+    # Train on 0.1 % of Tight-quality files:
+    python3 -m src.pipeline --train-goodRunList \
+        --train-goodRunList-quality Tight --train-goodRunList-fraction 0.001 \
+        --skip-apply --skip-evaluate --skip-report --skip-all-plots
+
+    # Apply to all files of run 1234 (or a fraction with --apply-specific-run-fraction):
+    python3 -m src.pipeline --train-goodRunList \
+        --train-goodRunList-quality Tight --train-goodRunList-fraction 0.001 \
+        --skip-train --apply-specific-run 1234
+
+Each job writes logs/<tag>_run<N>.csv (no report or plots).  When all jobs
+are done, combine the per-run outputs and then run global plots:
+
+    python3 -m src.pipeline --train-goodRunList --combine-specific-run-outputs '*'
+    python3 -m src.pipeline --train-goodRunList --skip-train --skip-apply
+
+--combine-specific-run-outputs accepts shell wildcards applied to the run
+number part: '*' for everything, '100?' for runs 1000–1009, etc.
+
+If uncombined per-run outputs exist when the pipeline is run without
+--apply-specific-run, it refuses to continue and asks to combine first.
 
 Resuming an interrupted run
 ----------------------------
@@ -31,12 +65,14 @@ resumes from the first incomplete step.  To force a step to re-run, delete
 its output:
   - Training : delete  models/<tag>/
   - Apply    : delete  logs/<tag>.csv
+  - Evaluate : delete  reports/<tag>/eval_summary.txt
   - Report   : delete  reports/<tag>/
   - Plots    : delete  plots/<tag>/
 
 Any step can also be skipped manually with --skip-train / --skip-apply /
---skip-report / --skip-all-plots.  Use --skip-subrun-plots to skip only the
-per-file plots while still producing the reference_* and log_* summaries.
+--skip-evaluate / --skip-report / --skip-all-plots.  Use --skip-subrun-plots
+to skip only the per-file plots while still producing the reference_* and
+log_* summaries.
 
 Training metadata
 -----------------
@@ -46,14 +82,21 @@ explicit record of any values that were overridden on the command line
 relative to the config file.  A copy of the config file itself is saved as
 models/<tag>/config.yaml.
 
-Deleting a model tag
---------------------
-To remove all outputs for a given tag at once:
-    python3 -m src.pipeline --delete-model-tag <tag>
+Overriding existing outputs
+---------------------------
+To delete all outputs for the current tag and re-run immediately:
+    python3 -m src.pipeline --override-outputs [... other flags ...]
 
 This deletes models/<tag>/, logs/<tag>.csv, logs/<tag>_paths.txt,
-reports/<tag>/, and plots/<tag>/.  A confirmation prompt requires typing YES
-before anything is removed.  Cannot be combined with any other argument.
+reports/<tag>/, and plots/<tag>/ (or their per-run equivalents when
+--apply-specific-run is set).  A YES confirmation prompt is shown before
+deletion, then the pipeline continues immediately.  Useful when you want
+to re-run with the same tag.
+
+To remove outputs for a tag without re-running:
+    python3 -m src.pipeline --delete-model-tag <tag>
+
+This requires typing YES to confirm and exits without running the pipeline.
 """
 
 import argparse
@@ -63,9 +106,12 @@ from pathlib import Path
 
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
-                   add_full_sample_args, validate_full_sample_args)
+                   add_full_sample_args, add_specific_run_args,
+                   validate_full_sample_args)
 from .train import step_train
 from .monitor import step_apply
+from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
+from .evaluate import step_evaluate
 
 
 # ── Step helpers ─────────────────────────────────────────────────────────────
@@ -77,7 +123,7 @@ def _step(name: str) -> None:
 
 
 def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> bool:
-    _step("STEP 3 — REPORT")
+    _step("STEP 4 — REPORT")
 
     if (reports_dir / "run_summary.csv").exists():
         print(f"[AUTO-SKIP] Report — {reports_dir}/run_summary.csv already exists.")
@@ -105,7 +151,7 @@ def step_plots(
     skip_subrun_plots: bool = False,
     max_subrun_plots: int = 10,
 ) -> bool:
-    _step("STEP 4 — PLOTS")
+    _step("STEP 5 — PLOTS")
 
     if (plots_dir / "reference_means.png").exists():
         print(f"[AUTO-SKIP] Plots — {plots_dir}/reference_means.png already exists.")
@@ -220,7 +266,7 @@ def main() -> None:
     _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
-        description="Run the full autoDQM pipeline: train → apply → report → plots."
+        description="Run the full autoDQM pipeline: train → apply → evaluate → report → plots."
     )
 
     # ── Config ──
@@ -254,6 +300,18 @@ def main() -> None:
                         help="Test mode: sample N apply files (default N=50 when flag is given)")
     add_test_mode(parser, cfg)
     add_full_sample_args(parser, cfg)
+    add_specific_run_args(parser)
+
+    # ── Evaluate ──
+    from .run_list import QUALITY_ALL_CHOICES as _EVAL_Q_CHOICES
+    parser.add_argument(
+        "--evaluate-quality",
+        choices=_EVAL_Q_CHOICES,
+        metavar="{" + ",".join(_EVAL_Q_CHOICES) + "}",
+        default="Tight",
+        help="Quality level used as 'known good' ground truth in the evaluate step "
+             "(default: Tight)",
+    )
 
     # ── Destructive operations ──
     parser.add_argument(
@@ -264,10 +322,21 @@ def main() -> None:
              "Cannot be combined with any other argument.",
     )
 
+    parser.add_argument(
+        "--override-outputs",
+        action="store_true",
+        help="Delete all existing outputs for the resolved model tag (models, log, "
+             "reports, plots) and re-run from scratch.  Prompts for YES confirmation "
+             "before deleting, then continues running — unlike --delete-model-tag "
+             "which exits after deletion.",
+    )
+
     # ── Skip flags ──
-    parser.add_argument("--skip-train",  action="store_true", help="Skip training step")
-    parser.add_argument("--skip-apply",  action="store_true", help="Skip apply step")
-    parser.add_argument("--skip-report", action="store_true", help="Skip report step")
+    parser.add_argument("--skip-train",    action="store_true", help="Skip training step")
+    parser.add_argument("--skip-apply",    action="store_true", help="Skip apply step")
+    parser.add_argument("--skip-evaluate", action="store_true",
+                        help="Skip evaluation step (TP/FP/TN/FN against goodRunsListSlab.json)")
+    parser.add_argument("--skip-report",   action="store_true", help="Skip report step")
     parser.add_argument("--skip-all-plots",    action="store_true",
                         help="Skip the entire plots step (no reference_*, log_*, or per-file plots)")
     parser.add_argument("--skip-subrun-plots", action="store_true",
@@ -345,6 +414,10 @@ def main() -> None:
 
     validate_full_sample_args(parser, args)
 
+    # ── --apply-specific-run validation ──────────────────────────────────────
+    if args.apply_specific_run is not None and not args.train_goodRunList:
+        parser.error("--apply-specific-run requires --train-goodRunList")
+
     random.seed(args.test_seed)
 
     # use_trigger/use_lvds: config sets the baseline, --no-* flags override
@@ -353,34 +426,87 @@ def main() -> None:
 
     # Auto-append feature-set suffix to the tag so outputs are self-documenting
     tag = args.model_tag
-    if args.read_full_sample:
-        tag += f"_{args.full_sample_train_quality}"
+    if args.train_goodRunList:
+        tag += f"_{args.train_goodRunList_quality}"
     if not use_trigger:
         tag += "_noTrigger"
     if not use_lvds:
         tag += "_noLVDS"
 
+    logs_dir_path = Path(args.logs_dir)
+
+    # ── --combine-specific-run-outputs: early exit ────────────────────────────
+    if args.combine_specific_run_outputs is not None:
+        step_combine_specific_runs(args.combine_specific_run_outputs, logs_dir_path, tag)
+        sys.exit(0)
+
+    # ── Guard: refuse to proceed if uncombined per-run outputs exist ──────────
+    if args.apply_specific_run is None and not args.override_outputs:
+        check_no_uncombined_run_outputs(logs_dir_path, tag)
+
+    # ── Resolve output paths ──────────────────────────────────────────────────
     models_dir  = Path(args.models_dir)  / tag
-    log_file    = Path(args.logs_dir)    / f"{tag}.csv"
     reports_dir = Path(args.reports_dir) / tag
     plots_dir   = Path(args.plots_dir)   / tag
 
+    # Per-run mode uses a run-specific log; global mode uses the combined log.
+    if args.apply_specific_run is not None:
+        log_file = logs_dir_path / f"{tag}_run{args.apply_specific_run}.csv"
+    else:
+        log_file = logs_dir_path / f"{tag}.csv"
+
+    # ── --override-outputs: delete existing outputs then fall through ─────────
+    if args.override_outputs:
+        import shutil
+        if args.apply_specific_run is not None:
+            candidates = [
+                models_dir,
+                log_file,
+                logs_dir_path / f"{tag}_run{args.apply_specific_run}_paths.txt",
+            ]
+        else:
+            candidates = [
+                models_dir,
+                log_file,
+                logs_dir_path / f"{tag}_paths.txt",
+                reports_dir,
+                plots_dir,
+            ]
+        to_delete = [p for p in candidates if p.exists()]
+        if to_delete:
+            print(f"\nWARNING: The following outputs for tag '{tag}' will be permanently deleted:\n")
+            for p in to_delete:
+                label = "dir " if p.is_dir() else "file"
+                print(f"  [{label}]  {p}")
+            print("\nType YES and press Enter to confirm, or anything else to abort: ", end="", flush=True)
+            if input().strip() != "YES":
+                print("Aborted — nothing was deleted.")
+                sys.exit(0)
+            for p in to_delete:
+                if p.is_dir():
+                    shutil.rmtree(p)
+                else:
+                    p.unlink()
+                print(f"  Deleted: {p}")
+        else:
+            print(f"[--override-outputs] No existing outputs found for tag '{tag}' — nothing to delete.")
+
     from .config import print_banner
 
-    if args.read_full_sample:
+    if args.train_goodRunList:
         train_source = (
             f"{cfg['full_sample_json']} "
-            f"[quality={args.full_sample_train_quality}, "
-            f"fraction={args.full_sample_train_fraction}]"
+            f"[quality={args.train_goodRunList_quality}, "
+            f"fraction={args.train_goodRunList_fraction}]"
         )
     else:
         train_source = args.good_list
 
-    if args.share_full_sample_lists:
+    if args.apply_to_training_list:
         apply_source = (
             f"{cfg['full_sample_json']} "
-            f"[quality={args.full_sample_train_quality}, "
-            f"fraction={args.full_sample_train_fraction}] "
+            f"[quality={args.train_goodRunList_quality}, "
+            f"fraction={args.train_goodRunList_fraction}] "
             f"[shared with training]"
         )
     elif args.read_full_sample_apply:
@@ -389,17 +515,25 @@ def main() -> None:
             f"[quality={args.full_sample_apply_quality}, "
             f"fraction={args.full_sample_apply_fraction}]"
         )
+    elif args.apply_specific_run is not None and args.train_goodRunList:
+        apply_source = (
+            f"{cfg['full_sample_slab_dir']} "
+            f"[run={args.apply_specific_run}, "
+            f"fraction={args.apply_specific_run_fraction} within run, "
+            f"direct disk scan]"
+        )
     else:
         apply_source = args.apply_list
 
     print_banner("pipeline", args.config, [
         ("model tag",            tag),
+        ("per-run mode",         f"run {args.apply_specific_run}" if args.apply_specific_run is not None else "no"),
+        ("log file",             str(log_file)),
         ("train source",         train_source),
-        ("full sample train",    "yes" if args.read_full_sample else "no"),
+        ("train goodRunList",    "yes" if args.train_goodRunList else "no"),
         ("apply source",         apply_source),
         ("full sample apply",    "yes" if args.read_full_sample_apply else "no"),
         ("models dir",           str(models_dir)),
-        ("log file",             str(log_file)),
         ("reports dir",          str(reports_dir)),
         ("plots dir",            str(plots_dir)),
         ("trigger features",     "yes" if use_trigger else "no"),
@@ -413,6 +547,7 @@ def main() -> None:
                                      if args.single_file_alert_n_channels else "disabled"),
         ("single-file extreme alert",f"z≥{args.single_file_alert_max_z}"
                                      if args.single_file_alert_max_z else "disabled"),
+        ("evaluate quality",         args.evaluate_quality),
         ("max subrun plots",         "ALL (WARNING)" if args.max_subrun_plots == -1
                                      else str(args.max_subrun_plots)),
         ("test seed",                str(args.test_seed)),
@@ -431,8 +566,8 @@ def main() -> None:
             "use_trigger":                use_trigger,
             "use_lvds":                   use_lvds,
             "ignore_features":            list(cfg["ignore_features"]),
-            "full_sample_train_quality":  args.full_sample_train_quality,
-            "full_sample_train_fraction": args.full_sample_train_fraction,
+            "train_goodRunList_quality":  args.train_goodRunList_quality,
+            "train_goodRunList_fraction": args.train_goodRunList_fraction,
             "test_seed":                  args.test_seed,
         }
         metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
@@ -443,11 +578,11 @@ def main() -> None:
             use_trigger=use_trigger,
             use_lvds=use_lvds,
             ignore_features=tuple(cfg["ignore_features"]),
-            read_full_sample     = args.read_full_sample,
+            read_full_sample     = args.train_goodRunList,
             full_sample_json     = cfg["full_sample_json"],
             full_sample_slab_dir = cfg["full_sample_slab_dir"],
-            full_sample_quality  = args.full_sample_train_quality,
-            full_sample_fraction = args.full_sample_train_fraction,
+            full_sample_quality  = args.train_goodRunList_quality,
+            full_sample_fraction = args.train_goodRunList_fraction,
             test_seed            = args.test_seed,
             config_path          = args.config,
             training_metadata    = metadata,
@@ -461,36 +596,74 @@ def main() -> None:
 
     # ── Step 2: Apply ──────────────────────────────────────────────────────
     if not args.skip_apply:
-        from .run_list import resolve_run_list, resolve_full_sample
-        if args.share_full_sample_lists:
+        _step("STEP 2 — APPLY")
+        from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files
+        if args.apply_to_training_list:
             print(
-                f"  [--share-full-sample-lists] Resolving apply list from same "
+                f"  [--apply-to-training-list] Resolving apply list from same "
                 f"catalogue params as training "
-                f"[quality={args.full_sample_train_quality}, "
-                f"fraction={args.full_sample_train_fraction}] ..."
+                f"[quality={args.train_goodRunList_quality}, "
+                f"fraction={args.train_goodRunList_fraction}] ..."
             )
             all_apply = resolve_full_sample(
                 json_path  = cfg["full_sample_json"],
                 slab_dir   = cfg["full_sample_slab_dir"],
-                quality    = args.full_sample_train_quality,
-                fraction   = args.full_sample_train_fraction,
+                quality    = args.train_goodRunList_quality,
+                fraction   = args.train_goodRunList_fraction,
                 seed       = args.test_seed,
             )
         elif args.read_full_sample_apply:
+            # Resolve the full catalogue at fraction=1.0 when --apply-specific-run
+            # is active; the within-run sub-sample is applied after filtering.
+            _catalogue_fraction = (
+                1.0 if args.apply_specific_run is not None
+                else args.full_sample_apply_fraction
+            )
             print(
                 f"  Reading full sample catalogue from {cfg['full_sample_json']} "
                 f"[quality={args.full_sample_apply_quality}, "
-                f"fraction={args.full_sample_apply_fraction}] ..."
+                f"fraction={_catalogue_fraction}] ..."
             )
             all_apply = resolve_full_sample(
                 json_path  = cfg["full_sample_json"],
                 slab_dir   = cfg["full_sample_slab_dir"],
                 quality    = args.full_sample_apply_quality,
-                fraction   = args.full_sample_apply_fraction,
+                fraction   = _catalogue_fraction,
                 seed       = args.test_seed,
+            )
+        elif args.apply_specific_run is not None and args.train_goodRunList:
+            # --apply-specific-run + --train-goodRunList: scan the slab directory
+            # directly for every subrun of the requested run on disk.  This is
+            # catalogue-independent so any run can be targeted, not only those
+            # that appear in the goodRunsListSlab.json.
+            print(
+                f"  [--apply-specific-run {args.apply_specific_run}] Scanning slab "
+                f"directory for all run {args.apply_specific_run} files ..."
+            )
+            all_apply = resolve_run_files(
+                slab_dir = cfg["full_sample_slab_dir"],
+                run      = args.apply_specific_run,
             )
         else:
             all_apply = resolve_run_list(args.apply_list)
+        if args.apply_specific_run is not None:
+            run_num   = args.apply_specific_run
+            total     = len(all_apply)
+            if not total:
+                print(
+                    f"ERROR: No files found for run {run_num} on disk.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            frac = args.apply_specific_run_fraction
+            n_selected = max(1, int(round(total * frac))) if frac < 1.0 else total
+            print(f"  ── Run {run_num} statistics ──────────────────────────────────")
+            print(f"     Total subruns on disk                : {total:>8,}")
+            print(f"     Fraction                             : {frac:>8.4g}")
+            print(f"     Subruns to process                   : {n_selected:>8,}")
+            print()
+            if frac < 1.0:
+                all_apply = random.sample(all_apply, min(n_selected, total))
         if args.test_apply:
             print(f"  [TEST MODE] {len(all_apply)} file(s) to sample for apply.\n")
             all_apply = random.sample(all_apply, min(args.test_apply, len(all_apply)))
@@ -500,6 +673,7 @@ def main() -> None:
             alert_consecutive_n=args.alert_consecutive_n,
             single_file_alert_n_channels=args.single_file_alert_n_channels,
             single_file_alert_max_z=args.single_file_alert_max_z,
+            show_banner=False,
         )
     else:
         print("[SKIP] Apply")
@@ -507,14 +681,35 @@ def main() -> None:
             print(f"ERROR: --skip-apply set but log not found: {log_file}", file=sys.stderr)
             sys.exit(1)
 
-    # ── Step 3: Report ─────────────────────────────────────────────────────
-    if not args.skip_report:
+    # ── Step 3: Evaluate ───────────────────────────────────────────────────
+    if not args.skip_evaluate:
+        _step("STEP 3 — EVALUATE")
+        step_evaluate(
+            log_file                     = log_file,
+            json_path                    = cfg.get("full_sample_json", ""),
+            out_dir                      = reports_dir,
+            plots_dir                    = plots_dir,
+            file_alert_n_channels        = args.file_alert_n_channels,
+            alert_consecutive_n          = args.alert_consecutive_n,
+            single_file_alert_n_channels = args.single_file_alert_n_channels,
+            single_file_alert_max_z      = args.single_file_alert_max_z,
+            gt_quality                   = args.evaluate_quality,
+        )
+    else:
+        print("[SKIP] Evaluate")
+
+    # ── Step 4: Report ─────────────────────────────────────────────────────
+    if args.apply_specific_run is not None:
+        print("[SKIP] Report (per-run mode — combine outputs first, then re-run without --apply-specific-run)")
+    elif not args.skip_report:
         step_report(log_file, reports_dir, args.file_alert_n_channels)
     else:
         print("[SKIP] Report")
 
-    # ── Step 4: Plots ──────────────────────────────────────────────────────
-    if not args.skip_all_plots:
+    # ── Step 5: Plots ──────────────────────────────────────────────────────
+    if args.apply_specific_run is not None:
+        print("[SKIP] Plots (per-run mode — combine outputs first, then re-run without --apply-specific-run)")
+    elif not args.skip_all_plots:
         step_plots(log_file, models_dir, plots_dir,
                    args.file_alert_n_channels, args.alert_consecutive_n,
                    single_file_alert_n_channels=args.single_file_alert_n_channels,
