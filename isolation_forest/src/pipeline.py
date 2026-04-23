@@ -675,10 +675,13 @@ def main() -> None:
             sys.exit(1)
 
     # ── Step 3: Evaluate ───────────────────────────────────────────────────
+    _quality_explicit = "--train-goodRunList-quality" in sys.argv
     if args.apply_specific_run is not None:
         print("[SKIP] Evaluate (per-run mode — combine outputs first, then re-run without --apply-specific-run)")
     elif not args.train_goodRunList:
         print("[SKIP] Evaluate (requires --train-goodRunList so the quality level is known)")
+    elif not _quality_explicit:
+        print("[SKIP] Evaluate (requires --train-goodRunList-quality to be explicitly set so the ground truth quality is unambiguous)")
     elif not args.skip_evaluate:
         _step("STEP 3 — EVALUATE")
         step_evaluate(
