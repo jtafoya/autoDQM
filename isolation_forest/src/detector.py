@@ -11,6 +11,23 @@ Two-layer anomaly detector:
       Trained only on good data → inherently a novelty detector.
 
 Both layers run per channel. A channel is flagged if either layer triggers.
+
+Absent data sources (LVDS)
+--------------------------
+Not every run has an LVDS file.  When LVDS is absent:
+
+  - Real channels (ch0, ch1, ...): the LVDSpin feature is NaN.  NaN z-scores
+    are transparent to Layer 1 (NaN > threshold = False) and are filled with 0.0
+    (= perfectly nominal) before Layer 2 scoring.  No anomaly is raised.
+
+  - trigger_lvds_total pseudo-channel: all features are NaN.  The channel IS
+    known to the reference (seen during training), so it is treated as nominal —
+    all-NaN z-scores do not trigger either layer.  It is never marked as
+    "new_channel" or "missing_channel".
+
+In both cases the absence of LVDS data has zero effect on anomaly detection.
+A channel is only "new" if the reference has no statistics for it at all
+(i.e. it never appeared in training data).
 """
 
 from __future__ import annotations
@@ -124,8 +141,15 @@ class AnomalyDetector:
           max_z              — largest absolute z-score across all features
           if_score           — Isolation Forest anomaly score (lower = more anomalous)
 
-        Channels present in the reference but absent from this file are flagged as
-        "missing_channel" — they fired in training data but produced zero hits here.
+        Channel classification:
+          new_channel     — channel appears in this file but has no reference statistics;
+                            flagged because the reference cannot assess it.
+          missing_channel — real channel known to the reference but entirely absent from
+                            this file; flagged because it was active during training.
+          (nominal / other) — known channels with absent optional data sources (e.g.
+                            trigger_lvds_total when the LVDS file is missing) produce
+                            all-NaN z-scores that do not trigger either layer; they are
+                            silently treated as nominal.
         """
         features = extract_features(
             filepath, use_trigger=self._use_trigger, use_lvds=self._use_lvds,
@@ -159,7 +183,11 @@ class AnomalyDetector:
             row: dict = {"channel": channel}
 
             z_row = z_df.loc[channel] if channel in z_df.index else None
-            is_new = z_row is None or z_row.isna().all()
+            # A channel is "new" only when the reference has no statistics for it —
+            # it never appeared in training data.  A known channel whose data source
+            # was absent this run (e.g. trigger_lvds_total with no LVDS file) has
+            # all-NaN z-scores but is NOT new: its absence is expected and benign.
+            is_new = self.reference.get_stats(channel) is None
 
             # ---- Layer 1: statistical z-score ----
             if is_new:

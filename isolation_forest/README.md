@@ -267,6 +267,25 @@ python3 -m src.monitor \
   --refresh-log-plots-every 50
 ```
 
+To accumulate confirmed good subruns into a live good-run list for incremental training:
+
+```bash
+python3 -m src.monitor \
+  --watch-dir /eos/experiment/milliqan/run3/slab/live/ \
+  --live-good-list data/live_good_runs.txt
+```
+
+Subruns that do not trigger an alert are written to `live_good_runs.txt` in the same
+plain-text format as `good_run_list_EOS.txt`, ready for incremental training
+(see [Scaling](#scaling-to--106-files)).
+
+**Probationary period**: the first `alert_consecutive_n − 1` subruns of each run are held
+in a queue rather than written immediately.  They are flushed (written retroactively) only
+when the first fully-confirmed subrun arrives — i.e. the first subrun for which the
+persistence window is complete and no alert fires.  An alert during the probationary period
+clears the queue; those subruns are discarded.  When `alert_consecutive_n = 1` there is no
+probationary period and every passing subrun is written immediately.
+
 To apply the model to a run list instead of a live directory (test mode only):
 
 ```bash
@@ -293,6 +312,7 @@ Options:
 | `--plot-alerts` | off | Auto-generate 4 diagnostic plots for every alerted file, saved to `plots-dir/alerts/<stem>/` |
 | `--plots-dir` | from config.yaml | Root directory for all plot output |
 | `--refresh-log-plots-every` | `0` | Regenerate log summary plots every N processed files (0 = disabled) |
+| `--live-good-list` | off | Path to a live good-run list file. Subruns that do not trigger an alert are written here (same plain-text format as `--good-list`). Probationary subruns (first `alert_consecutive_n − 1` of each run) are held and flushed retroactively when the persistence window is confirmed; an alert during probation discards them. To change what counts as "good", edit `_subrun_quality_verdict()` in `monitor.py` |
 | `--test [N]` | off | Test mode: randomly sample N files from the source (watch-dir or run-list), process them, then exit |
 | `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
 | `--plot-format` | from config.yaml (`png`) | Output format for `--plot-alerts` diagnostic plots and log-summary refreshes: `png`, `pdf`, or `svg` |
@@ -661,6 +681,18 @@ Z-scoring first makes the IF scale-invariant (channels at different detector pos
 have different baseline values but similar nominal z-score distributions), and means
 the IF learns *patterns of deviation* rather than memorising absolute scales.
 
+**How the Isolation Forest works**: the algorithm builds an ensemble of random trees
+that recursively split the feature space on randomly chosen features and split values.
+Anomalous points — those that are sparse or far from the training distribution — are
+isolated in fewer splits and receive a lower (more negative) `if_score`.  The score
+ranges roughly from −0.5 (very anomalous) to 0 (deep inside the training distribution).
+The decision boundary is set by `if_contamination`: the IF will always flag the top
+`if_contamination` fraction of any scored dataset as anomalous, regardless of absolute
+score values.  Lowering `if_contamination` is therefore the most direct lever for
+reducing IF-driven false positives (see [Performance tuning](#performance-tuning)).
+The forest uses `n_estimators=200` trees, which is sufficient to produce stable scores
+for a feature space of this size.
+
 Training data is capped at `max_samples=50_000` channel-file vectors; beyond that,
 a random subsample is drawn. This keeps training fast regardless of corpus size.
 
@@ -678,6 +710,15 @@ python3 -m src.train --update
 `--update` reads `models/seen_files.json`, skips files already in the reference,
 and folds in only the new ones. The Isolation Forest is always fully retrained
 (it cannot be updated incrementally), but this is fast since training data is capped.
+
+**Live deployment**: when the monitor is running with `--live-good-list`, the output file
+accumulates confirmed good subruns automatically (probationary subruns are held and flushed
+retroactively once the persistence window is confirmed — see `--live-good-list` above).
+Pass it directly to `--good-list` for the next incremental training cycle:
+
+```bash
+python3 -m src.train --good-list data/live_good_runs.txt --update
+```
 
 As the reference improves with more files, per-channel mean and std estimates become
 tighter and the Isolation Forest has a larger, more representative training set — the

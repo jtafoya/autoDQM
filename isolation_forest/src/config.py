@@ -38,6 +38,11 @@ Single-file severity alerts — fire immediately on one bad file, no history nee
                          0.0 = disabled.
 
 poll_interval        Seconds between directory scans in watch mode.
+live_good_list       Path to the live good-run list file updated by the monitor.
+                     When set (non-empty), every subrun that passes
+                     _subrun_quality_verdict() is appended to this file in real
+                     time.  The file format is the same plain-text format read
+                     by the training step.  "" (default) = disabled.
 test_seed            Random seed for reproducible test-mode sampling.
 max_subrun_plots     Number of subrun plot sets to generate per category in the
                      pipeline plots step. Produces up to max_subrun_plots random
@@ -110,6 +115,7 @@ DEFAULTS: dict = {
     #
     #
     "poll_interval":        5.0,
+    "live_good_list":       "",     # path to live good-run list; "" = disabled
     "test_seed":            42,
     #
     ### Full-sample training
@@ -124,6 +130,13 @@ DEFAULTS: dict = {
     "full_sample_apply_quality":   "Medium",
     "full_sample_apply_fraction":  1.0,
 }
+
+
+def print_step_header(name: str) -> None:
+    """Print a prominent section header for a pipeline step."""
+    print(f"\n{'='*60}")
+    print(f"  {name}")
+    print(f"{'='*60}\n")
 
 
 def print_banner(script: str, config_path: str, fields: list[tuple[str, str]]) -> None:

@@ -18,9 +18,19 @@ actual extension is substituted at save time.
 The eval confusion plot (eval_confusion.<fmt>) is generated here from the
 eval_confusion_data.json written by the evaluate step, so that --skip-all-plots
 suppresses it consistently with every other plot.
+
+Public API
+----------
+step_plots(log_file, models_dir, plots_dir, ...)
+    Pipeline step called by pipeline.py: auto-skip guard + all plot generation.
+plot_reference(ref, out_dir, fmt)  — reference model statistics
+plot_file(filepath, detector, out_dir, ...)  — per-file anomaly diagnostics
+plot_log(log_path, out_dir, ...)  — anomaly log summary
+plot_eval_confusion(confusion_data_path, plots_dir, fmt)  — confusion bar chart
 """
 
 import argparse
+import random
 import sys
 from pathlib import Path
 
@@ -32,9 +42,11 @@ import numpy as np
 import pandas as pd
 
 from .args import preparse_config, add_config, add_plot_format
+from .config import print_step_header
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .features import extract_features, METRIC_COLS
+from .run_list import run_subrun_sort_key
 
 # ── shared style ────────────────────────────────────────────────────────────
 
@@ -515,15 +527,6 @@ def plot_file(
 # 3.  LOG SUMMARY PLOTS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _run_subrun_key(filename: str):
-    """Return (run, subrun) ints parsed from a Digitizer filename, or (inf, inf) if unparseable."""
-    import re
-    m = re.search(r"Digitizer_run(\d+)_subrun(\d+)", str(filename), re.IGNORECASE)
-    if m:
-        return int(m.group(1)), int(m.group(2))
-    return (float("inf"), float("inf"))
-
-
 def _compute_persistence_status(
     df: "pd.DataFrame",
     file_alert_n_channels: int,
@@ -550,7 +553,7 @@ def _compute_persistence_status(
     """
     from collections import deque
 
-    files_sorted = sorted(df["filename"].unique(), key=_run_subrun_key)
+    files_sorted = sorted(df["filename"].unique(), key=run_subrun_sort_key)
 
     # Pre-build per-file channel sets and per-file worst anomalous max_z from log
     anom_sets:    dict = {}
@@ -569,7 +572,7 @@ def _compute_persistence_status(
     rows = []
 
     for fname in files_sorted:
-        run_k, sub_k = _run_subrun_key(fname)
+        run_k, sub_k = run_subrun_sort_key(fname)
 
         # Reset channel history when the run number changes, so that
         # the persistence window never spans two different runs.
@@ -672,7 +675,7 @@ def plot_log(
                   .reset_index())
 
     # Sort by run number then subrun number
-    per_file["_sort_key"] = per_file["filename"].apply(_run_subrun_key)
+    per_file["_sort_key"] = per_file["filename"].apply(run_subrun_sort_key)
     per_file = per_file.sort_values("_sort_key").drop(columns="_sort_key").reset_index(drop=True)
 
     # Colour bars using the full alert status (persistence + bulk + extreme)
@@ -753,8 +756,8 @@ def plot_log(
         _save(fig, out_dir / "log_feature_frequency.png", fmt)
 
     # ── 3d. Per-run good-subrun fraction (raw, non-persistence-aware) ─────────
-    per_file["_run"]    = per_file["filename"].apply(lambda f: _run_subrun_key(f)[0])
-    per_file["_subrun"] = per_file["filename"].apply(lambda f: _run_subrun_key(f)[1])
+    per_file["_run"]    = per_file["filename"].apply(lambda f: run_subrun_sort_key(f)[0])
+    per_file["_subrun"] = per_file["filename"].apply(lambda f: run_subrun_sort_key(f)[1])
     per_file["_status"] = per_file["filename"].map(file_status).fillna("ok")
     parseable = per_file[per_file["_run"] != float("inf")].copy()
 
@@ -1116,6 +1119,172 @@ def _plot_eval_confusion(
     ax.legend(loc="upper right", fontsize=9, title="Predicted", title_fontsize=9)
     fig.tight_layout()
     _save(fig, out_path, fmt)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6.  PIPELINE STEP
+# ══════════════════════════════════════════════════════════════════════════════
+
+def step_plots(
+    log_file: Path,
+    models_dir: Path,
+    plots_dir: Path,
+    file_alert_n_channels: int,
+    alert_consecutive_n: int,
+    reports_dir: Path = None,
+    single_file_alert_n_channels: int = 0,
+    single_file_alert_max_z: float = 0.0,
+    skip_subrun_plots: bool = False,
+    max_subrun_plots: int = 10,
+    fmt: str = "png",
+) -> bool:
+    """
+    Generate all diagnostic plots for one pipeline run.
+
+    Produces reference model plots, anomaly log summary plots, and (if
+    reports_dir contains eval_confusion_data.json) the evaluation confusion
+    chart.  Unless skip_subrun_plots is True, also generates per-file
+    diagnostic plots for a sample of bad and good subruns.
+
+    Parameters
+    ----------
+    log_file : Path
+        Anomaly log CSV produced by the apply step.
+    models_dir : Path
+        Directory containing reference.npz and detector.pkl.
+    plots_dir : Path
+        Destination directory for all figures.
+    file_alert_n_channels : int
+        Persistent alert threshold used to colour bars and select bad subruns.
+    alert_consecutive_n : int
+        Persistence window used by the status replay logic.
+    reports_dir : Path, optional
+        If provided, checked for eval_confusion_data.json; when found the
+        evaluation confusion chart is rendered into plots_dir.
+    single_file_alert_n_channels : int
+        Bulk single-file alert threshold forwarded to plot_log and plot_file.
+    single_file_alert_max_z : float
+        Extreme single-file alert threshold forwarded to plot_log and plot_file.
+    skip_subrun_plots : bool
+        When True, skip per-file diagnostic plots (reference + log still run).
+    max_subrun_plots : int
+        Per category cap on per-file plots: worst bad + N-1 random bad, N random
+        good.  Pass -1 to plot every file (prints a loud warning).
+    fmt : str
+        Output format for all figures (png / pdf / svg).
+
+    Returns
+    -------
+    bool
+        True when plots were generated, False when auto-skipped because
+        reference_means.<fmt> already exists in plots_dir.
+    """
+    print_step_header("STEP 5 — PLOTS")
+
+    _sentinel = next(plots_dir.glob("reference_means.*"), None)
+    if _sentinel is not None:
+        print(f"[AUTO-SKIP] Plots — {_sentinel} already exists.")
+        print(f"            Delete {plots_dir}/ to regenerate.")
+        return False
+
+    ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
+    detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
+
+    plots_dir.mkdir(parents=True, exist_ok=True)
+
+    print("Reference plots...")
+    plot_reference(ref, plots_dir, fmt=fmt)
+
+    print("Log summary plots...")
+    plot_log(str(log_file), plots_dir,
+             file_alert_n_channels=file_alert_n_channels,
+             alert_consecutive_n=alert_consecutive_n,
+             single_file_alert_n_channels=single_file_alert_n_channels,
+             single_file_alert_max_z=single_file_alert_max_z,
+             fmt=fmt)
+
+    if reports_dir is not None:
+        confusion_data = reports_dir / "eval_confusion_data.json"
+        if confusion_data.exists():
+            print("Evaluation confusion plot...")
+            plot_eval_confusion(confusion_data, plots_dir, fmt=fmt)
+
+    if skip_subrun_plots:
+        print("[SKIP] Per-file subrun plots (--skip-subrun-plots)")
+        print(f"  Plots saved → {plots_dir}/")
+        return
+
+    print("Per-file plots (sample of good and bad subruns)...")
+    df = pd.read_csv(str(log_file))
+    per_file = (
+        df.groupby("filename")
+          .agg(total=("channel", "count"), n_bad=("anomalous", "sum"))
+    )
+    bad_df   = per_file[per_file["n_bad"] >= file_alert_n_channels].sort_values("n_bad", ascending=False)
+    good_df  = per_file[per_file["n_bad"] <  file_alert_n_channels]
+
+    bad_names  = bad_df.index.tolist()
+    good_names = good_df.index.tolist()
+
+    n_bad  = len(bad_names)
+    n_good = len(good_names)
+
+    if max_subrun_plots == -1:
+        print()
+        print("!" * 60)
+        print("  WARNING: max_subrun_plots = -1")
+        print(f"  This will generate plots for ALL {n_bad} bad and ALL {n_good} good file(s).")
+        print("  For large runs this can be very slow and use significant")
+        print("  disk space.  Set  \"max_subrun_plots\": N  in config.yaml")
+        print("  (or pass --max-subrun-plots N) to cap the output.")
+        print("!" * 60)
+        print()
+        plot_bad  = bad_names
+        plot_good = good_names
+    else:
+        if bad_names:
+            worst     = bad_names[:1]
+            remaining = bad_names[1:]
+            n_extra   = min(max_subrun_plots - 1, len(remaining))
+            plot_bad  = worst + random.sample(remaining, n_extra)
+        else:
+            plot_bad = []
+
+        plot_good = random.sample(good_names, min(max_subrun_plots, len(good_names)))
+
+        print(f"  Plotting {len(plot_bad)}/{n_bad} bad file(s) "
+              f"(worst + {len(plot_bad)-1 if plot_bad else 0} random) "
+              f"and {len(plot_good)}/{n_good} good file(s) (random).")
+
+    plot_names = plot_bad + plot_good
+
+    path_cache_file = log_file.parent / (log_file.stem + "_paths.txt")
+    if path_cache_file.exists():
+        path_map = {Path(p).name: p for p in path_cache_file.read_text().splitlines() if p.strip()}
+    else:
+        path_map = {}
+
+    n_plotted = 0
+    for name in plot_names:
+        full_path = path_map.get(name)
+        if full_path is None:
+            print(f"    [SKIP] {name} — full path not in cache, re-run with --apply-list to rebuild")
+            continue
+        out = plots_dir / Path(full_path).stem
+        out.mkdir(parents=True, exist_ok=True)
+        print(f"  {name}")
+        try:
+            plot_file(full_path, detector, out,
+                      single_file_alert_n_channels=single_file_alert_n_channels,
+                      single_file_alert_max_z=single_file_alert_max_z,
+                      fmt=fmt)
+            n_plotted += 1
+        except Exception as exc:
+            print(f"    [ERROR] {exc}", file=sys.stderr)
+
+    print(f"\n  {n_plotted}/{len(plot_names)} file(s) plotted ({len(plot_bad)} bad, {len(plot_good)} good).")
+    print(f"  All plots saved → {plots_dir}/")
+    return True
 
 
 # ══════════════════════════════════════════════════════════════════════════════

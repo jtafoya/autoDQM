@@ -105,6 +105,26 @@ To remove outputs for a tag without re-running:
     python3 -m src.pipeline --delete-model-tag <tag>
 
 This requires typing YES to confirm and exits without running the pipeline.
+
+Internal structure
+------------------
+This module is a pure orchestrator: all step logic lives in its owning module
+(train.py → step_train, monitor.py → step_apply, evaluate.py → step_evaluate,
+report.py → step_report, plot.py → step_plots, combine.py → step_combine_*).
+Two private helpers assist main():
+
+  _confirm_and_delete(to_delete, header)
+      Shared confirm-and-delete flow used by both --delete-model-tag and
+      --override-outputs, which previously duplicated that logic.
+
+  _resolve_apply_list(args, cfg)
+      Resolves the apply file list for Step 2, handling all four source modes:
+      --apply-to-training-list, --read-full-sample-apply, --apply-specific-run,
+      and the default plain-text run list.
+
+Feature-flag resolution and the training 'effective config' dict are handled by
+args.resolve_feature_flags() and args.build_train_effective(), which are shared
+with train.py to avoid duplicating those patterns across CLI entry points.
 """
 
 import argparse
@@ -115,216 +135,96 @@ from pathlib import Path
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
                    add_full_sample_args, add_specific_run_args,
-                   validate_full_sample_args, add_plot_format)
+                   validate_full_sample_args, add_plot_format,
+                   resolve_feature_flags, build_train_effective)
+from .config import print_step_header, print_banner, build_training_metadata
 from .train import step_train
 from .monitor import step_apply
 from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
 from .evaluate import step_evaluate
+from .report import step_report
+from .plot import step_plots
+from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files
 
 
-# ── Step helpers ─────────────────────────────────────────────────────────────
+# ── Private helpers ───────────────────────────────────────────────────────────
 
-def _step(name: str) -> None:
-    """Print a prominent section header for a pipeline step."""
-    print(f"\n{'='*60}")
-    print(f"  {name}")
-    print(f"{'='*60}\n")
-
-
-def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> bool:
-    """
-    Classify runs as good / partial / bad and write run_summary.csv to reports_dir.
-
-    Returns True when the step ran, False when auto-skipped because run_summary.csv
-    already exists.
-    """
-    _step("STEP 4 — REPORT")
-
-    if (reports_dir / "run_summary.csv").exists():
-        print(f"[AUTO-SKIP] Report — {reports_dir}/run_summary.csv already exists.")
-        print(f"            Delete {reports_dir}/ to regenerate.")
-        return False
-
-    from .report import classify_runs, write_report
-
-    runs = classify_runs(str(log_file), file_alert_n_channels)
-    if not runs:
-        print("  No runs found in log — skipping report.")
-        return True
-    write_report(runs, reports_dir)
-    return True
-
-
-def step_plots(
-    log_file: Path,
-    models_dir: Path,
-    plots_dir: Path,
-    file_alert_n_channels: int,
-    alert_consecutive_n: int,
-    reports_dir: Path = None,
-    single_file_alert_n_channels: int = 0,
-    single_file_alert_max_z: float = 0.0,
-    skip_subrun_plots: bool = False,
-    max_subrun_plots: int = 10,
-    fmt: str = "png",
-) -> bool:
-    """
-    Generate all diagnostic plots for one pipeline run.
-
-    Produces reference model plots, anomaly log summary plots, and (if
-    reports_dir contains eval_confusion_data.json) the evaluation confusion
-    chart.  Unless skip_subrun_plots is True, also generates per-file
-    diagnostic plots for a sample of bad and good subruns.
-
-    Parameters
-    ----------
-    log_file : Path
-        Anomaly log CSV produced by the apply step.
-    models_dir : Path
-        Directory containing reference.npz and detector.pkl.
-    plots_dir : Path
-        Destination directory for all figures.
-    file_alert_n_channels : int
-        Persistent alert threshold used to colour bars and select bad subruns.
-    alert_consecutive_n : int
-        Persistence window used by the status replay logic.
-    reports_dir : Path, optional
-        If provided, checked for eval_confusion_data.json; when found the
-        evaluation confusion chart is rendered into plots_dir.
-    single_file_alert_n_channels : int
-        Bulk single-file alert threshold forwarded to plot_log and plot_file.
-    single_file_alert_max_z : float
-        Extreme single-file alert threshold forwarded to plot_log and plot_file.
-    skip_subrun_plots : bool
-        When True, skip per-file diagnostic plots (reference + log still run).
-    max_subrun_plots : int
-        Per category cap on per-file plots: worst bad + N-1 random bad, N random
-        good.  Pass -1 to plot every file (prints a loud warning).
-    fmt : str
-        Output format for all figures (png / pdf / svg).
-
-    Returns
-    -------
-    bool
-        True when plots were generated, False when auto-skipped because
-        reference_means.<fmt> already exists in plots_dir.
-    """
-    _step("STEP 5 — PLOTS")
-
-    _sentinel = next(plots_dir.glob("reference_means.*"), None)
-    if _sentinel is not None:
-        print(f"[AUTO-SKIP] Plots — {_sentinel} already exists.")
-        print(f"            Delete {plots_dir}/ to regenerate.")
-        return False
-
-    import pandas as pd
-    from .reference import ReferenceModel
-    from .detector import AnomalyDetector
-    from .plot import plot_reference, plot_file, plot_log, plot_eval_confusion
-
-    ref      = ReferenceModel.load(str(models_dir / "reference.npz"))
-    detector = AnomalyDetector.load(str(models_dir / "detector.pkl"), ref)
-
-    plots_dir.mkdir(parents=True, exist_ok=True)
-
-    print("Reference plots...")
-    plot_reference(ref, plots_dir, fmt=fmt)
-
-    print("Log summary plots...")
-    plot_log(str(log_file), plots_dir,
-             file_alert_n_channels=file_alert_n_channels,
-             alert_consecutive_n=alert_consecutive_n,
-             single_file_alert_n_channels=single_file_alert_n_channels,
-             single_file_alert_max_z=single_file_alert_max_z,
-             fmt=fmt)
-
-    if reports_dir is not None:
-        confusion_data = reports_dir / "eval_confusion_data.json"
-        if confusion_data.exists():
-            print("Evaluation confusion plot...")
-            plot_eval_confusion(confusion_data, plots_dir, fmt=fmt)
-
-    if skip_subrun_plots:
-        print("[SKIP] Per-file subrun plots (--skip-subrun-plots)")
-        print(f"  Plots saved → {plots_dir}/")
+def _confirm_and_delete(to_delete: list, header: str) -> None:
+    """Print paths, prompt YES, delete them. No-op if to_delete is empty."""
+    import shutil
+    if not to_delete:
         return
-
-    print("Per-file plots (sample of good and bad subruns)...")
-    df = pd.read_csv(str(log_file))
-    per_file = (
-        df.groupby("filename")
-          .agg(total=("channel", "count"), n_bad=("anomalous", "sum"))
-    )
-    # Split into bad (alert) and good (below threshold), bad sorted worst-first
-    bad_df   = per_file[per_file["n_bad"] >= file_alert_n_channels].sort_values("n_bad", ascending=False)
-    good_df  = per_file[per_file["n_bad"] <  file_alert_n_channels]
-
-    bad_names  = bad_df.index.tolist()
-    good_names = good_df.index.tolist()
-
-    n_bad  = len(bad_names)
-    n_good = len(good_names)
-
-    if max_subrun_plots == -1:
-        print()
-        print("!" * 60)
-        print("  WARNING: max_subrun_plots = -1")
-        print(f"  This will generate plots for ALL {n_bad} bad and ALL {n_good} good file(s).")
-        print("  For large runs this can be very slow and use significant")
-        print("  disk space.  Set  \"max_subrun_plots\": N  in config.yaml")
-        print("  (or pass --max-subrun-plots N) to cap the output.")
-        print("!" * 60)
-        print()
-        plot_bad  = bad_names
-        plot_good = good_names
-    else:
-        # Bad: always include the worst subrun, then randomly sample from the rest
-        if bad_names:
-            worst     = bad_names[:1]
-            remaining = bad_names[1:]
-            n_extra   = min(max_subrun_plots - 1, len(remaining))
-            plot_bad  = worst + random.sample(remaining, n_extra)
+    print(header)
+    for p in to_delete:
+        label = "dir " if p.is_dir() else "file"
+        print(f"  [{label}]  {p}")
+    print("\nType YES and press Enter to confirm, or anything else to abort: ", end="", flush=True)
+    if input().strip() != "YES":
+        print("Aborted — nothing was deleted.")
+        sys.exit(0)
+    for p in to_delete:
+        if p.is_dir():
+            shutil.rmtree(p)
         else:
-            plot_bad = []
+            p.unlink()
+        print(f"  Deleted: {p}")
 
-        # Good: random sample up to max_subrun_plots
-        plot_good = random.sample(good_names, min(max_subrun_plots, len(good_names)))
 
-        print(f"  Plotting {len(plot_bad)}/{n_bad} bad file(s) "
-              f"(worst + {len(plot_bad)-1 if plot_bad else 0} random) "
-              f"and {len(plot_good)}/{n_good} good file(s) (random).")
+def _resolve_apply_list(args, cfg: dict) -> list:
+    """
+    Resolve the list of files to apply the model to.
 
-    plot_names = plot_bad + plot_good
-
-    # Recover full paths from the log (filenames only) via a path cache stored
-    # alongside the log by the apply step.
-    path_cache_file = log_file.parent / (log_file.stem + "_paths.txt")
-    if path_cache_file.exists():
-        path_map = {Path(p).name: p for p in path_cache_file.read_text().splitlines() if p.strip()}
-    else:
-        path_map = {}
-
-    n_plotted = 0
-    for name in plot_names:
-        full_path = path_map.get(name)
-        if full_path is None:
-            print(f"    [SKIP] {name} — full path not in cache, re-run with --apply-list to rebuild")
-            continue
-        out = plots_dir / Path(full_path).stem
-        out.mkdir(parents=True, exist_ok=True)
-        print(f"  {name}")
-        try:
-            plot_file(full_path, detector, out,
-                      single_file_alert_n_channels=single_file_alert_n_channels,
-                      single_file_alert_max_z=single_file_alert_max_z,
-                      fmt=fmt)
-            n_plotted += 1
-        except Exception as exc:
-            print(f"    [ERROR] {exc}", file=sys.stderr)
-
-    print(f"\n  {n_plotted}/{len(plot_names)} file(s) plotted ({len(plot_bad)} bad, {len(plot_good)} good).")
-    print(f"  All plots saved → {plots_dir}/")
-    return True
+    Handles all four source modes:
+      --apply-to-training-list   : same catalogue / quality / fraction as training
+      --read-full-sample-apply   : full-sample catalogue with apply-specific quality/fraction
+      --apply-specific-run       : direct disk scan of one run's subruns
+      default                    : plain text run list
+    """
+    if args.apply_to_training_list:
+        print(
+            f"  [--apply-to-training-list] Resolving apply list from same "
+            f"catalogue params as training "
+            f"[quality={args.train_goodRunList_quality}, "
+            f"fraction={args.train_goodRunList_fraction}] ..."
+        )
+        return resolve_full_sample(
+            json_path  = cfg["full_sample_json"],
+            slab_dir   = cfg["full_sample_slab_dir"],
+            quality    = args.train_goodRunList_quality,
+            fraction   = args.train_goodRunList_fraction,
+            seed       = args.test_seed,
+        )
+    if args.read_full_sample_apply:
+        # When targeting a specific run, load the full catalogue unsampled;
+        # the within-run sub-sample is applied after filtering.
+        _catalogue_fraction = (
+            1.0 if args.apply_specific_run is not None
+            else args.full_sample_apply_fraction
+        )
+        print(
+            f"  Reading full sample catalogue from {cfg['full_sample_json']} "
+            f"[quality={args.full_sample_apply_quality}, "
+            f"fraction={_catalogue_fraction}] ..."
+        )
+        return resolve_full_sample(
+            json_path  = cfg["full_sample_json"],
+            slab_dir   = cfg["full_sample_slab_dir"],
+            quality    = args.full_sample_apply_quality,
+            fraction   = _catalogue_fraction,
+            seed       = args.test_seed,
+        )
+    if args.apply_specific_run is not None and args.train_goodRunList:
+        # Catalogue-independent: scan the slab directory directly so any run
+        # can be targeted regardless of its quality flags.
+        print(
+            f"  [--apply-specific-run {args.apply_specific_run}] Scanning slab "
+            f"directory for all run {args.apply_specific_run} files ..."
+        )
+        return resolve_run_files(
+            slab_dir = cfg["full_sample_slab_dir"],
+            run      = args.apply_specific_run,
+        )
+    return resolve_run_list(args.apply_list)
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -451,23 +351,10 @@ def main() -> None:
             print(f"Nothing found for tag '{tag}' — no outputs to delete.")
             sys.exit(0)
 
-        print(f"\nWARNING: The following will be permanently deleted for tag '{tag}':\n")
-        for p in to_delete:
-            label = "dir " if p.is_dir() else "file"
-            print(f"  [{label}]  {p}")
-
-        print("\nType YES and press Enter to confirm, or anything else to abort: ", end="", flush=True)
-        if input().strip() != "YES":
-            print("Aborted — nothing was deleted.")
-            sys.exit(0)
-
-        import shutil
-        for p in to_delete:
-            if p.is_dir():
-                shutil.rmtree(p)
-            else:
-                p.unlink()
-            print(f"  Deleted: {p}")
+        _confirm_and_delete(
+            to_delete,
+            f"\nWARNING: The following will be permanently deleted for tag '{tag}':\n",
+        )
         print(f"\nAll outputs for tag '{tag}' removed.")
         sys.exit(0)
 
@@ -480,8 +367,7 @@ def main() -> None:
     random.seed(args.test_seed)
 
     # use_trigger/use_lvds: config sets the baseline, --no-* flags override
-    use_trigger = cfg["use_trigger"] and not args.no_trigger
-    use_lvds    = cfg["use_lvds"]    and not args.no_trigger_lvds
+    use_trigger, use_lvds = resolve_feature_flags(args, cfg)
 
     # Auto-append feature-set suffix to the tag so outputs are self-documenting
     tag = args.model_tag
@@ -516,7 +402,6 @@ def main() -> None:
 
     # ── --override-outputs: delete existing outputs then fall through ─────────
     if args.override_outputs:
-        import shutil
         if args.apply_specific_run is not None:
             candidates = [
                 models_dir,
@@ -533,24 +418,12 @@ def main() -> None:
             ]
         to_delete = [p for p in candidates if p.exists()]
         if to_delete:
-            print(f"\nWARNING: The following outputs for tag '{tag}' will be permanently deleted:\n")
-            for p in to_delete:
-                label = "dir " if p.is_dir() else "file"
-                print(f"  [{label}]  {p}")
-            print("\nType YES and press Enter to confirm, or anything else to abort: ", end="", flush=True)
-            if input().strip() != "YES":
-                print("Aborted — nothing was deleted.")
-                sys.exit(0)
-            for p in to_delete:
-                if p.is_dir():
-                    shutil.rmtree(p)
-                else:
-                    p.unlink()
-                print(f"  Deleted: {p}")
+            _confirm_and_delete(
+                to_delete,
+                f"\nWARNING: The following outputs for tag '{tag}' will be permanently deleted:\n",
+            )
         else:
             print(f"[--override-outputs] No existing outputs found for tag '{tag}' — nothing to delete.")
-
-    from .config import print_banner
 
     if args.train_goodRunList:
         train_source = (
@@ -616,20 +489,10 @@ def main() -> None:
 
     # ── Step 1: Train ──────────────────────────────────────────────────────
     if not args.skip_train:
-        from .config import build_training_metadata
-        effective = {
-            "good_list":                  args.good_list,
-            "models_dir":                 args.models_dir,
-            "z_threshold":                args.z_threshold,
-            "if_contamination":           args.if_contamination,
-            "use_trigger":                use_trigger,
-            "use_lvds":                   use_lvds,
-            "ignore_features":            list(cfg["ignore_features"]),
-            "train_goodRunList_quality":  args.train_goodRunList_quality,
-            "train_goodRunList_fraction": args.train_goodRunList_fraction,
-            "test_seed":                  args.test_seed,
-        }
-        metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
+        metadata = build_training_metadata(
+            cfg, build_train_effective(args, cfg, use_trigger, use_lvds),
+            args.config, sys.argv,
+        )
         step_train(
             args.good_list, models_dir,
             args.z_threshold, args.if_contamination,
@@ -656,56 +519,8 @@ def main() -> None:
 
     # ── Step 2: Apply ──────────────────────────────────────────────────────
     if not args.skip_apply:
-        _step("STEP 2 — APPLY")
-        from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files
-        if args.apply_to_training_list:
-            print(
-                f"  [--apply-to-training-list] Resolving apply list from same "
-                f"catalogue params as training "
-                f"[quality={args.train_goodRunList_quality}, "
-                f"fraction={args.train_goodRunList_fraction}] ..."
-            )
-            all_apply = resolve_full_sample(
-                json_path  = cfg["full_sample_json"],
-                slab_dir   = cfg["full_sample_slab_dir"],
-                quality    = args.train_goodRunList_quality,
-                fraction   = args.train_goodRunList_fraction,
-                seed       = args.test_seed,
-            )
-        elif args.read_full_sample_apply:
-            # Resolve the full catalogue at fraction=1.0 when --apply-specific-run
-            # is active; the within-run sub-sample is applied after filtering.
-            _catalogue_fraction = (
-                1.0 if args.apply_specific_run is not None
-                else args.full_sample_apply_fraction
-            )
-            print(
-                f"  Reading full sample catalogue from {cfg['full_sample_json']} "
-                f"[quality={args.full_sample_apply_quality}, "
-                f"fraction={_catalogue_fraction}] ..."
-            )
-            all_apply = resolve_full_sample(
-                json_path  = cfg["full_sample_json"],
-                slab_dir   = cfg["full_sample_slab_dir"],
-                quality    = args.full_sample_apply_quality,
-                fraction   = _catalogue_fraction,
-                seed       = args.test_seed,
-            )
-        elif args.apply_specific_run is not None and args.train_goodRunList:
-            # --apply-specific-run + --train-goodRunList: scan the slab directory
-            # directly for every subrun of the requested run on disk.  This is
-            # catalogue-independent so any run can be targeted, not only those
-            # that appear in the goodRunsListSlab.json.
-            print(
-                f"  [--apply-specific-run {args.apply_specific_run}] Scanning slab "
-                f"directory for all run {args.apply_specific_run} files ..."
-            )
-            all_apply = resolve_run_files(
-                slab_dir = cfg["full_sample_slab_dir"],
-                run      = args.apply_specific_run,
-            )
-        else:
-            all_apply = resolve_run_list(args.apply_list)
+        print_step_header("STEP 2 — APPLY")
+        all_apply = _resolve_apply_list(args, cfg)
         if args.apply_specific_run is not None:
             run_num   = args.apply_specific_run
             total     = len(all_apply)
@@ -755,7 +570,7 @@ def main() -> None:
     elif not _quality_explicit:
         print("[SKIP] Evaluate (requires --train-goodRunList-quality to be explicitly set so the ground truth quality is unambiguous)")
     elif not args.skip_evaluate:
-        _step("STEP 3 — EVALUATE")
+        print_step_header("STEP 3 — EVALUATE")
         step_evaluate(
             log_file                     = log_file,
             json_path                    = cfg.get("full_sample_json", ""),

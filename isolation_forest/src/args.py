@@ -29,6 +29,19 @@ Typical usage in every script::
     # ... script-specific arguments ...
     args = parser.parse_args()
     validate_full_sample_args(parser, args)  # range-checks fractions; validates --apply-to-training-list
+
+Post-parse helpers
+------------------
+Two helpers operate on the parsed Namespace and are intended to be called
+immediately after validate_full_sample_args() in any script that trains a model:
+
+  resolve_feature_flags(args, cfg) → (use_trigger, use_lvds)
+      Applies --no-trigger / --no-trigger-LVDS overrides to the config baseline.
+
+  build_train_effective(args, cfg, use_trigger, use_lvds) → dict
+      Returns the canonical 'effective config' dict consumed by
+      config.build_training_metadata().  Centralised here so that train.py and
+      pipeline.py do not duplicate the 10-key construction.
 """
 
 import argparse
@@ -312,6 +325,49 @@ def add_plot_format(parser: argparse.ArgumentParser, cfg: dict) -> None:
         help="Output format for all figures (default: %(default)s)",
     )
     parser.set_defaults(plot_format=cfg.get("plot_format", "png"))
+
+
+def resolve_feature_flags(args: argparse.Namespace, cfg: dict) -> "tuple[bool, bool]":
+    """
+    Resolve use_trigger and use_lvds from config baseline and --no-* CLI overrides.
+
+    The config sets the baseline; the flags can only disable a group, not enable
+    one the config has turned off.  Returns (use_trigger, use_lvds).
+
+    Used by train.py and pipeline.py — defined here to avoid duplicating the
+    two-line pattern in every CLI entry point that exposes --no-trigger.
+    """
+    return (
+        cfg["use_trigger"] and not args.no_trigger,
+        cfg["use_lvds"]    and not args.no_trigger_lvds,
+    )
+
+
+def build_train_effective(
+    args: argparse.Namespace,
+    cfg: dict,
+    use_trigger: bool,
+    use_lvds: bool,
+) -> dict:
+    """
+    Build the 'effective config' dict passed to build_training_metadata.
+
+    Records the resolved training parameters so that training_metadata.json
+    captures the exact values used (config defaults + any CLI overrides).
+    Defined here alongside the argument helpers that set these values.
+    """
+    return {
+        "good_list":                  args.good_list,
+        "models_dir":                 args.models_dir,
+        "z_threshold":                args.z_threshold,
+        "if_contamination":           args.if_contamination,
+        "use_trigger":                use_trigger,
+        "use_lvds":                   use_lvds,
+        "ignore_features":            list(cfg["ignore_features"]),
+        "train_goodRunList_quality":  args.train_goodRunList_quality,
+        "train_goodRunList_fraction": args.train_goodRunList_fraction,
+        "test_seed":                  args.test_seed,
+    }
 
 
 def validate_full_sample_args(

@@ -44,7 +44,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -55,21 +54,12 @@ from .run_list import (
     _COL_RUN, _COL_FILE,
     _COL_GOOD_RUN_LOOSE, _COL_GOOD_RUN_MEDIUM, _COL_GOOD_RUN_TIGHT,
     QUALITY_ALL_CHOICES,
+    parse_run_subrun,
 )
 
 
-_FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)  # extracts run/subrun from filenames
-
 _STAT_ORDER = ["ok", "warn", "pend", "alert"]          # canonical predicted-status ordering
 _GT_ORDER   = ["known_good", "not_certified", "unknown"]  # canonical ground-truth category ordering
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _parse_run_subrun(filename: str):
-    """Return (run, subrun) ints from a Digitizer filename, or (None, None) if unparseable."""
-    m = _FILENAME_RE.search(str(filename))
-    return (int(m.group(1)), int(m.group(2))) if m else (None, None)
 
 
 def _load_catalogue(json_path: str) -> dict:
@@ -172,7 +162,7 @@ def step_evaluate(
     # Classify each subrun: ground-truth category + predicted status
     rows = []
     for _, row in status_df.iterrows():
-        run, subrun = _parse_run_subrun(row["filename"])
+        run, subrun = parse_run_subrun(row["filename"])
         if run is None:
             continue
         pred = row["status"]

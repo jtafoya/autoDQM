@@ -20,6 +20,16 @@ A run is classified as:
   persistent_fault  — all subruns appear "good" by per-file threshold, but one or more
                       channels are anomalous in every subrun (e.g. a dead or missing channel)
 
+Public API
+----------
+step_report(log_file, reports_dir, file_alert_n_channels)
+    Pipeline step called by pipeline.py: auto-skip guard + classify + write.
+classify_runs(log_path, file_alert_n_channels)
+    Core classification logic; returns a per-run dict.
+write_report(runs, out_dir)
+    Writes good_runs.txt, partial_good_runs.txt, persistent_fault_runs.txt,
+    and run_summary.csv.
+
 Usage:
     python3 -m src.report
     python3 -m src.report --log-file logs/anomalies.csv --out-dir logs/
@@ -28,24 +38,17 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 
 from .args import preparse_config, add_config
-
-_FILENAME_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
+from .config import print_step_header
+from .run_list import parse_run_subrun
 
 
 # ── Core logic ───────────────────────────────────────────────────────────────
-
-def _parse_run_subrun(filename: str):
-    m = _FILENAME_RE.search(str(filename))
-    if m:
-        return int(m.group(1)), int(m.group(2))
-    return None, None
 
 
 def classify_runs(log_path: str, file_alert_n_channels: int = 2) -> dict:
@@ -68,7 +71,7 @@ def classify_runs(log_path: str, file_alert_n_channels: int = 2) -> dict:
     if df.empty:
         return {}
 
-    parsed = df["filename"].apply(lambda f: pd.Series(_parse_run_subrun(f),
+    parsed = df["filename"].apply(lambda f: pd.Series(parse_run_subrun(f),
                                                        index=["run", "subrun"]))
     df = pd.concat([df, parsed], axis=1).dropna(subset=["run", "subrun"])
     df["run"]    = df["run"].astype(int)
@@ -217,6 +220,30 @@ def write_report(runs: dict, out_dir: Path) -> None:
     ]
     pd.DataFrame(rows).to_csv(summary_path, index=False)
     print(f"  {summary_path.name}  →  {len(rows)} run(s) total")
+
+
+# ── Pipeline step ────────────────────────────────────────────────────────────
+
+def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -> bool:
+    """
+    Classify runs as good / partial / bad and write run_summary.csv to reports_dir.
+
+    Returns True when the step ran, False when auto-skipped because run_summary.csv
+    already exists.
+    """
+    print_step_header("STEP 4 — REPORT")
+
+    if (reports_dir / "run_summary.csv").exists():
+        print(f"[AUTO-SKIP] Report — {reports_dir}/run_summary.csv already exists.")
+        print(f"            Delete {reports_dir}/ to regenerate.")
+        return False
+
+    runs = classify_runs(str(log_file), file_alert_n_channels)
+    if not runs:
+        print("  No runs found in log — skipping report.")
+        return True
+    write_report(runs, reports_dir)
+    return True
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────

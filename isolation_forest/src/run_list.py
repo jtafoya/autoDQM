@@ -1,14 +1,24 @@
 """
 Run list parser and filename utilities.
 
-Three functions are provided:
+Six functions are provided:
 
-1. extract_run_number(path)
+1. parse_run_subrun(path)
+   Parse (run, subrun) from a Digitizer filename.  Returns (int, int) on
+   success or (None, None) if the pattern is absent.  Canonical implementation
+   shared by evaluate.py and report.py.
+
+2. run_subrun_sort_key(path)
+   Return (run, subrun) as a sort key.  On failure returns (inf, inf) so that
+   unparseable filenames sort last.  Canonical implementation shared by
+   monitor.py and plot.py.
+
+3. extract_run_number(path)
    Parse the run number from a Digitizer filename (e.g. "Digitizer_run1234_subrun5.csv"
    → 1234).  Returns None if the pattern is absent.  Used by the per-run apply mode
    (--apply-specific-run) and by the combine guard in combine.py.
 
-2. resolve_run_list(list_file) — text-based run list
+4. resolve_run_list(list_file) — text-based run list
    A plain text file where each non-empty, non-comment line is a glob pattern
    that expands to one or more Digitizer CSV file paths.
 
@@ -23,7 +33,7 @@ Three functions are provided:
    Lines starting with '#' and blank lines are ignored.
    Patterns are resolved relative to the current working directory.
 
-3. resolve_full_sample(json_path, slab_dir, quality, ...) — full-sample mode
+5. resolve_full_sample(json_path, slab_dir, quality, ...) — full-sample mode
    Reads the goodRunsListSlab.json catalogue and builds file paths directly
    from the slab directory on EOS.  Requires a quality level to be specified
    (Loose, Medium, Tight, or All) and an optional fraction for sub-sampling
@@ -32,6 +42,14 @@ Three functions are provided:
    pre-filter unique-run total is intentionally omitted to avoid confusion
    with the run count actually used by the caller.
    "All" selects entries that pass at least one quality criterion (OR logic).
+
+6. append_to_live_good_list(filepath, live_good_list_path)
+   Append one absolute file path to the live good-run list, creating the file
+   (and any parent directories) on first use.  The format is the same plain-text
+   format read by resolve_run_list — one path per line, header comment on line 1
+   — so the resulting list is directly usable as a training input without any
+   conversion.  Called by monitor.py in live-deployment mode to record newly
+   confirmed good subruns in real time.
 """
 
 import glob
@@ -62,6 +80,21 @@ QUALITY_CHOICES: dict[str, int] = {
 QUALITY_ALL_CHOICES: list[str] = [*QUALITY_CHOICES, "All"]
 
 
+_RUN_SUBRUN_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
+
+
+def parse_run_subrun(path: str) -> "tuple[int, int] | tuple[None, None]":
+    """Return (run, subrun) ints from a Digitizer filename, or (None, None) if unparseable."""
+    m = _RUN_SUBRUN_RE.search(Path(path).name)
+    return (int(m.group(1)), int(m.group(2))) if m else (None, None)
+
+
+def run_subrun_sort_key(path: str) -> tuple:
+    """Return (run, subrun) sort key from a Digitizer filename; (inf, inf) if unparseable."""
+    m = _RUN_SUBRUN_RE.search(str(path))
+    return (int(m.group(1)), int(m.group(2))) if m else (float("inf"), float("inf"))
+
+
 def extract_run_number(path: str) -> "int | None":
     """Extract the run number from a Digitizer filename, or None if not parseable."""
     m = re.search(r"run(\d+)", Path(path).name, re.IGNORECASE)
@@ -78,6 +111,29 @@ def resolve_run_files(slab_dir: str, run: int) -> list:
     subdir = (run // 100) * 100
     pattern = str(Path(slab_dir) / str(subdir) / f"Digitizer_run{run}_subrun*.csv")
     return sorted(glob.glob(pattern))
+
+
+def append_to_live_good_list(filepath: str, live_good_list_path: str) -> None:
+    """
+    Append one file path to the live good-run list, creating it if needed.
+
+    The list is written in the same plain-text format that resolve_run_list reads:
+    one absolute path per line, with a header comment on the first line.  This
+    means the resulting file can be passed directly to the training step as a
+    good run list without any conversion.
+
+    Duplicates are not deduplicated here; if a file is processed more than once
+    (e.g. after a monitor restart with --process-existing) its path may appear
+    multiple times.  resolve_run_list() removes duplicates when reading, so this
+    is harmless for training but the file may grow larger than necessary over time.
+    """
+    p = Path(live_good_list_path)
+    if not p.exists():
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "w") as fh:
+            fh.write("# Live good-run list — auto-populated by the autoDQM monitor\n")
+    with open(p, "a") as fh:
+        fh.write(str(Path(filepath).resolve()) + "\n")
 
 
 def resolve_run_list(list_file: str) -> list:

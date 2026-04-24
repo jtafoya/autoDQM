@@ -39,6 +39,11 @@ Each run saves <models-dir>/training_metadata.json containing the full
 resolved configuration, the exact command, a timestamp, and an explicit
 record of any values overridden on the command line relative to the config
 file.  A copy of the config file is also saved as <models-dir>/config.yaml.
+
+The effective-config dict fed to training_metadata.json is built by
+args.build_train_effective(), shared with pipeline.py to avoid duplicating
+the construction across CLI entry points.  Feature flags are resolved via
+args.resolve_feature_flags() for the same reason.
 """
 
 import argparse
@@ -50,15 +55,11 @@ from pathlib import Path
 from .run_list import resolve_run_list, resolve_full_sample
 from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
+from .config import print_step_header, print_banner, build_training_metadata
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_test_mode,
-                   add_full_sample_args, validate_full_sample_args, add_plot_format)
-
-
-def _step(name: str) -> None:
-    print(f"\n{'='*60}")
-    print(f"  {name}")
-    print(f"{'='*60}\n")
+                   add_full_sample_args, validate_full_sample_args, add_plot_format,
+                   resolve_feature_flags, build_train_effective)
 
 
 def step_train(
@@ -82,7 +83,7 @@ def step_train(
     fmt: str = "png",
 ) -> bool:
 
-    _step("STEP 1 — TRAIN")
+    print_step_header("STEP 1 — TRAIN")
 
     if (models_dir / "detector.pkl").exists() and not update:
         print(f"[AUTO-SKIP] Training — models already exist in {models_dir}/")
@@ -240,12 +241,9 @@ def main() -> None:
 
     args = parser.parse_args()
     validate_full_sample_args(parser, args)
-    use_trigger = cfg["use_trigger"] and not args.no_trigger
-    use_lvds    = cfg["use_lvds"]    and not args.no_trigger_lvds
+    use_trigger, use_lvds = resolve_feature_flags(args, cfg)
 
     models_dir = Path(args.models_dir)
-
-    from .config import print_banner, build_training_metadata
 
     if args.train_goodRunList:
         input_source = (
@@ -272,19 +270,10 @@ def main() -> None:
 
     models_dir.mkdir(parents=True, exist_ok=True)
 
-    effective = {
-        "good_list":                  args.good_list,
-        "models_dir":                 args.models_dir,
-        "z_threshold":                args.z_threshold,
-        "if_contamination":           args.if_contamination,
-        "use_trigger":                use_trigger,
-        "use_lvds":                   use_lvds,
-        "ignore_features":            list(cfg["ignore_features"]),
-        "train_goodRunList_quality":  args.train_goodRunList_quality,
-        "train_goodRunList_fraction": args.train_goodRunList_fraction,
-        "test_seed":                  args.test_seed,
-    }
-    metadata = build_training_metadata(cfg, effective, args.config, sys.argv)
+    metadata = build_training_metadata(
+        cfg, build_train_effective(args, cfg, use_trigger, use_lvds),
+        args.config, sys.argv,
+    )
 
     if not step_train(
         args.good_list, models_dir,
