@@ -4,9 +4,8 @@
 flowchart TD
 
     %% ── Configuration ────────────────────────────────────────────────────────
-    subgraph CFG["⚙️  env.sh  —  Central Path Configuration"]
-        ENV["INSTALLATION_PATH · DATA_PATH
-        GOOD_RUN_LIST · ALL_RUN_LIST
+    subgraph CFG["⚙️  config.yaml  —  Central Path Configuration"]
+        ENV["DATA_PATH · GOOD_RUN_LIST · ALL_RUN_LIST
         MODELS_DIR · LOGS_DIR · REPORTS_DIR · PLOTS_DIR"]
     end
 

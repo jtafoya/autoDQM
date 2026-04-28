@@ -56,8 +56,8 @@ different failure modes and any one of them is sufficient:
                     exceeds single_file_alert_max_z, regardless of history.
                     Set single_file_alert_max_z=0.0 to disable.
 
-    [OK]    — no anomalous channels
-    [WARN]  — anomalous channels present but no alert condition met
+    [OK]    — no anomalous channels, or purely transient (streak not established)
+    [WARN]  — sub-threshold persistent anomaly (n_persistent > 0 but below alert threshold)
     [ALERT] — one or more conditions triggered; active reasons shown in suffix
 
 Setting alert_consecutive_n=1 (or omitting it) disables the persistence check:
@@ -80,13 +80,14 @@ include the file.  The current criteria match the existing alert conditions:
 any alerted file is excluded; everything else is included.
 To change the criteria, edit only _subrun_quality_verdict().
 
-Probationary period: the first alert_consecutive_n-1 subruns of each run are
-held in a per-run pending queue rather than appended immediately.  When the
-first non-probationary subrun passes the quality check the entire queue is
-flushed (retroactive append) and the confirming subrun is appended alongside.
-An alert during probation clears the queue; those subruns are never written.
-When alert_consecutive_n=1 there is no probationary period — every passing
-subrun is appended immediately.
+Probationary period: applies only to subruns that have transient anomalous
+channels (n_bad > 0 but not yet alerted).  Such subruns are held in a per-run
+pending queue; when the first fully clean (n_bad == 0) or non-probationary
+passing subrun arrives the queue is flushed (retroactive append).  An alert
+during probation clears the queue; those subruns are never written.
+Fully clean subruns (n_bad == 0) are appended immediately — no history is
+needed to confirm a file with zero anomalies.
+When alert_consecutive_n=1 there is no probationary period.
 
 The resulting file is in the same plain-text format read by resolve_run_list
 and can be used directly as the good_list input for incremental training.
@@ -195,11 +196,11 @@ def process_file(
         failure). 0 = disabled.
 
     run_file_index               : 0-based position of this file within its run
-        (0 = first file of the run, 1 = second, etc.). The first
-        alert_consecutive_n-1 files of each run are "probationary": they can
-        still raise [ALERT] via the single-file conditions, but a clean file
-        prints [PEND] instead of [OK] because there is not yet enough within-run
-        history to confirm nominal behaviour. Default 9999 (not probationary).
+        (0 = first file of the run, 1 = second, etc.).  Used to gate the
+        probationary live-list queue: subruns with transient anomalies (n_bad > 0
+        but not alerted) are held until the window is established.  Fully clean
+        subruns (n_bad == 0) are never probationary — [OK] is immediate.
+        Default 9999 (not probationary).
 
     Other
     -----
@@ -309,22 +310,7 @@ def process_file(
 
     # ── Print status line ────────────────────────────────────────────────────
     if n_bad == 0:
-        # The first (alert_consecutive_n - 1) files of a run are "probationary":
-        # no within-run history exists yet, so we cannot confirm nominal behaviour.
-        # They are labelled [PEND] until the run has accumulated enough clean files.
-        # When alert_consecutive_n=1 (persistence disabled), n_probationary=0 and
-        # [PEND] is never emitted.
-        n_probationary = max(0, alert_consecutive_n - 1)
-        if run_file_index < n_probationary:
-            files_so_far = run_file_index + 1
-            remaining    = n_probationary - run_file_index
-            print(
-                f"[PEND]  {timestamp}  {filename}  —  {n_total} channels, no anomalies"
-                f"  (run start: file {files_so_far}/{alert_consecutive_n},"
-                f" need {remaining} more clean file(s) to confirm [OK])"
-            )
-        else:
-            print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
+        print(f"[OK]    {timestamp}  {filename}  —  {n_total} channels, all nominal")
 
     elif alerted:
         # Build reason string — one clause per active alert condition
@@ -351,12 +337,20 @@ def process_file(
         for ch in sorted(transient_chs, key=str):
             _print_channel(ch)
 
+    elif n_persistent == 0:
+        # Purely transient anomalies — streak not established → treat as OK.
+        note = (
+            f"{n_transient} transient anomalous channel(s), streak not established"
+            + (f"  [window: {alert_consecutive_n} files]" if use_history else "")
+        )
+        print(f"[OK]    {timestamp}  {filename}  —  {note}")
+        for ch in sorted(transient_chs, key=str):
+            _print_channel(ch)
+
     else:
-        # WARN: anomalous channels present but no alert condition met
+        # WARN: sub-threshold persistent anomaly (n_persistent > 0 but below alert).
         if use_history:
-            parts = []
-            if n_persistent:
-                parts.append(f"{n_persistent} persistent")
+            parts = [f"{n_persistent} persistent"]
             if n_transient:
                 parts.append(f"{n_transient} transient")
             suffix = (
@@ -417,7 +411,7 @@ def process_file(
     # ── Append to live good-run list ─────────────────────────────────────────
     if live_good_list:
         n_probationary  = max(0, alert_consecutive_n - 1)
-        is_probationary = run_file_index < n_probationary
+        is_probationary = (run_file_index < n_probationary) and (n_bad > 0)
         if _subrun_quality_verdict(alerted, n_bad, n_persistent, n_total, worst_z_val):
             if is_probationary and pending_good_files is not None:
                 # Persistence window not yet full — queue and wait for confirmation.

@@ -4,6 +4,12 @@ Reference model built from good data using Welford's online algorithm.
 Stores per-channel, per-feature running statistics (count, mean, M2) that
 can be updated incrementally — new good files can be added without reprocessing
 the entire history. This is the scalability mechanism for >10^6 files.
+
+Per-run configuration feature flags (include_trigger_config, include_daq_config,
+trigger_config_vars, daq_config_vars, run_configs_dir, thresholds_json_path) are
+stored on the model and serialised to reference.npz alongside the Welford state,
+so loaded models carry their own feature-set definition for reproducibility and
+bookkeeping.
 """
 
 from __future__ import annotations
@@ -33,13 +39,27 @@ class ReferenceModel:
         use_trigger: bool = True,
         use_lvds: bool = True,
         ignore_features: tuple = (),
+        include_trigger_config: bool = False,
+        trigger_config_vars: tuple = (),
+        include_daq_config: bool = False,
+        daq_config_vars: tuple = (),
+        run_configs_dir: str = "",
+        thresholds_json_path: str = "",
     ) -> None:
         self._use_trigger: bool = use_trigger
         self._use_lvds: bool = use_lvds
         self._ignore_features: tuple = tuple(ignore_features)
+        self._include_trigger_config: bool = include_trigger_config
+        self._trigger_config_vars: tuple = tuple(trigger_config_vars)
+        self._include_daq_config: bool = include_daq_config
+        self._daq_config_vars: tuple = tuple(daq_config_vars)
+        self._run_configs_dir: str = run_configs_dir
+        self._thresholds_json_path: str = thresholds_json_path
         self._state: dict = {}           # channel (int or str) -> {"count", "mean", "M2"}
         self._feat_cols: list = feature_columns(
-            use_trigger=use_trigger, use_lvds=use_lvds, ignore_features=ignore_features
+            use_trigger=use_trigger,
+            use_lvds=use_lvds,
+            ignore_features=ignore_features,
         )
         self._n_feats: int = len(self._feat_cols)
 
@@ -138,21 +158,43 @@ class ReferenceModel:
             use_trigger=np.array([self._use_trigger]),
             use_lvds=np.array([self._use_lvds]),
             ignore_features=np.array(list(self._ignore_features), dtype=object),
+            include_trigger_config=np.array([self._include_trigger_config]),
+            trigger_config_vars=np.array(list(self._trigger_config_vars), dtype=object),
+            include_daq_config=np.array([self._include_daq_config]),
+            daq_config_vars=np.array(list(self._daq_config_vars), dtype=object),
+            run_configs_dir=np.array([self._run_configs_dir]),
+            thresholds_json_path=np.array([self._thresholds_json_path]),
         )
 
     @classmethod
     def load(cls, path: str) -> "ReferenceModel":
         data = np.load(path, allow_pickle=True)
-        use_trigger     = bool(data["use_trigger"][0]) if "use_trigger" in data else True
-        use_lvds        = bool(data["use_lvds"][0])    if "use_lvds"    in data else False
-        ignore_features = tuple(data["ignore_features"].tolist()) if "ignore_features" in data else ()
-        model = cls(use_trigger=use_trigger, use_lvds=use_lvds, ignore_features=ignore_features)
+        use_trigger             = bool(data["use_trigger"][0])             if "use_trigger"             in data else True
+        use_lvds                = bool(data["use_lvds"][0])                if "use_lvds"                in data else False
+        ignore_features         = tuple(data["ignore_features"].tolist())  if "ignore_features"         in data else ()
+        include_trigger_config  = bool(data["include_trigger_config"][0])  if "include_trigger_config"  in data else False
+        trigger_config_vars     = tuple(data["trigger_config_vars"].tolist()) if "trigger_config_vars"  in data else ()
+        include_daq_config      = bool(data["include_daq_config"][0])      if "include_daq_config"      in data else False
+        daq_config_vars         = tuple(data["daq_config_vars"].tolist())   if "daq_config_vars"         in data else ()
+        run_configs_dir         = str(data["run_configs_dir"][0])           if "run_configs_dir"         in data else ""
+        thresholds_json_path    = str(data["thresholds_json_path"][0])      if "thresholds_json_path"    in data else ""
+        model = cls(
+            use_trigger=use_trigger,
+            use_lvds=use_lvds,
+            ignore_features=ignore_features,
+            include_trigger_config=include_trigger_config,
+            trigger_config_vars=trigger_config_vars,
+            include_daq_config=include_daq_config,
+            daq_config_vars=daq_config_vars,
+            run_configs_dir=run_configs_dir,
+            thresholds_json_path=thresholds_json_path,
+        )
         for i, ch_raw in enumerate(data["channels"]):
             ch_str = str(ch_raw)
             try:
                 ch = int(ch_str)       # real digitizer channel
             except ValueError:
-                ch = ch_str            # pseudo-channel ("trigger_rate", "trigger_lvds_total")
+                ch = ch_str            # pseudo-channel ("trigger_rate", "trigger_lvds_total", "config_trigger")
             model._state[ch] = {
                 "count": int(data["counts"][i]),
                 "mean": data["means"][i].copy(),
@@ -170,29 +212,60 @@ def build_reference(
     use_trigger: bool = True,
     use_lvds: bool = True,
     ignore_features: tuple = (),
+    include_trigger_config: bool = False,
+    trigger_config_vars: tuple = (),
+    include_daq_config: bool = False,
+    daq_config_vars: tuple = (),
+    run_configs_dir: str = "",
+    thresholds_json_path: str = "",
 ) -> tuple:
     """
     Build a fresh ReferenceModel from an explicit list of CSV file paths.
 
-    csv_files       : list of str or Path
-    use_trigger     : include TriggerBoard rate features (default True)
-    use_lvds        : include LVDS pin count features
-    ignore_features : glob patterns for features to exclude (e.g. "TDCRollovers_*")
+    csv_files              : list of str or Path
+    use_trigger            : include TriggerBoard rate features (default True)
+    use_lvds               : include LVDS pin count features
+    ignore_features        : glob patterns for features to exclude
+    include_trigger_config : add trigger config pseudo-channel features
+    trigger_config_vars    : which trigger variables to parse (e.g. "triggerBoard.trigger")
+    include_daq_config     : add per-channel DAQ threshold feature
+    daq_config_vars        : which DAQ variables to parse (e.g. "channel.triggerThreshold")
+    run_configs_dir        : path to directory containing Run*Default.py files
+    thresholds_json_path   : path to thresholds.json
 
     Returns
     -------
     (model, features_cache) where features_cache is a list of DataFrames
     (one per file) so callers can reuse them without re-reading from disk.
     """
-    model = ReferenceModel(use_trigger=use_trigger, use_lvds=use_lvds,
-                           ignore_features=ignore_features)
+    model = ReferenceModel(
+        use_trigger=use_trigger,
+        use_lvds=use_lvds,
+        ignore_features=ignore_features,
+        include_trigger_config=include_trigger_config,
+        trigger_config_vars=trigger_config_vars,
+        include_daq_config=include_daq_config,
+        daq_config_vars=daq_config_vars,
+        run_configs_dir=run_configs_dir,
+        thresholds_json_path=thresholds_json_path,
+    )
     if not csv_files:
         raise ValueError("csv_files list is empty — nothing to build a reference from.")
     features_cache = []
     for f in csv_files:
         print(f"  [{Path(f).name}] extracting features...")
-        feats = extract_features(str(f), use_trigger=use_trigger, use_lvds=use_lvds,
-                                 ignore_features=ignore_features)
+        feats = extract_features(
+            str(f),
+            use_trigger=use_trigger,
+            use_lvds=use_lvds,
+            ignore_features=ignore_features,
+            include_trigger_config=include_trigger_config,
+            trigger_config_vars=trigger_config_vars,
+            include_daq_config=include_daq_config,
+            daq_config_vars=daq_config_vars,
+            run_configs_dir=run_configs_dir,
+            thresholds_json_path=thresholds_json_path,
+        )
         model.update(feats)
         features_cache.append(feats)
     print(f"  Reference built: {len(csv_files)} file(s), {len(model.known_channels())} channels.")

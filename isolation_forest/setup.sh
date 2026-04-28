@@ -7,9 +7,6 @@
 
 set -e
 
-# Load central path configuration
-source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
-
 PYTHON=${PYTHON:-python3}
 
 echo "Python: $($PYTHON --version)"

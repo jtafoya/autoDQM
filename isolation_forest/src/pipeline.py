@@ -136,7 +136,8 @@ from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_alert_thresholds, add_test_mode,
                    add_full_sample_args, add_specific_run_args,
                    validate_full_sample_args, add_plot_format,
-                   resolve_feature_flags, build_train_effective)
+                   add_run_config_flags, resolve_feature_flags,
+                   resolve_run_config_flags, build_train_effective)
 from .config import print_step_header, print_banner, build_training_metadata
 from .train import step_train
 from .monitor import step_apply
@@ -144,7 +145,7 @@ from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
 from .evaluate import step_evaluate
 from .report import step_report
 from .plot import step_plots
-from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files
+from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files, catalogue_counts
 
 
 # ── Private helpers ───────────────────────────────────────────────────────────
@@ -188,11 +189,13 @@ def _resolve_apply_list(args, cfg: dict) -> list:
             f"fraction={args.train_goodRunList_fraction}] ..."
         )
         return resolve_full_sample(
-            json_path  = cfg["full_sample_json"],
+            json_path  = cfg["goodRunsList_json"],
             slab_dir   = cfg["full_sample_slab_dir"],
             quality    = args.train_goodRunList_quality,
             fraction   = args.train_goodRunList_fraction,
             seed       = args.test_seed,
+            min_run    = args.train_goodRunList_min_run,
+            max_run    = args.train_goodRunList_max_run,
         )
     if args.read_full_sample_apply:
         # When targeting a specific run, load the full catalogue unsampled;
@@ -202,12 +205,12 @@ def _resolve_apply_list(args, cfg: dict) -> list:
             else args.full_sample_apply_fraction
         )
         print(
-            f"  Reading full sample catalogue from {cfg['full_sample_json']} "
+            f"  Reading full sample catalogue from {cfg['goodRunsList_json']} "
             f"[quality={args.full_sample_apply_quality}, "
             f"fraction={_catalogue_fraction}] ..."
         )
         return resolve_full_sample(
-            json_path  = cfg["full_sample_json"],
+            json_path  = cfg["goodRunsList_json"],
             slab_dir   = cfg["full_sample_slab_dir"],
             quality    = args.full_sample_apply_quality,
             fraction   = _catalogue_fraction,
@@ -255,6 +258,7 @@ def main() -> None:
 
     # ── Feature set ──
     add_features(parser, cfg)
+    add_run_config_flags(parser, cfg)
 
     # ── Thresholds ──
     add_model_thresholds(parser, cfg)
@@ -366,8 +370,10 @@ def main() -> None:
 
     random.seed(args.test_seed)
 
-    # use_trigger/use_lvds: config sets the baseline, --no-* flags override
+    # Config flags: baseline from config, --no-* CLI flags can disable
     use_trigger, use_lvds = resolve_feature_flags(args, cfg)
+    include_trigger_config, trigger_config_vars, include_daq_config, daq_config_vars = \
+        resolve_run_config_flags(args, cfg)
 
     # Auto-append feature-set suffix to the tag so outputs are self-documenting
     tag = args.model_tag
@@ -377,6 +383,10 @@ def main() -> None:
         tag += "_noTrigger"
     if not use_lvds:
         tag += "_noLVDS"
+    if not include_trigger_config:
+        tag += "_ignoreTriggerConfig"
+    if not include_daq_config:
+        tag += "_ignoreDAQConfig"
 
     logs_dir_path = Path(args.logs_dir)
 
@@ -427,23 +437,49 @@ def main() -> None:
 
     if args.train_goodRunList:
         train_source = (
-            f"{cfg['full_sample_json']} "
+            f"{cfg['goodRunsList_json']} "
             f"[quality={args.train_goodRunList_quality}, "
             f"fraction={args.train_goodRunList_fraction}]"
         )
+        _lo = str(args.train_goodRunList_min_run) if args.train_goodRunList_min_run is not None else "—"
+        _hi = str(args.train_goodRunList_max_run) if args.train_goodRunList_max_run is not None else "—"
+        run_range = f"{_lo} … {_hi}"
+        _json_path = cfg["goodRunsList_json"]
+        if Path(_json_path).exists():
+            _cts = catalogue_counts(
+                _json_path,
+                args.train_goodRunList_quality,
+                fraction=args.train_goodRunList_fraction,
+                min_run=args.train_goodRunList_min_run,
+                max_run=args.train_goodRunList_max_run,
+            )
+            _lo_r = str(args.train_goodRunList_min_run) if args.train_goodRunList_min_run is not None else "—"
+            _hi_r = str(args.train_goodRunList_max_run) if args.train_goodRunList_max_run is not None else "—"
+            catalogue_summary = (
+                f"{_cts['total']:,} total → "
+                f"{_cts['after_quality']:,} after {args.train_goodRunList_quality} "
+                f"({_cts['quality_runs']} runs) → "
+                f"{_cts['after_range']:,} after range [{_lo_r},{_hi_r}] "
+                f"({_cts['range_runs']} runs) → "
+                f"~{_cts['after_fraction']:,} entries sampled"
+            )
+        else:
+            catalogue_summary = f"(catalogue not found: {_json_path})"
     else:
         train_source = args.good_list
+        run_range = "n/a"
+        catalogue_summary = "n/a"
 
     if args.apply_to_training_list:
         apply_source = (
-            f"{cfg['full_sample_json']} "
+            f"{cfg['goodRunsList_json']} "
             f"[quality={args.train_goodRunList_quality}, "
             f"fraction={args.train_goodRunList_fraction}] "
             f"[shared with training]"
         )
     elif args.read_full_sample_apply:
         apply_source = (
-            f"{cfg['full_sample_json']} "
+            f"{cfg['goodRunsList_json']} "
             f"[quality={args.full_sample_apply_quality}, "
             f"fraction={args.full_sample_apply_fraction}]"
         )
@@ -463,6 +499,8 @@ def main() -> None:
         ("log file",             str(log_file)),
         ("train source",         train_source),
         ("train goodRunList",    "yes" if args.train_goodRunList else "no"),
+        ("run range",            run_range),
+        ("catalogue counts",     catalogue_summary),
         ("apply source",         apply_source),
         ("full sample apply",    "yes" if args.read_full_sample_apply else "no"),
         ("models dir",           str(models_dir)),
@@ -490,7 +528,10 @@ def main() -> None:
     # ── Step 1: Train ──────────────────────────────────────────────────────
     if not args.skip_train:
         metadata = build_training_metadata(
-            cfg, build_train_effective(args, cfg, use_trigger, use_lvds),
+            cfg,
+            build_train_effective(args, cfg, use_trigger, use_lvds,
+                                  include_trigger_config, trigger_config_vars,
+                                  include_daq_config, daq_config_vars),
             args.config, sys.argv,
         )
         step_train(
@@ -500,11 +541,19 @@ def main() -> None:
             use_trigger=use_trigger,
             use_lvds=use_lvds,
             ignore_features=tuple(cfg["ignore_features"]),
+            include_trigger_config=include_trigger_config,
+            trigger_config_vars=trigger_config_vars,
+            include_daq_config=include_daq_config,
+            daq_config_vars=daq_config_vars,
+            run_configs_dir=cfg["run_configs_dir"],
+            thresholds_json_path=cfg["thresholds_json_path"],
             read_full_sample     = args.train_goodRunList,
-            full_sample_json     = cfg["full_sample_json"],
+            goodRunsList_json     = cfg["goodRunsList_json"],
             full_sample_slab_dir = cfg["full_sample_slab_dir"],
             full_sample_quality  = args.train_goodRunList_quality,
             full_sample_fraction = args.train_goodRunList_fraction,
+            full_sample_min_run  = args.train_goodRunList_min_run,
+            full_sample_max_run  = args.train_goodRunList_max_run,
             test_seed            = args.test_seed,
             config_path          = args.config,
             training_metadata    = metadata,
@@ -573,7 +622,7 @@ def main() -> None:
         print_step_header("STEP 3 — EVALUATE")
         step_evaluate(
             log_file                     = log_file,
-            json_path                    = cfg.get("full_sample_json", ""),
+            json_path                    = cfg.get("goodRunsList_json", ""),
             out_dir                      = reports_dir,
             file_alert_n_channels        = args.file_alert_n_channels,
             alert_consecutive_n          = args.alert_consecutive_n,

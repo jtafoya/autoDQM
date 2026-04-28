@@ -46,8 +46,7 @@ The pipeline refuses to produce global plots if uncombined per-run files exist
 
 ## HTCondor — all 4 feature variants in parallel (production)
 
-Before submitting, verify `config.yaml` has correct absolute paths and that
-`INSTALLATION_PATH` in `env.sh` is correct (it is the only variable defined there), then:
+Before submitting, verify `config.yaml` has correct absolute paths, then:
 
 ```bash
 bash setup.sh                    # install deps on lxplus (once)
@@ -93,8 +92,8 @@ Runs all five steps in order: train → apply → evaluate → report → plots.
 Use `--skip-train`, `--skip-apply`, `--skip-evaluate`, `--skip-report`, `--skip-all-plots` to skip individual steps.
 
 Output directories are controlled by `--model-tag` (default: `default`). The base directories
-are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (set by `env.sh`),
-falling back to `models/`, `logs/`, `reports/`, `plots/` when those env vars are unset.
+are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (falling back to
+`models/`, `logs/`, `reports/`, `plots/` when those env vars are unset).
 
 ## Step by step
 
@@ -121,6 +120,12 @@ python3 -m src.train --no-trigger
 
 # Disable LVDS pin count features
 python3 -m src.train --no-trigger-LVDS
+
+# Disable config integration for this run (tag gets _ignoreTriggerConfig)
+python3 -m src.train --no-trigger-config
+
+# Disable both config flags
+python3 -m src.train --no-trigger-config --no-daq-config
 ```
 
 ### 3. Monitor a live directory
@@ -184,10 +189,14 @@ Output in `reports/`:
 # Reference model statistics (3 plots)
 python3 -m src.plot reference
 
-# Anomaly analysis of a single file (4 plots)
+# Anomaly analysis of a single file
+# With config integration active, also generates 3 config-state plots:
+#   <stem>_config_trigger.png         — raw vs prescale-normalised trigger rates
+#   <stem>_config_zscore_comparison.png — side-by-side |z| heatmap: raw vs normalised
+#   <stem>_config_mask.png            — geometry showing masked vs active channels
 python3 -m src.plot file /eos/user/t/tafoyava/autoDQM/data/Digitizer_run2068_subrun1.csv
 
-# Summary of the anomaly log (4 plots, sorted by run/subrun)
+# Summary of the anomaly log (sorted by run/subrun)
 python3 -m src.plot log
 
 # Save all figures as PDF (vector, lossless zoom) instead of the default PNG

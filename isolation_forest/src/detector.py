@@ -28,6 +28,40 @@ Not every run has an LVDS file.  When LVDS is absent:
 In both cases the absence of LVDS data has zero effect on anomaly detection.
 A channel is only "new" if the reference has no statistics for it at all
 (i.e. it never appeared in training data).
+
+Config-driven normalisations (applied when include_trigger_config=True)
+------------------------------------------------------------------------
+Per-run MilliDAQ config files are parsed once per file and used exclusively
+to transform observable features *before* scoring.  No new features are added;
+the feature space size is identical regardless of whether config integration is
+active.  This means the model never raises an alert because a config parameter
+changed — it alerts only when observables are inconsistent with the run's own
+config.
+
+Three transformations (each gated by the corresponding variable being in
+trigger_config_vars):
+
+  1. Prescale normalisation (triggerBoard.prescale):
+         triggerRate_bit{N} → raw_rate / prescale[N-1]   (physics rate)
+     Runs with different prescale settings produce comparable trigger rates.
+     triggerRate_tot and triggerCounts_tot are left unnormalised.
+
+  2. Disabled trigger masking (triggerBoard.trigger):
+         triggerRate_bit{N} → NaN for disabled trigger types.
+     A zero rate from an inactive trigger is expected, not anomalous; NaN
+     features are transparent to both the Welford reference and z-scoring.
+
+  3. LVDS channel masking (triggerBoard.trigger_mask):
+         All features for channels 2p and 2p+1 → NaN when LVDS pin p is masked.
+     Masked channels do not contribute to the reference or anomaly score.
+     Pin p covers digitizer channels 2p and 2p+1 (pins 0–47 → channels 0–95).
+
+The DAQ config flag (include_daq_config) is accepted for API and tag-suffix
+purposes but currently applies no transformation (no analytical normalisation
+is available for per-channel thresholds without the full pulse-height spectrum).
+
+Config flags and variable lists are stored in reference.npz and
+training_metadata.json for bookkeeping; they do not affect the scoring logic.
 """
 
 from __future__ import annotations
@@ -56,9 +90,15 @@ class AnomalyDetector:
         self.z_threshold = z_threshold
         self.if_contamination = if_contamination
         self._if_model: Optional[IsolationForest] = None
-        self._use_trigger: bool     = getattr(reference, "_use_trigger",     True)
-        self._use_lvds: bool        = getattr(reference, "_use_lvds",         False)
-        self._ignore_features: tuple = getattr(reference, "_ignore_features", ())
+        self._use_trigger: bool              = getattr(reference, "_use_trigger",             True)
+        self._use_lvds: bool                 = getattr(reference, "_use_lvds",                False)
+        self._ignore_features: tuple         = getattr(reference, "_ignore_features",         ())
+        self._include_trigger_config: bool   = getattr(reference, "_include_trigger_config",  False)
+        self._trigger_config_vars: tuple     = getattr(reference, "_trigger_config_vars",     ())
+        self._include_daq_config: bool       = getattr(reference, "_include_daq_config",      False)
+        self._daq_config_vars: tuple         = getattr(reference, "_daq_config_vars",         ())
+        self._run_configs_dir: str           = getattr(reference, "_run_configs_dir",         "")
+        self._thresholds_json_path: str      = getattr(reference, "_thresholds_json_path",    "")
         self._feat_cols: list = feature_columns(
             use_trigger=self._use_trigger,
             use_lvds=self._use_lvds,
@@ -95,8 +135,16 @@ class AnomalyDetector:
         source = features_cache if features_cache is not None else None
         for i, f in enumerate(csv_files):
             features = source[i] if source is not None else extract_features(
-                str(f), use_trigger=self._use_trigger, use_lvds=self._use_lvds,
+                str(f),
+                use_trigger=self._use_trigger,
+                use_lvds=self._use_lvds,
                 ignore_features=self._ignore_features,
+                include_trigger_config=self._include_trigger_config,
+                trigger_config_vars=self._trigger_config_vars,
+                include_daq_config=self._include_daq_config,
+                daq_config_vars=self._daq_config_vars,
+                run_configs_dir=self._run_configs_dir,
+                thresholds_json_path=self._thresholds_json_path,
             )
             z_df = self.reference.z_score(features)
             # Drop rows that are entirely NaN (channels not in the reference).
@@ -152,8 +200,16 @@ class AnomalyDetector:
                             silently treated as nominal.
         """
         features = extract_features(
-            filepath, use_trigger=self._use_trigger, use_lvds=self._use_lvds,
+            filepath,
+            use_trigger=self._use_trigger,
+            use_lvds=self._use_lvds,
             ignore_features=self._ignore_features,
+            include_trigger_config=self._include_trigger_config,
+            trigger_config_vars=self._trigger_config_vars,
+            include_daq_config=self._include_daq_config,
+            daq_config_vars=self._daq_config_vars,
+            run_configs_dir=self._run_configs_dir,
+            thresholds_json_path=self._thresholds_json_path,
         )
         if features.empty:
             import warnings

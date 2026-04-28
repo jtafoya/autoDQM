@@ -32,16 +32,23 @@ Typical usage in every script::
 
 Post-parse helpers
 ------------------
-Two helpers operate on the parsed Namespace and are intended to be called
+Three helpers operate on the parsed Namespace and are intended to be called
 immediately after validate_full_sample_args() in any script that trains a model:
 
   resolve_feature_flags(args, cfg) → (use_trigger, use_lvds)
       Applies --no-trigger / --no-trigger-LVDS overrides to the config baseline.
 
-  build_train_effective(args, cfg, use_trigger, use_lvds) → dict
+  resolve_run_config_flags(args, cfg) → (include_trigger_config, trigger_config_vars,
+                                         include_daq_config, daq_config_vars)
+      Applies --no-trigger-config / --no-daq-config overrides to the config baseline.
+
+  build_train_effective(args, cfg, use_trigger, use_lvds,
+                        include_trigger_config, trigger_config_vars,
+                        include_daq_config, daq_config_vars) → dict
       Returns the canonical 'effective config' dict consumed by
       config.build_training_metadata().  Centralised here so that train.py and
-      pipeline.py do not duplicate the 10-key construction.
+      pipeline.py do not duplicate the construction.  Includes the resolved config
+      variable lists for bookkeeping in training_metadata.json.
 """
 
 import argparse
@@ -211,6 +218,22 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
              "(0 < F ≤ 1).  A random sub-sample is drawn when F < 1. "
              "(default: %(default)s)",
     )
+    trn.add_argument(
+        "--train-goodRunList-min-run",
+        type=int,
+        metavar="RUN",
+        help="Lowest run number (inclusive) to include in goodRunList training. "
+             "Catalogue entries with run < RUN are excluded. "
+             "(default: no lower bound)",
+    )
+    trn.add_argument(
+        "--train-goodRunList-max-run",
+        type=int,
+        metavar="RUN",
+        help="Highest run number (inclusive) to include in goodRunList training. "
+             "Catalogue entries with run > RUN are excluded. "
+             "(default: no upper bound)",
+    )
 
     # ── Apply ─────────────────────────────────────────────────────────────────
     apl = parser.add_argument_group(
@@ -253,6 +276,8 @@ def add_full_sample_args(parser: argparse.ArgumentParser, cfg: dict) -> None:
         train_goodRunList            = False,
         train_goodRunList_quality    = cfg["train_goodRunList_quality"],
         train_goodRunList_fraction   = cfg["train_goodRunList_fraction"],
+        train_goodRunList_min_run    = cfg["train_goodRunList_min_run"],
+        train_goodRunList_max_run    = cfg["train_goodRunList_max_run"],
         read_full_sample_apply       = False,
         full_sample_apply_quality    = cfg["full_sample_apply_quality"],
         full_sample_apply_fraction   = cfg["full_sample_apply_fraction"],
@@ -327,6 +352,29 @@ def add_plot_format(parser: argparse.ArgumentParser, cfg: dict) -> None:
     parser.set_defaults(plot_format=cfg.get("plot_format", "png"))
 
 
+def add_run_config_flags(parser: argparse.ArgumentParser, cfg: dict) -> None:
+    """
+    Add --no-trigger-config and --no-daq-config flags.
+
+    When set, these disable the corresponding per-run configuration feature
+    groups and append a suffix to the model tag so outputs are self-documenting.
+    The config supplies the baseline (includeConfigInfo_Trigger /
+    includeConfigInfo_DAQ); the flags can only disable a group.
+    """
+    parser.add_argument(
+        "--no-trigger-config",
+        action="store_true",
+        help="Exclude trigger board config features (active bits, prescales, mask, timing). "
+             "Appends _ignoreTriggerConfig to the model tag.",
+    )
+    parser.add_argument(
+        "--no-daq-config",
+        action="store_true",
+        help="Exclude DAQ config features (per-channel trigger thresholds). "
+             "Appends _ignoreDAQConfig to the model tag.",
+    )
+
+
 def resolve_feature_flags(args: argparse.Namespace, cfg: dict) -> "tuple[bool, bool]":
     """
     Resolve use_trigger and use_lvds from config baseline and --no-* CLI overrides.
@@ -343,11 +391,38 @@ def resolve_feature_flags(args: argparse.Namespace, cfg: dict) -> "tuple[bool, b
     )
 
 
+def resolve_run_config_flags(
+    args: argparse.Namespace,
+    cfg: dict,
+) -> "tuple[bool, tuple, bool, tuple]":
+    """
+    Resolve include_trigger_config / include_daq_config from config and --no-* overrides.
+
+    Returns (include_trigger_config, trigger_config_vars, include_daq_config, daq_config_vars).
+    """
+    include_trigger_config = (
+        cfg["includeConfigInfo_Trigger"] and not getattr(args, "no_trigger_config", False)
+    )
+    include_daq_config = (
+        cfg["includeConfigInfo_DAQ"] and not getattr(args, "no_daq_config", False)
+    )
+    return (
+        include_trigger_config,
+        tuple(cfg["includeConfigVariables_Trigger"]),
+        include_daq_config,
+        tuple(cfg["includeConfigVariables_DAQ"]),
+    )
+
+
 def build_train_effective(
     args: argparse.Namespace,
     cfg: dict,
     use_trigger: bool,
     use_lvds: bool,
+    include_trigger_config: bool = False,
+    trigger_config_vars: tuple = (),
+    include_daq_config: bool = False,
+    daq_config_vars: tuple = (),
 ) -> dict:
     """
     Build the 'effective config' dict passed to build_training_metadata.
@@ -357,16 +432,24 @@ def build_train_effective(
     Defined here alongside the argument helpers that set these values.
     """
     return {
-        "good_list":                  args.good_list,
-        "models_dir":                 args.models_dir,
-        "z_threshold":                args.z_threshold,
-        "if_contamination":           args.if_contamination,
-        "use_trigger":                use_trigger,
-        "use_lvds":                   use_lvds,
-        "ignore_features":            list(cfg["ignore_features"]),
-        "train_goodRunList_quality":  args.train_goodRunList_quality,
-        "train_goodRunList_fraction": args.train_goodRunList_fraction,
-        "test_seed":                  args.test_seed,
+        "good_list":                       args.good_list,
+        "models_dir":                      args.models_dir,
+        "z_threshold":                     args.z_threshold,
+        "if_contamination":                args.if_contamination,
+        "use_trigger":                     use_trigger,
+        "use_lvds":                        use_lvds,
+        "ignore_features":                 list(cfg["ignore_features"]),
+        "train_goodRunList_quality":       args.train_goodRunList_quality,
+        "train_goodRunList_fraction":      args.train_goodRunList_fraction,
+        "train_goodRunList_min_run":       args.train_goodRunList_min_run,
+        "train_goodRunList_max_run":       args.train_goodRunList_max_run,
+        "test_seed":                       args.test_seed,
+        "include_trigger_config":          include_trigger_config,
+        "trigger_config_vars":             list(trigger_config_vars),
+        "include_daq_config":              include_daq_config,
+        "daq_config_vars":                 list(daq_config_vars),
+        "run_configs_dir":                 cfg["run_configs_dir"],
+        "thresholds_json_path":            cfg["thresholds_json_path"],
     }
 
 

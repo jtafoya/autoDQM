@@ -16,6 +16,44 @@ reports_dir          Root directory for run-classification reports.
 plots_dir            Root directory for diagnostic plots.
 use_trigger          Include TriggerBoard rate features (bool).
 use_lvds             Include LVDS pin-count features (bool).
+
+Per-run configuration features (optional, controlled by includeConfigInfo_*)
+-----------------------------------------------------------------------------
+run_configs_dir         Directory containing Run{N}TriggerDefault.py and
+                        Run{N}DAQDefault.py config files.
+thresholds_json_path    Path to thresholds.json (per-channel trigger thresholds).
+includeConfigInfo_Trigger  Use per-run trigger board config to transform
+                        observable features before scoring.  No new features
+                        are added — the feature space size is unchanged.
+                        When True, the variables listed in
+                        includeConfigVariables_Trigger drive three in-place
+                        transformations applied to every file at extract time:
+                          • triggerBoard.prescale  → prescale-normalise each
+                            triggerRate_bit{N} to the physics rate before
+                            prescaling; runs with different prescale settings
+                            become directly comparable.
+                          • triggerBoard.trigger   → NaN triggerRate_bit{N}
+                            for disabled trigger types (expected-zero rate is
+                            not anomalous).
+                          • triggerBoard.trigger_mask → NaN all features for
+                            channels whose LVDS pin is masked (pin p covers
+                            channels 2p and 2p+1; masked channels should not
+                            register activity).
+                        When False, behaviour is identical to the pre-config
+                        code path and "_ignoreTriggerConfig" is appended to
+                        the model tag.
+includeConfigVariables_Trigger  List of trigger variable names to parse.
+                        Supported: triggerBoard.trigger, triggerBoard.prescale,
+                        triggerBoard.trigger_mask, triggerBoard.dead_time,
+                        triggerBoard.coincidence_time, triggerBoard.nLayerThreshold,
+                        triggerBoard.nHitThreshold, triggerBoard.zero_bias.
+includeConfigInfo_DAQ   Accepted for API and tag-suffix purposes; currently
+                        applies no transformation (no analytical normalisation
+                        is available for per-channel thresholds without the full
+                        pulse-height spectrum).  When False, "_ignoreDAQConfig"
+                        is appended to the model tag.
+includeConfigVariables_DAQ  List of DAQ variable names.  Supported:
+                        channel.triggerThreshold.
 z_threshold          |z-score| above which a channel feature is flagged.
 if_contamination     Expected anomaly fraction passed to IsolationForest.
 
@@ -59,7 +97,7 @@ These keys control training on the complete slab dataset stored on EOS.
 full_sample_slab_dir   Root directory of the slab dataset on EOS.  Files are
                        organised in sub-directories named by the floor-100 of the
                        run number (e.g. run 1214 → .../slab/1200/).
-full_sample_json       Path to the JSON good-runs catalogue
+goodRunsList_json       Path to the JSON good-runs catalogue
                        (goodRunsListSlab.json).  The file must contain a top-level
                        "data" list whose rows follow the column order:
                        [run, file, goodRunLoose, goodRunMedium, goodRunTight,
@@ -71,6 +109,16 @@ train_goodRunList_quality  Default quality level for training when --train-goodR
 train_goodRunList_fraction Fraction of the quality-filtered catalogue to use for
                            training (0 < value ≤ 1).  A value < 1 draws a random
                            sub-sample; set to 1.0 to use all matching entries.
+train_goodRunList_min_run  Lowest run number (inclusive) to include in training.
+                           Catalogue entries with run < this value are excluded
+                           before quality filtering and sub-sampling.  None (default)
+                           means no lower bound.  Overridable at runtime with
+                           --train-goodRunList-min-run.
+train_goodRunList_max_run  Highest run number (inclusive) to include in training.
+                           Catalogue entries with run > this value are excluded
+                           before quality filtering and sub-sampling.  None (default)
+                           means no upper bound.  Overridable at runtime with
+                           --train-goodRunList-max-run.
 full_sample_apply_quality  Default quality level for the apply step when
                            --read-full-sample-apply is active.  Same accepted values
                            as train_goodRunList_quality.  Can be overridden at runtime
@@ -113,6 +161,18 @@ DEFAULTS: dict = {
     "use_lvds":             True,
     "ignore_features":      [],
     #
+    ### Per-run configuration features
+    "run_configs_dir":             "/eos/experiment/milliqan/run3/slab/configs",
+    "thresholds_json_path":        "/eos/experiment/milliqan/run3/slab/configs/thresholds.json",
+    "includeConfigInfo_Trigger":   True,
+    "includeConfigVariables_Trigger": [
+        "triggerBoard.trigger",
+        "triggerBoard.prescale",
+        "triggerBoard.trigger_mask",
+    ],
+    "includeConfigInfo_DAQ":       True,
+    "includeConfigVariables_DAQ":  ["channel.triggerThreshold"],
+    #
     #
     "poll_interval":        5.0,
     "live_good_list":       "",     # path to live good-run list; "" = disabled
@@ -120,13 +180,15 @@ DEFAULTS: dict = {
     #
     ### Full-sample training
     "full_sample_slab_dir":  "/eos/experiment/milliqan/run3_MilliMon/slab",
-    "full_sample_json":      "../data/goodRunsListSlab.json",
+    "goodRunsList_json":      "../data/goodRunsListSlab.json",
     #"train_goodRunList_quality":   "Loose",
     "train_goodRunList_quality":   "Medium",
     #"train_goodRunList_quality":   "Tight",
     #"train_goodRunList_quality":   "All",
     "train_goodRunList_fraction":  0.01,
     #"train_goodRunList_fraction":  1.0,
+    "train_goodRunList_min_run":   None,
+    "train_goodRunList_max_run":   None,
     "full_sample_apply_quality":   "Medium",
     "full_sample_apply_fraction":  1.0,
 }

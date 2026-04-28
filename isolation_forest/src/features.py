@@ -1,20 +1,46 @@
 """
 Per-channel feature extraction from a Digitizer CSV file, optionally enriched
-with trigger rate and LVDS count information from matching TriggerBoard CSVs.
+with trigger rate and LVDS count information from matching TriggerBoard CSVs,
+and with config-driven normalisations derived from MilliDAQ Python config files.
 
 A Digitizer file is in long format: each row is one (event, channel) pair.
 This module aggregates all events into one feature vector per channel.
 
-Two pseudo-channels are appended to the returned DataFrame when the
-corresponding data sources are available:
+Two pseudo-channels are appended when the corresponding data sources are available:
 
-  "trigger_rate" — one row holding all TriggerBoard rate / count features.
-                    Digitizer and LVDS columns are NaN for this row.
-  "trigger_lvds_total"    — one row holding the run-level LVDS total count.
-                    Digitizer and trigger columns are NaN for this row.
+  "trigger_rate"       — TriggerBoard rate / count features per subrun.
+  "trigger_lvds_total" — run-level LVDS total count.
 
 Per-channel LVDS pin counts (LVDSpin) remain as a regular channel feature:
   ch 0 & 1 → LVDSpin0, ch 2 & 3 → LVDSpin1, etc.
+
+Config-driven normalisations (applied when include_trigger_config=True)
+-----------------------------------------------------------------------
+Config variables are used only to transform existing observable features.
+They are never added to the feature vector and are never scored.
+
+  triggerBoard.prescale (if in trigger_config_vars):
+      recorded_rate = prescale * real_rate, so the physics rate is recovered as
+      triggerRate_bit{N} = recorded_rate / prescale[N-1].  The prescale list is
+      stored reversed: cfg_prescale_bit{N-1} is the prescale for trigger type N
+      (last element of the config array = prescale for type 1).  Runs with
+      different prescale settings become directly comparable.  triggerRate_tot
+      and triggerCounts_tot are left unnormalised (mixed trigger types, no single
+      prescale applies).  Zero prescale produces NaN (type was off).
+
+  triggerBoard.trigger (if in trigger_config_vars):
+      The trigger word is read right-to-left: bit 0 (rightmost) = trigger type 1,
+      bit 1 = trigger type 2, …  triggerRate_bit{N} is set to NaN for any trigger
+      type N whose bit is 0 (disabled).  A zero rate from a disabled trigger is
+      expected — it should not enter the reference statistics or anomaly score.
+      Up to 16 trigger types (bits 0–15) are supported.
+
+  triggerBoard.trigger_mask (if in trigger_config_vars):
+      Each LVDS pin p maps to digitizer channels 2p and 2p+1.  When pin p is
+      masked (bit = 0), all features for channels 2p and 2p+1 are set to NaN.
+      Masked channels have no expected trigger activity; NaN features are
+      transparently skipped by the Welford reference and produce NaN z-scores
+      that do not contribute to anomaly detection.
 
 Scalability: reads one file at a time, no global state.
 """
@@ -27,6 +53,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Optional
+
+from .run_config import parse_trigger_config
 
 # ── Digitizer metrics ───────────────────────────────────────────────────────
 
@@ -50,7 +78,7 @@ _LVDS_PIN_COL = ["LVDSpin"]
 # ── Pseudo-channel feature groups ────────────────────────────────────────────
 
 # "trigger_rate" pseudo-channel — one row per file, independent of channels
-TRIGGER_COLS = [f"triggerRate_bit{i}" for i in range(1, 14)] + [
+TRIGGER_COLS = [f"triggerRate_bit{i}" for i in range(1, 17)] + [
     "triggerRate_tot",
     "triggerCounts_tot",
 ]
@@ -71,8 +99,12 @@ def feature_columns(
     ignore_features: tuple = (),
 ) -> list:
     """
-    Ordered list of all feature column names shared by both real channels and
-    pseudo-channels. Columns irrelevant to a given row are NaN in the DataFrame.
+    Ordered list of all feature column names shared by real channels and
+    pseudo-channels.  Columns irrelevant to a given row are NaN in the DataFrame.
+
+    Config normalisations (include_trigger_config, etc.) transform the *values*
+    of these columns but never add new columns — the feature space is identical
+    regardless of whether config-based normalisation is active.
 
     ignore_features : sequence of glob patterns (e.g. "TDCRollovers_*") whose
         matching columns are excluded from the returned list.
@@ -97,6 +129,12 @@ def extract_features(
     use_trigger: bool = True,
     use_lvds: bool = True,
     ignore_features: tuple = (),
+    include_trigger_config: bool = False,
+    trigger_config_vars: tuple = (),
+    include_daq_config: bool = False,
+    daq_config_vars: tuple = (),
+    run_configs_dir: str = "",
+    thresholds_json_path: str = "",
 ) -> pd.DataFrame:
     """
     Read a Digitizer CSV and return a combined feature DataFrame.
@@ -118,15 +156,31 @@ def extract_features(
           All other columns are NaN.
 
       "trigger_lvds_total" (if use_lvds):
-          LVDStotal — sum of all LVDS pin counts for this subrun.
+          LVDStotal — run-level sum of all LVDS pin counts.
           All other columns are NaN.
 
-    TriggerBoard / LVDS pseudo-channel rows have NaN values (not absent rows)
-    when the matching file is not found — the reference and detector treat
-    all-NaN pseudo-channels as no-data rather than anomalies.
+    Config-driven normalisations (when include_trigger_config=True)
+    ---------------------------------------------------------------
+    Config variables are used to transform observable features in-place.
+    No new columns are added; the feature space is the same as without config.
+
+      triggerBoard.prescale → prescale-normalised trigger rates (physics rate).
+      triggerBoard.trigger  → NaN for disabled trigger types.
+      triggerBoard.trigger_mask → NaN all features for channels whose LVDS pin
+          is masked (pin p = channel // 2; masked pin → channels 2p, 2p+1).
+
+    include_daq_config is accepted for API consistency and tag-suffix logic but
+    currently applies no transformation (no analytical normalisation available
+    for per-channel thresholds without the full pulse-height spectrum).
+
+    Missing data sources (absent TriggerBoard file, absent config file) produce
+    NaN values — treated as no-data, not as anomalies.
     """
-    all_cols = feature_columns(use_trigger=use_trigger, use_lvds=use_lvds,
-                               ignore_features=ignore_features)
+    all_cols = feature_columns(
+        use_trigger=use_trigger,
+        use_lvds=use_lvds,
+        ignore_features=ignore_features,
+    )
     df = pd.read_csv(filepath)
 
     if df.empty:
@@ -160,6 +214,50 @@ def extract_features(
         else:
             agg["LVDSpin"] = np.nan
 
+    # ── Config-driven normalisations ──────────────────────────────────────────
+    # Parse the trigger config once; derive all normalisation lookups from it.
+    # When include_trigger_config=False, trig_cfg_feats stays None and every
+    # downstream block is a no-op — behaviour is identical to the pre-config path.
+    trig_cfg_feats = None
+    if include_trigger_config and run_configs_dir:
+        run_m = _DIGI_RE.search(Path(filepath).name)
+        run_num = int(run_m.group(1)) if run_m else None
+        if run_num is not None:
+            trig_cfg_feats = parse_trigger_config(
+                run_num, run_configs_dir, list(trigger_config_vars)
+            )
+
+    # Prescale lookup: triggerRate_bit{N} (1-indexed) → prescale[N-1].
+    _prescales: "list | None" = None
+    if trig_cfg_feats is not None and "triggerBoard.prescale" in trigger_config_vars:
+        _prescales = [
+            trig_cfg_feats.get(f"cfg_prescale_bit{i}", np.nan)
+            for i in range(16)
+        ]
+
+    # Disabled trigger types: bit i of trigger word = 0 → trigger type i+1 inactive.
+    # triggerRate_bit{N} for N in _disabled_triggers is set to NaN (expected zero rate
+    # from an inactive trigger should not enter the reference or anomaly score).
+    _disabled_triggers: set = set()
+    if trig_cfg_feats is not None and "triggerBoard.trigger" in trigger_config_vars:
+        for i in range(16):  # TRIGGER_COLS covers types 1..16 (bits 0..15)
+            if trig_cfg_feats.get(f"cfg_trigger_bit{i}", 1.0) == 0.0:
+                _disabled_triggers.add(i + 1)
+
+    # LVDS trigger-mask: pin p = channel // 2; masked pin → NaN all features for
+    # channels 2p and 2p+1.  Pins 0..47 cover digitizer channels 0..95.
+    # Pins 48..63 map to non-digitizer components (panels, etc.) and are ignored.
+    if trig_cfg_feats is not None and "triggerBoard.trigger_mask" in trigger_config_vars:
+        masked_channels = [
+            ch
+            for p in range(48)
+            if trig_cfg_feats.get(f"cfg_mask_ch{p}", 1.0) == 0.0
+            for ch in (2 * p, 2 * p + 1)
+            if ch in agg.index
+        ]
+        if masked_channels:
+            agg.loc[masked_channels, :] = np.nan
+
     # Pad real channel rows with NaN for pseudo-channel-only columns
     for col in all_cols:
         if col not in agg.columns:
@@ -173,10 +271,21 @@ def extract_features(
         tb_vals = {col: np.nan for col in all_cols}
         if tb_row is not None:
             for col in TRIGGER_COLS:
-                tb_vals[col] = tb_row.get(col, np.nan)
+                val = tb_row.get(col, np.nan)
+                if col.startswith("triggerRate_bit"):
+                    bit_num = int(col[len("triggerRate_bit"):])
+                    # Disabled trigger → NaN (expected zero; not an anomaly).
+                    if bit_num in _disabled_triggers:
+                        val = np.nan
+                    # Prescale-normalise: recorded = prescale * real, so real = recorded / prescale.
+                    # cfg_prescale_bit{N-1} holds the prescale for trigger type N (list reversed at parse).
+                    elif _prescales is not None:
+                        p = _prescales[bit_num - 1] if bit_num <= len(_prescales) else np.nan
+                        val = (val / p) if (not np.isnan(p) and p > 0) else np.nan
+                tb_vals[col] = val
         frames.append(pd.DataFrame([tb_vals], index=[PSEUDO_TRIGGER]))
 
-    # ── "trigger_lvds_total" pseudo-channel ───────────────────────────────────────────
+    # ── "trigger_lvds_total" pseudo-channel ───────────────────────────────────
     if use_lvds:
         lt_vals = {col: np.nan for col in all_cols}
         if lvds_row is not None:

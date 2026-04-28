@@ -48,7 +48,10 @@ isolation_forest/
   src/
     config.py        — central config loader (load_config, DEFAULTS)
     args.py          — shared argparse helpers (preparse_config, add_* argument groups)
-    features.py      — per-channel feature extraction from Digitizer + TriggerBoard CSVs
+    features.py      — per-channel feature extraction; applies config-driven normalisations
+                        (prescale normalisation, channel masking) before training/scoring
+    run_config.py    — per-run MilliDAQ config parser (Run{N}TriggerDefault.py,
+                        Run{N}DAQDefault.py, thresholds.json); regex-based, no import needed
     reference.py     — Welford online reference model (incremental, scalable)
     detector.py      — two-layer anomaly detector (z-score + Isolation Forest)
     run_list.py      — run list file parser and filename utilities (glob expansion, extract_run_number)
@@ -61,22 +64,21 @@ isolation_forest/
     pipeline.py      — CLI: run the full pipeline (train → apply → evaluate → report → plots) in one command
   condor/
     submit.sub       — HTCondor job description (4 feature-variant jobs)
-    run_pipeline.sh  — worker-node entry point (sources env.sh, calls pipeline.py)
+    run_pipeline.sh  — worker-node entry point (calls pipeline.py)
     logs/            — per-job stdout/stderr and shared job event log
   models/            — saved reference stats and trained Isolation Forest (created by train.py); each tag subdirectory also contains a config.yaml snapshot of the settings used for that training run
   logs/              — anomaly log CSV files (created by monitor.py / pipeline.py)
   reports/           — run quality lists and summary table (created by report.py / pipeline.py)
   plots/             — diagnostic figures (created by plot.py / pipeline.py)
   config.yaml        — central pipeline configuration (paths, thresholds, feature flags)
-  env.sh             — exports INSTALLATION_PATH for condor/run_pipeline.sh (all other config is in config.yaml)
-  setup.sh           — install Python dependencies (sources env.sh)
+  setup.sh           — install Python dependencies
   diagram.md         — Mermaid architecture diagram of the full framework
   ../data/
     good_run_list_EOS.txt    — known-good files used for training (default --good-list)
     bad_run_list_EOS.txt     — known-bad files (for reference and validation)
     all_run_list_EOS.txt     — all classified runs combined (good + bad); default --apply-list
     goodRunsListSlab.json    — full good-runs catalogue for the slab dataset on EOS
-                               (used by --train-goodRunList; path set by full_sample_json in config)
+                               (used by --train-goodRunList; path set by goodRunsList_json in config)
   requirements.txt   — Python dependencies
 ```
 
@@ -99,10 +101,6 @@ models_dir: /afs/.../isolation_forest/models
 
 All paths must be **absolute** so the pipeline works from Condor worker nodes, cron jobs,
 or any working directory. CLI arguments always override config.yaml values.
-
-`env.sh` now only exports `INSTALLATION_PATH`, used by `condor/run_pipeline.sh`
-for `cd` and `PYTHONPATH` setup. If you move the installation, update
-`INSTALLATION_PATH` in `env.sh` and all paths in `config.yaml`.
 
 ### 2. Install Python dependencies
 
@@ -198,7 +196,7 @@ python3 -m src.train --no-trigger-LVDS
 
 Use `--train-goodRunList` to train on the complete slab dataset instead of the
 default text run list.  The good-run catalogue `goodRunsListSlab.json` is read
-automatically (path set by `full_sample_json` in `config.yaml`).
+automatically (path set by `goodRunsList_json` in `config.yaml`).
 
 The quality level and fraction are read from `config.yaml` (`train_goodRunList_quality`
 and `train_goodRunList_fraction`) — no extra flags are required at the command line.
@@ -241,6 +239,8 @@ Options:
 | `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
 | `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.yaml) |
 | `--no-trigger-LVDS` | off | Exclude LVDS features: drops `LVDSpin` and the `"trigger_lvds_total"` pseudo-channel (overrides `use_lvds`) |
+| `--no-trigger-config` | off | Disable per-run trigger config integration (prescale normalisation, channel masking). Overrides `includeConfigInfo_Trigger`. Appends `_ignoreTriggerConfig` to the model tag |
+| `--no-daq-config` | off | Disable DAQ config integration. Overrides `includeConfigInfo_DAQ`. Appends `_ignoreDAQConfig` to the model tag |
 | `--update` | off | Incremental mode: add new good files without reprocessing old ones |
 | `--test [N]` | off | Test mode: randomly sample N files (default N=50 when flag is given) |
 | `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
@@ -426,7 +426,7 @@ Options:
 | Flag | Default | Meaning |
 |---|---|---|
 | `--log-file` | from config.yaml | Anomaly log to read |
-| `--json-path` | from config.yaml (`full_sample_json`) | Path to goodRunsListSlab.json |
+| `--json-path` | from config.yaml (`goodRunsList_json`) | Path to goodRunsListSlab.json |
 | `--out-dir` | from config.yaml | Directory for `eval_summary.txt` and `framework_good_runs.json` |
 | `--plots-dir` | from config.yaml | Directory for `eval_confusion.png` |
 | `--gt-quality` | `Tight` | Quality level used to define "known good" ground truth |
@@ -536,10 +536,18 @@ python3 -m src.plot file <path/to/Digitizer_runXXXX_subrunY.csv>
 
 | File | Description |
 |---|---|
-| `<stem>_zscore_heatmap.png` | Full channels × features z-score matrix, clamped at 50σ. Same layout as `reference_mean_table.png`: digitiser channels (`ch0`–`ch95`) ordered numerically top to bottom, pseudo-channels (`trigger_rate`, `trigger_lvds_total`) below a dashed separator, cell text showing the actual \|z\| value, grey cells for features not applicable to that row. Red shading highlights flagged channels. |
+| `<stem>_zscore_heatmap.png` | Full channels × features z-score matrix, clamped at 50σ. Same layout as `reference_mean_table.png`: digitiser channels (`ch0`–`ch95`) ordered numerically top to bottom, pseudo-channels (`trigger_rate`, `trigger_lvds_total`) below a dashed separator, cell text showing the actual \|z\| value, grey cells for features not applicable to that row (including masked channels when config integration is active). Red shading highlights flagged channels. |
 | `<stem>_max_zscore.png` | Bar chart of the maximum absolute z-score per channel (log scale), channels ordered numerically with pseudo-channels at the right. The dashed line marks the alert threshold. Red bars are flagged channels, blue are nominal. |
 | `<stem>_if_scores.png` | Isolation Forest anomaly score per channel, same channel ordering. More negative = more anomalous. Complements the z-score plot by capturing multivariate anomalies not visible in any single feature. |
 | `<stem>_geometry.png` | Detector layout plot: one panel per layer (all 4 layers in a single row), channels placed at their (row, column) position and coloured by max \|z\|. Each channel also gets a status ring: 🟢 green = OK (nominal), 🟡 yellow = WARN (anomalous but no alert condition fired), 🔴 red = ALERT (bulk or extreme condition triggered). Useful for spotting spatially localised problems (e.g. a dead row or noisy column). |
+
+The following three figures are generated automatically when `includeConfigInfo_Trigger: true`:
+
+| File | Description |
+|---|---|
+| `<stem>_config_trigger.png` | Side-by-side bars for trigger types 1–13: **blue** = raw rate from TriggerBoard CSV, **orange** = prescale-normalised rate (what the model sees), **grey** = disabled by `triggerBoard.trigger`. The ÷N prescale factor is annotated above each active trigger. Directly shows the effect of prescale normalisation for this subrun. |
+| `<stem>_config_zscore_comparison.png` | Two |z|-score heatmaps side by side for all channels × features. **Left panel**: raw (un-normalised) features scored against the reference — shows what would happen without config integration (potential false positives highlighted). **Right panel**: config-normalised features (what the model actually used). Grey cells in the right panel are masked channels or disabled triggers correctly excluded from scoring. Large |z| values that appear only in the left panel are false positives that config normalisation suppresses. |
+| `<stem>_config_mask.png` | Detector geometry per layer showing channel mask state. **Grey ×** = channel silenced by `triggerBoard.trigger_mask` (all features NaN'd, excluded from reference and scoring). **Blue/red dots** = active nominal/anomalous channels. Only generated when at least one channel is actually masked in this subrun. |
 
 ### Log summary plots
 
@@ -654,6 +662,53 @@ skipped in the Welford update so they do not corrupt the running mean or varianc
 
 Feature flags are saved in `models/reference.npz` and applied automatically by all
 subsequent steps (apply, plots) — no flags needed at inference time.
+
+### Per-run config integration (`src/run_config.py`, `src/features.py`)
+
+Enabled by `includeConfigInfo_Trigger: true` in `config.yaml`.  Config files
+(`Run{N}TriggerDefault.py`, `Run{N}DAQDefault.py`) are parsed once per subrun using
+regex extraction — they cannot be imported since they reference custom MilliDAQ classes.
+
+Config information is used **exclusively to transform observable features in-place**.
+No new features are added; the feature space size is unchanged (52 columns by default).
+This means the model never alerts because a configuration parameter changed between runs —
+it alerts only when observables are inconsistent with the run's own configuration.
+
+Three transformations are applied when the corresponding variable is listed in
+`includeConfigVariables_Trigger`:
+
+| Variable | Transformation |
+|---|---|
+| `triggerBoard.prescale` | `triggerRate_bit{N}` → `raw_rate / prescale[N-1]` (physics rate before prescaling). Runs with different prescale settings become directly comparable. |
+| `triggerBoard.trigger` | `triggerRate_bit{N}` → NaN for disabled trigger types. A zero rate from an inactive trigger is expected, not anomalous. |
+| `triggerBoard.trigger_mask` | All features for channels `2p` and `2p+1` → NaN when LVDS pin `p` is masked. Masked channels are excluded from the reference and not scored. Pin mapping: `p = channel // 2` (pins 0–47 cover channels 0–95). |
+
+When either config flag is False, behaviour is identical to the pre-config code path and
+`_ignoreTriggerConfig` / `_ignoreDAQConfig` is appended to the model tag.
+
+Config flags and variable lists are stored in `reference.npz` and `training_metadata.json`
+so any loaded model is always self-describing.
+
+```yaml
+# config.yaml — enable all three trigger transformations
+includeConfigInfo_Trigger: true
+includeConfigVariables_Trigger:
+  - "triggerBoard.trigger"
+  - "triggerBoard.prescale"
+  - "triggerBoard.trigger_mask"
+includeConfigInfo_DAQ: true
+includeConfigVariables_DAQ:
+  - "channel.triggerThreshold"
+run_configs_dir:       /eos/experiment/milliqan/run3/slab/configs
+thresholds_json_path:  /eos/experiment/milliqan/run3/slab/configs/thresholds.json
+```
+
+Disable for a single run (tag suffix appended automatically):
+
+```bash
+python3 -m src.pipeline --no-trigger-config   # tag gets _ignoreTriggerConfig
+python3 -m src.pipeline --no-daq-config       # tag gets _ignoreDAQConfig
+```
 
 ### Reference model (`src/reference.py`)
 
@@ -832,6 +887,8 @@ Options:
 | `--test-seed` | from config.yaml | Random seed for reproducible test-mode sampling |
 | `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.yaml) |
 | `--no-trigger-LVDS` | off | Exclude LVDS pin count features (overrides `use_lvds` in config.yaml) |
+| `--no-trigger-config` | off | Disable trigger config integration (prescale normalisation, channel masking). Appends `_ignoreTriggerConfig` |
+| `--no-daq-config` | off | Disable DAQ config integration. Appends `_ignoreDAQConfig` |
 | `--z-threshold` | from config.yaml | σ threshold for the statistical layer |
 | `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
 | `--file-alert-n-channels` | from config.yaml | Number of *persistent* anomalous channels to trigger a file-level ALERT (persistence condition) |
@@ -871,8 +928,7 @@ train → apply → evaluate → report → plots sequence for one variant.
 ### Prerequisites
 
 1. `config.yaml` has correct absolute paths for `good_list`, `apply_list`, and the output directories (see [Setup](#setup))
-2. `INSTALLATION_PATH` in `env.sh` points to the correct `isolation_forest/` directory (only variable it contains)
-3. Dependencies are installed: `bash setup.sh`
+2. Dependencies are installed: `bash setup.sh`
 
 ### Submit
 

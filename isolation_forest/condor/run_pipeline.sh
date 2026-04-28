@@ -15,9 +15,8 @@ set -euo pipefail
 
 VARIANT=${1:?Usage: run_pipeline.sh <variant>}
 
-# Load INSTALLATION_PATH (pipeline configuration lives in config.json)
 SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
-source "${SCRIPT_DIR}/../env.sh"
+INSTALLATION_PATH="${SCRIPT_DIR}/.."
 
 cd "${INSTALLATION_PATH}"
 

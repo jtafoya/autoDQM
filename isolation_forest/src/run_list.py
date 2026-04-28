@@ -42,6 +42,12 @@ Six functions are provided:
    pre-filter unique-run total is intentionally omitted to avoid confusion
    with the run count actually used by the caller.
    "All" selects entries that pass at least one quality criterion (OR logic).
+   Optional min_run / max_run arguments restrict the catalogue to a run-number
+   window (both bounds inclusive); the filter is applied after quality selection
+   and before fraction sub-sampling.
+   Catalogue entries whose subrun field is -1 are expanded to all subrun files
+   found on disk for that run (via resolve_run_files), so a single -1 entry can
+   contribute many paths.
 
 6. append_to_live_good_list(filepath, live_good_list_path)
    Append one absolute file path to the live good-run list, creating the file
@@ -166,6 +172,62 @@ def resolve_run_list(list_file: str) -> list:
     return paths
 
 
+def catalogue_counts(
+    json_path: str,
+    quality: str,
+    fraction: float = 1.0,
+    min_run: "int | None" = None,
+    max_run: "int | None" = None,
+) -> dict:
+    """
+    Return entry counts at each filter stage without resolving file paths.
+
+    Fast summary for banner display — does not touch the disk for CSV files.
+
+    Returns a dict with keys:
+        total          — all entries in the catalogue
+        after_quality  — entries passing the quality filter
+        quality_runs   — unique runs after quality filter
+        after_range    — entries after run-range filter
+        range_runs     — unique runs after run-range filter
+        after_fraction — estimated entries after fraction sub-sample
+    """
+    with open(json_path) as fh:
+        all_rows = json.load(fh)["data"]
+
+    total = len(all_rows)
+
+    if quality == "All":
+        quality_rows = [
+            r for r in all_rows
+            if r[_COL_GOOD_RUN_LOOSE] or r[_COL_GOOD_RUN_MEDIUM] or r[_COL_GOOD_RUN_TIGHT]
+        ]
+    else:
+        col = QUALITY_CHOICES[quality]
+        quality_rows = [r for r in all_rows if r[col]]
+
+    range_rows = quality_rows
+    if min_run is not None:
+        range_rows = [r for r in range_rows if r[_COL_RUN] >= min_run]
+    if max_run is not None:
+        range_rows = [r for r in range_rows if r[_COL_RUN] <= max_run]
+
+    after_fraction = (
+        max(1, int(round(len(range_rows) * fraction)))
+        if fraction < 1.0
+        else len(range_rows)
+    )
+
+    return {
+        "total":          total,
+        "after_quality":  len(quality_rows),
+        "quality_runs":   len(set(r[_COL_RUN] for r in quality_rows)),
+        "after_range":    len(range_rows),
+        "range_runs":     len(set(r[_COL_RUN] for r in range_rows)),
+        "after_fraction": after_fraction,
+    }
+
+
 def resolve_full_sample(
     json_path: str,
     slab_dir: str,
@@ -173,6 +235,8 @@ def resolve_full_sample(
     fraction: float = 1.0,
     seed: int = 42,
     print_stats: bool = True,
+    min_run: "int | None" = None,
+    max_run: "int | None" = None,
 ) -> list:
     """
     Build a list of Digitizer CSV paths from the goodRunsListSlab.json catalogue.
@@ -206,11 +270,21 @@ def resolve_full_sample(
         If False, suppress the quality-filter and fraction-sample counts
         (useful in the apply-specific-run path where those counts describe the
         full catalogue, not the single targeted run).
+    min_run : int | None
+        If set, exclude catalogue entries whose run number is below this value
+        (inclusive lower bound).  Applied after quality filtering, before
+        fraction sub-sampling.
+    max_run : int | None
+        If set, exclude catalogue entries whose run number is above this value
+        (inclusive upper bound).  Applied after quality filtering, before
+        fraction sub-sampling.
 
     Returns
     -------
     list[str]
         Resolved, existing file paths in run/subrun order.
+        Catalogue entries with subrun == -1 are expanded to all subrun files
+        found on disk for that run via resolve_run_files().
     """
     if quality not in QUALITY_ALL_CHOICES:
         raise ValueError(
@@ -261,6 +335,20 @@ def resolve_full_sample(
         print(f"     Matching entries                 : {len(filtered):>8,}")
         print(f"     Unique runs                      : {filtered_runs:>8,}")
 
+    # ── Run range filter ──────────────────────────────────────────────────────
+    if min_run is not None or max_run is not None:
+        if min_run is not None:
+            filtered = [r for r in filtered if r[_COL_RUN] >= min_run]
+        if max_run is not None:
+            filtered = [r for r in filtered if r[_COL_RUN] <= max_run]
+        if print_stats:
+            range_runs = len(set(r[_COL_RUN] for r in filtered))
+            lo = str(min_run) if min_run is not None else "—"
+            hi = str(max_run) if max_run is not None else "—"
+            print(f"  ── After run range filter (min={lo}, max={hi})")
+            print(f"     Matching entries                 : {len(filtered):>8,}")
+            print(f"     Unique runs                      : {range_runs:>8,}")
+
     # ── Sub-sample by fraction ────────────────────────────────────────────────
     if fraction < 1.0:
         rng = random.Random(seed)
@@ -284,12 +372,20 @@ def resolve_full_sample(
         run     = row[_COL_RUN]
         subrun  = row[_COL_FILE]
         # tag is available here for future use: row[_COL_TAG]
-        subdir  = (run // 100) * 100
-        fpath   = slab_root / str(subdir) / f"Digitizer_run{run}_subrun{subrun}.csv"
-        if fpath.exists():
-            paths.append(str(fpath))
+        if subrun == -1:
+            # Expand to all subrun files present on disk for this run.
+            disk_files = resolve_run_files(slab_dir, run)
+            if disk_files:
+                paths.extend(disk_files)
+            else:
+                missing += 1
         else:
-            missing += 1
+            subdir = (run // 100) * 100
+            fpath  = slab_root / str(subdir) / f"Digitizer_run{run}_subrun{subrun}.csv"
+            if fpath.exists():
+                paths.append(str(fpath))
+            else:
+                missing += 1
 
     if missing:
         print(f"  WARNING: {missing} catalogue entr{'y' if missing == 1 else 'ies'} "

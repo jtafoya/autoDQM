@@ -43,7 +43,7 @@ thresholds_json_path:  /eos/experiment/milliqan/run3/slab/configs/thresholds.jso
 # Supported variables: triggerBoard.trigger, triggerBoard.prescale,
 #   triggerBoard.trigger_mask, triggerBoard.dead_time, triggerBoard.coincidence_time,
 #   triggerBoard.nLayerThreshold, triggerBoard.nHitThreshold, triggerBoard.zero_bias
-includeConfigInfo_Trigger: true
+includeConfigInfo_Trigger: false
 includeConfigVariables_Trigger:
   - "triggerBoard.trigger"
   - "triggerBoard.prescale"

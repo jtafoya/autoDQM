@@ -23,6 +23,17 @@ Usage — incremental update after collecting more good runs:
     python -m src.train --update
     (adds only files not yet seen; the Isolation Forest is always fully retrained)
 
+Usage — disable per-run config integration (appends tag suffixes):
+    python -m src.train --no-trigger-config   # → tag gets _ignoreTriggerConfig
+    python -m src.train --no-daq-config       # → tag gets _ignoreDAQConfig
+
+Config integration is enabled by default when includeConfigInfo_Trigger /
+includeConfigInfo_DAQ are true in config.yaml.  When active, trigger rates
+are prescale-normalised, disabled trigger types and LVDS-masked channels are
+NaN'd out before building the reference — the model learns physics rates and
+never sees masked channels, so config changes between runs never produce false
+alerts.  See src/detector.py for full details on the three transformations.
+
 Models are saved to --models-dir (default: models/).
 The mean feature table figure format is set by --plot-format (png/pdf/svg,
 default png; also configurable via ``plot_format`` in config.yaml).
@@ -59,7 +70,8 @@ from .config import print_step_header, print_banner, build_training_metadata
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_test_mode,
                    add_full_sample_args, validate_full_sample_args, add_plot_format,
-                   resolve_feature_flags, build_train_effective)
+                   add_run_config_flags, resolve_feature_flags, resolve_run_config_flags,
+                   build_train_effective)
 
 
 def step_train(
@@ -71,11 +83,19 @@ def step_train(
     use_trigger: bool = True,
     use_lvds: bool = False,
     ignore_features: tuple = (),
+    include_trigger_config: bool = False,
+    trigger_config_vars: tuple = (),
+    include_daq_config: bool = False,
+    daq_config_vars: tuple = (),
+    run_configs_dir: str = "",
+    thresholds_json_path: str = "",
     read_full_sample: bool = False,
-    full_sample_json: str = "",
+    goodRunsList_json: str = "",
     full_sample_slab_dir: str = "",
     full_sample_quality: str = "",
     full_sample_fraction: float = 1.0,
+    full_sample_min_run: "int | None" = None,
+    full_sample_max_run: "int | None" = None,
     test_seed: int = 42,
     update: bool = False,
     config_path: str = "",
@@ -108,15 +128,17 @@ def step_train(
     # ---- Resolve file list ----
     if read_full_sample:
         print(
-            f"  Reading full sample catalogue from {full_sample_json} "
+            f"  Reading full sample catalogue from {goodRunsList_json} "
             f"[quality={full_sample_quality}, fraction={full_sample_fraction}] ..."
         )
         all_csv = resolve_full_sample(
-            json_path  = full_sample_json,
+            json_path  = goodRunsList_json,
             slab_dir   = full_sample_slab_dir,
             quality    = full_sample_quality,
             fraction   = full_sample_fraction,
             seed       = test_seed,
+            min_run    = full_sample_min_run,
+            max_run    = full_sample_max_run,
         )
     else:
         print(f"  Reading good run list from {good_list} ...")
@@ -130,8 +152,12 @@ def step_train(
     if not read_full_sample:
         # resolve_full_sample already prints its own count summary
         print(f"  {len(all_csv)} good file(s) found.")
-    print(f"  Trigger features: {'enabled' if use_trigger else 'disabled'}")
-    print(f"  LVDS features:    {'enabled' if use_lvds else 'disabled'}")
+    print(f"  Trigger features:        {'enabled' if use_trigger else 'disabled'}")
+    print(f"  LVDS features:           {'enabled' if use_lvds else 'disabled'}")
+    print(f"  Trigger config features: {'enabled' if include_trigger_config else 'disabled'}"
+          + (f"  {list(trigger_config_vars)}" if include_trigger_config else ""))
+    print(f"  DAQ config features:     {'enabled' if include_daq_config else 'disabled'}"
+          + (f"  {list(daq_config_vars)}" if include_daq_config else ""))
 
     # ---- Test mode: subsample ----
     if test_n:
@@ -161,7 +187,18 @@ def step_train(
             from .features import extract_features
             for f in new_files:
                 print(f"  [{Path(f).name}] adding to reference...")
-                ref.update(extract_features(str(f), use_trigger=ref._use_trigger, use_lvds=ref._use_lvds))
+                ref.update(extract_features(
+                    str(f),
+                    use_trigger=ref._use_trigger,
+                    use_lvds=ref._use_lvds,
+                    ignore_features=ref._ignore_features,
+                    include_trigger_config=ref._include_trigger_config,
+                    trigger_config_vars=ref._trigger_config_vars,
+                    include_daq_config=ref._include_daq_config,
+                    daq_config_vars=ref._daq_config_vars,
+                    run_configs_dir=ref._run_configs_dir,
+                    thresholds_json_path=ref._thresholds_json_path,
+                ))
                 seen.add(Path(f).name)
             print(f"  Added {len(new_files)} file(s). "
                   f"Reference now covers {len(ref.known_channels())} channels.")
@@ -172,6 +209,12 @@ def step_train(
             use_trigger=use_trigger,
             use_lvds=use_lvds,
             ignore_features=ignore_features,
+            include_trigger_config=include_trigger_config,
+            trigger_config_vars=trigger_config_vars,
+            include_daq_config=include_daq_config,
+            daq_config_vars=daq_config_vars,
+            run_configs_dir=run_configs_dir,
+            thresholds_json_path=thresholds_json_path,
         )
         seen = {Path(f).name for f in all_csv}
 
@@ -220,6 +263,7 @@ def main() -> None:
         help="Incremental mode: add new files to an existing reference without reprocessing old ones",
     )
     add_features(parser, cfg)
+    add_run_config_flags(parser, cfg)
     add_model_thresholds(parser, cfg)
     parser.add_argument(
         "--test",
@@ -242,36 +286,50 @@ def main() -> None:
     args = parser.parse_args()
     validate_full_sample_args(parser, args)
     use_trigger, use_lvds = resolve_feature_flags(args, cfg)
+    include_trigger_config, trigger_config_vars, include_daq_config, daq_config_vars = \
+        resolve_run_config_flags(args, cfg)
 
     models_dir = Path(args.models_dir)
 
     if args.train_goodRunList:
         input_source = (
-            f"{cfg['full_sample_json']} "
+            f"{cfg['goodRunsList_json']} "
             f"[quality={args.train_goodRunList_quality}, "
             f"fraction={args.train_goodRunList_fraction}]"
         )
+        _lo = str(args.train_goodRunList_min_run) if args.train_goodRunList_min_run is not None else "—"
+        _hi = str(args.train_goodRunList_max_run) if args.train_goodRunList_max_run is not None else "—"
+        run_range = f"{_lo} … {_hi}"
     else:
         input_source = args.good_list
+        run_range = "n/a"
 
     print_banner("train", args.config, [
-        ("models dir",       str(models_dir)),
-        ("input source",     input_source),
+        ("models dir",        str(models_dir)),
+        ("input source",      input_source),
         ("train goodRunList", "yes" if args.train_goodRunList else "no"),
-        ("trigger features", "yes" if use_trigger else "no"),
-        ("LVDS features",    "yes" if use_lvds else "no"),
-        ("ignore features",  str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
-        ("z threshold",      f"{args.z_threshold}σ"),
-        ("IF contamination", str(args.if_contamination)),
-        ("test mode",        f"{args.test} files" if args.test else "off (full run)"),
-        ("test seed",        str(args.test_seed)),
-        ("incremental",      "yes" if args.update else "no"),
+        ("run range",         run_range),
+        ("trigger features",  "yes" if use_trigger else "no"),
+        ("LVDS features",     "yes" if use_lvds else "no"),
+        ("trigger config",    "yes" if include_trigger_config else "no"),
+        ("  vars",            str(list(trigger_config_vars)) if include_trigger_config else "—"),
+        ("DAQ config",        "yes" if include_daq_config else "no"),
+        ("  vars",            str(list(daq_config_vars)) if include_daq_config else "—"),
+        ("ignore features",   str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
+        ("z threshold",       f"{args.z_threshold}σ"),
+        ("IF contamination",  str(args.if_contamination)),
+        ("test mode",         f"{args.test} files" if args.test else "off (full run)"),
+        ("test seed",         str(args.test_seed)),
+        ("incremental",       "yes" if args.update else "no"),
     ])
 
     models_dir.mkdir(parents=True, exist_ok=True)
 
     metadata = build_training_metadata(
-        cfg, build_train_effective(args, cfg, use_trigger, use_lvds),
+        cfg,
+        build_train_effective(args, cfg, use_trigger, use_lvds,
+                              include_trigger_config, trigger_config_vars,
+                              include_daq_config, daq_config_vars),
         args.config, sys.argv,
     )
 
@@ -282,11 +340,19 @@ def main() -> None:
         use_trigger=use_trigger,
         use_lvds=use_lvds,
         ignore_features=tuple(cfg["ignore_features"]),
+        include_trigger_config=include_trigger_config,
+        trigger_config_vars=trigger_config_vars,
+        include_daq_config=include_daq_config,
+        daq_config_vars=daq_config_vars,
+        run_configs_dir=cfg["run_configs_dir"],
+        thresholds_json_path=cfg["thresholds_json_path"],
         read_full_sample     = args.train_goodRunList,
-        full_sample_json     = cfg["full_sample_json"],
+        goodRunsList_json     = cfg["goodRunsList_json"],
         full_sample_slab_dir = cfg["full_sample_slab_dir"],
         full_sample_quality  = args.train_goodRunList_quality,
         full_sample_fraction = args.train_goodRunList_fraction,
+        full_sample_min_run  = args.train_goodRunList_min_run,
+        full_sample_max_run  = args.train_goodRunList_max_run,
         test_seed            = args.test_seed,
         update               = args.update,
         config_path          = args.config,

@@ -3,19 +3,19 @@ Evaluate the anomaly detector against the goodRunsListSlab.json ground truth.
 
 Reads the anomaly log produced by the apply step, replays the full alert logic
 (persistence + bulk + extreme) to assign per-subrun predicted status
-(ok / warn / pend / alert), then cross-references each subrun against the
+(ok / warn / alert), then cross-references each subrun against the
 goodRunsListSlab.json catalogue to compute:
 
   Known good (quality ≥ threshold):
     True Negative  (TN) : predicted ok
-    Mild anomaly        : predicted warn   (anomaly present but below alert threshold)
-    Unconfirmed (PEND)  : predicted pend   (too few within-run subruns to confirm)
+    Mild anomaly        : predicted warn   (sub-threshold persistent anomaly)
+    Unverifiable        : predicted pend   (anomalous, run too short to verify persistence)
     False Positive (FP) : predicted alert
 
   Not certified good (in catalogue, all quality flags = 0):
     Possible FN         : predicted ok
     Mild anomaly        : predicted warn
-    Unconfirmed (PEND)  : predicted pend
+    Unverifiable        : predicted pend
     Possible TP         : predicted alert
 
   Unknown (not in catalogue): shown separately.
@@ -28,9 +28,9 @@ Outputs:
                                        subruns with their framework quality flags
 
 Quality mapping in framework_good_runs.json (same column order as goodRunsListSlab):
-  Tight  = predicted ok only (most conservative — no anomalies, past probation)
-  Medium = predicted ok or warn (anomaly present but not persisted to alert level)
-  Loose  = predicted ok, warn, or pend (includes run-start unconfirmed subruns)
+  Tight  = predicted ok only (most conservative — no anomalies detected)
+  Medium = predicted ok or warn (anomaly present but below alert threshold)
+  Loose  = predicted ok, warn, or pend (anomalous but persistence unverifiable)
   All zero → predicted alert (framework considers the subrun anomalous)
 
 Usage:
@@ -133,7 +133,7 @@ def step_evaluate(
     if not Path(json_path).exists():
         print(
             f"  [SKIP] Evaluate — catalogue not found: {json_path}\n"
-            f"         Set full_sample_json in config.yaml to enable evaluation.",
+            f"         Set goodRunsList_json in config.yaml to enable evaluation.",
             file=sys.stderr,
         )
         return True
@@ -213,17 +213,17 @@ def step_evaluate(
     # Summary rates
     n_kg = totals["known_good"]
     if n_kg:
-        tn  = counts["known_good"]["ok"]
-        fp  = counts["known_good"]["alert"]
-        fw  = counts["known_good"]["warn"]
-        fu  = counts["known_good"]["pend"]
+        tn   = counts["known_good"]["ok"]
+        fw   = counts["known_good"]["warn"]
+        fp_p = counts["known_good"]["pend"]
+        fp   = counts["known_good"]["alert"]
         lines += [
             "",
             f"  ── Rates on known-good subruns ──",
-            f"    True Negative  (ok)    : {tn:>6}  ({tn /n_kg*100:>5.1f}%)",
-            f"    Mild anomaly   (warn)  : {fw:>6}  ({fw /n_kg*100:>5.1f}%)",
-            f"    Unconfirmed    (pend)  : {fu:>6}  ({fu /n_kg*100:>5.1f}%)",
-            f"    False Positive (alert) : {fp:>6}  ({fp /n_kg*100:>5.1f}%)",
+            f"    True Negative  (ok)    : {tn:>6}  ({tn  /n_kg*100:>5.1f}%)",
+            f"    Mild anomaly   (warn)  : {fw:>6}  ({fw  /n_kg*100:>5.1f}%)",
+            f"    Unverifiable   (pend)  : {fp_p:>6}  ({fp_p/n_kg*100:>5.1f}%)",
+            f"    False Positive (alert) : {fp:>6}  ({fp  /n_kg*100:>5.1f}%)",
         ]
 
     n_nc = totals["not_certified"]
@@ -237,7 +237,7 @@ def step_evaluate(
             f"  ── Rates on not-certified subruns ──",
             f"    Possible FN    (ok)    : {poss_fn:>6}  ({poss_fn/n_nc*100:>5.1f}%)",
             f"    Mild anomaly   (warn)  : {w_nc:>6}  ({w_nc  /n_nc*100:>5.1f}%)",
-            f"    Unconfirmed    (pend)  : {p_nc:>6}  ({p_nc  /n_nc*100:>5.1f}%)",
+            f"    Unverifiable   (pend)  : {p_nc:>6}  ({p_nc  /n_nc*100:>5.1f}%)",
             f"    Possible TP    (alert) : {poss_tp:>6}  ({poss_tp/n_nc*100:>5.1f}%)",
         ]
 
@@ -274,17 +274,17 @@ def _write_framework_json(eval_df: "pd.DataFrame", out_dir: Path) -> None:
     Write framework_good_runs.json in goodRunsListSlab column order:
       [run, subrun, loose, medium, tight, 0, "autoDQM_IF"]
 
-    Tight  = predicted ok  (no anomalies, past probation window)
-    Medium = predicted ok or warn
-    Loose  = predicted ok, warn, or pend
+    Tight  = predicted ok  (no anomalies detected)
+    Medium = predicted ok or warn (sub-threshold persistent anomaly)
+    Loose  = predicted ok, warn, or pend (anomalous, persistence unverifiable)
     0/0/0  = predicted alert (framework considers the subrun anomalous)
     """
     data = []
     for _, row in eval_df.sort_values(["run", "subrun"]).iterrows():
         s      = row["status"]
-        tight  = 1 if s == "ok"                   else 0
-        medium = 1 if s in ("ok", "warn")          else 0
-        loose  = 1 if s in ("ok", "warn", "pend")  else 0
+        tight  = 1 if s == "ok"                        else 0
+        medium = 1 if s in ("ok", "warn")               else 0
+        loose  = 1 if s in ("ok", "warn", "pend")       else 0
         data.append([
             int(row["run"]), int(row["subrun"]),
             loose, medium, tight,
@@ -329,7 +329,7 @@ def main() -> None:
 
     parser.set_defaults(
         log_file   = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
-        json_path  = cfg.get("full_sample_json", ""),
+        json_path  = cfg.get("goodRunsList_json", ""),
         out_dir    = str(Path(cfg["reports_dir"]) / tag),
         gt_quality = "Tight",
     )
