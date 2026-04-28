@@ -73,7 +73,7 @@ echo ""
 #    "${FLAGS[@]}"
 
 python3 -m src.pipeline \
-	--config config.yaml \
+	--config config_ignoreTriggerConfig.yaml \
 	--model-tag condor_full_260428 \
 	--train-goodRunList \
 	--train-goodRunList-quality Tight \

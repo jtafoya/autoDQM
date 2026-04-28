@@ -1,6 +1,6 @@
 #!/bin/bash
-# Run the full autoDQM pipeline for one feature variant.
-# Called by submit.sub with a single argument: the variant name.
+# Run the full autoDQM pipeline for one feature variant — Loose quality, ignoreTriggerConfig_ignoreDAQConfig.
+# Called by submit__ignoreTriggerConfig_ignoreDAQConfig_Loose.sub with a single argument: the variant name.
 #
 # Variants:
 #   trigger_lvds      — trigger rates on, LVDS counts on  (default)
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-VARIANT=${1:?Usage: run_pipeline.sh <variant>}
+VARIANT=${1:?Usage: run_pipeline__ignoreTriggerConfig_ignoreDAQConfig_Loose.sh <variant>}
 
 SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
 INSTALLATION_PATH="${SCRIPT_DIR}/.."
@@ -26,8 +26,6 @@ echo "  Host : $(hostname)"
 echo "  Start: $(date -u)"
 echo "============================================================"
 
-# Make pip --user packages (installed via setup.sh) visible on worker nodes.
-# AFS is mounted on lxplus condor nodes, so ~/.local is available.
 PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 export PYTHONUSERBASE="${HOME}/.local"
 export PATH="${HOME}/.local/bin:${PATH}"
@@ -36,7 +34,6 @@ export PYTHONPATH="${HOME}/.local/lib/python${PYVER}/site-packages:${INSTALLATIO
 echo "  Python : $(python3 --version)  ($(which python3))"
 echo "  PYTHONPATH prefix: ${HOME}/.local/lib/python${PYVER}/site-packages"
 
-# Verify dependencies are importable before doing any real work
 python3 -c "import pandas, sklearn, numpy, scipy, watchdog" || {
     echo "ERROR: required packages not found." >&2
     echo "Run 'bash setup.sh' on lxplus before submitting condor jobs." >&2
@@ -45,7 +42,6 @@ python3 -c "import pandas, sklearn, numpy, scipy, watchdog" || {
 echo "  Dependencies: OK"
 echo ""
 
-# Map variant name to CLI flags
 FLAGS=()
 case $VARIANT in
     trigger_lvds)
@@ -68,15 +64,11 @@ esac
 echo "  Flags: ${FLAGS[*]:-'(none — full feature set)'}"
 echo ""
 
-#python3 -m src.pipeline \
-#    --model-tag "condor" \
-#    "${FLAGS[@]}"
-
 python3 -m src.pipeline \
-	--config config.yaml \
+	--config config_ignoreTriggerConfig_ignoreDAQConfig.yaml \
 	--model-tag condor_full_260428 \
 	--train-goodRunList \
-	--train-goodRunList-quality Tight \
+	--train-goodRunList-quality Loose \
 	--train-goodRunList-fraction 0.1 \
 	--apply-to-training-list \
 	"${FLAGS[@]}"

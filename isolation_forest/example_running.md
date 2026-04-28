@@ -92,8 +92,7 @@ Runs all five steps in order: train → apply → evaluate → report → plots.
 Use `--skip-train`, `--skip-apply`, `--skip-evaluate`, `--skip-report`, `--skip-all-plots` to skip individual steps.
 
 Output directories are controlled by `--model-tag` (default: `default`). The base directories
-are read from `$MODELS_DIR`, `$LOGS_DIR`, `$REPORTS_DIR`, `$PLOTS_DIR` (falling back to
-`models/`, `logs/`, `reports/`, `plots/` when those env vars are unset).
+(`models_dir`, `logs_dir`, `reports_dir`, `plots_dir`) are read from `config.yaml`.
 
 ## Step by step
 

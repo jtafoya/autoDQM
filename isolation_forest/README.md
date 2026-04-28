@@ -27,7 +27,7 @@ To suppress single-file fluctuations, the pipeline distinguishes two levels of a
 | **Persistent** | channel anomalous in the current file **and** every one of the `alert_consecutive_n − 1` preceding files **within the same run** | counts toward ALERT |
 | **Transient** | channel anomalous now but streak incomplete | counts toward WARN only |
 
-**Channel history is reset at every run boundary.** A helper `_run_number()` extracts the run number from the filename; when it changes, the streak counters are cleared and the file index within the run resets to zero. The first `alert_consecutive_n − 1` files of each run cannot yet confirm nominal behaviour — they print `[PEND]` if clean, or escalate to `[ALERT]` immediately if a single-file condition fires.
+**Channel history is reset at every run boundary.** A helper `_run_number()` extracts the run number from the filename; when it changes, the streak counters are cleared. Clean files always print `[OK]` immediately — there is no probationary hold for nominal subruns. A subrun with only transient anomalies (streak not established) also prints `[OK]`; `[WARN]` fires only when at least one channel has a confirmed sub-threshold persistent anomaly. In the plots, subruns in runs that are too short for persistence to ever be verified (fewer than `alert_consecutive_n` subruns total) are labelled `PEND` retrospectively.
 
 Three independent conditions can raise `[ALERT]`:
 
@@ -37,7 +37,7 @@ Three independent conditions can raise `[ALERT]`:
 | **Bulk** | `single_file_alert_n_channels` | ≥ K anomalous channels in a single file. Targets sudden widespread events (power glitch, noisy run). No history required; set higher than `file_alert_n_channels` (e.g. 5) since there is no persistence filter. 0 = disabled. |
 | **Extreme** | `single_file_alert_max_z` | Any single channel's `max_z` ≥ this value. Targets a catastrophically out-of-range channel (e.g. broken hardware). 0.0 = disabled. |
 
-Setting `alert_consecutive_n = 1` disables the persistence check and restores single-file behaviour (`[PEND]` never fires).
+Setting `alert_consecutive_n = 1` disables the persistence check and restores single-file behaviour (every anomalous channel is immediately persistent).
 
 ---
 
@@ -279,12 +279,7 @@ Subruns that do not trigger an alert are written to `live_good_runs.txt` in the 
 plain-text format as `good_run_list_EOS.txt`, ready for incremental training
 (see [Scaling](#scaling-to--106-files)).
 
-**Probationary period**: the first `alert_consecutive_n − 1` subruns of each run are held
-in a queue rather than written immediately.  They are flushed (written retroactively) only
-when the first fully-confirmed subrun arrives — i.e. the first subrun for which the
-persistence window is complete and no alert fires.  An alert during the probationary period
-clears the queue; those subruns are discarded.  When `alert_consecutive_n = 1` there is no
-probationary period and every passing subrun is written immediately.
+**Probationary period** (live-good-list only): subruns with transient anomalies (`n_bad > 0` but no alert) are held in a per-run queue rather than written immediately. They are flushed (written retroactively) only when the first non-probationary passing subrun arrives — i.e. the first subrun for which the persistence window is complete and no alert fires. An alert during probation clears the queue; those subruns are discarded. **Clean subruns (`n_bad = 0`) and purely-transient subruns (streak not established) are written immediately** — no hold applies. When `alert_consecutive_n = 1` there is no probationary period.
 
 To apply the model to a run list instead of a live directory (test mode only):
 
@@ -305,7 +300,7 @@ Options:
 | `--log-file` | from config.yaml | Output log path |
 | `--poll-interval` | from config.yaml | Seconds between directory scans |
 | `--file-alert-n-channels` | from config.yaml | Number of *persistent* anomalous channels needed to print `[ALERT]` (persistence condition) |
-| `--alert-consecutive-n` | from config.yaml | A channel must be anomalous in this many consecutive files to count as persistent. Set to `1` to disable (any anomaly → ALERT-eligible, no `[PEND]`) |
+| `--alert-consecutive-n` | from config.yaml | A channel must be anomalous in this many consecutive files to count as persistent. Set to `1` to disable (any anomaly → ALERT-eligible) |
 | `--single-file-alert-n-channels` | from config.yaml | Minimum anomalous channels in a single file to trigger `[ALERT]` (bulk condition). Should be higher than `--file-alert-n-channels`. `0` = disabled |
 | `--single-file-alert-max-z` | from config.yaml | If any channel's `max_z` meets or exceeds this value, trigger `[ALERT]` immediately (extreme condition). `0.0` = disabled |
 | `--process-existing` | off | Also process files already in the directory at startup |
@@ -320,19 +315,22 @@ Options:
 Terminal output (with `alert_consecutive_n = 3`, `single_file_alert_n_channels = 5`, `single_file_alert_max_z = 15.0`):
 ```
 [run 2090] New run — channel history reset
-[PEND]  2026-04-08T17:00:00Z  Digitizer_run2090_subrun1.csv  —  96 channels, no anomalies  (run start: file 1/3, need 2 more clean file(s) to confirm [OK])
-[PEND]  2026-04-08T17:00:05Z  Digitizer_run2090_subrun2.csv  —  96 channels, no anomalies  (run start: file 2/3, need 1 more clean file(s) to confirm [OK])
+[OK]    2026-04-08T17:00:00Z  Digitizer_run2090_subrun1.csv  —  96 channels, all nominal
+[OK]    2026-04-08T17:00:05Z  Digitizer_run2090_subrun2.csv  —  96 channels, all nominal
 [OK]    2026-04-08T17:00:10Z  Digitizer_run2090_subrun3.csv  —  96 channels, all nominal
-[WARN]  2026-04-08T17:00:15Z  Digitizer_run2090_subrun4.csv  —  2 transient anomalous channel(s)  [window: 3 files, need 2 persistent for ALERT]
+[OK]    2026-04-08T17:00:15Z  Digitizer_run2090_subrun4.csv  —  2 transient anomalous channel(s), streak not established  [window: 3 files]
                   ch1  method=statistical+IF        max_z=8.2    if_score=-0.59   features=[nPulses_std;occupancy]  [1/3 files]
                   ch3  method=statistical           max_z=6.4    if_score=-0.41   features=[sideband_mean_median]   [1/3 files]
-[ALERT] 2026-04-08T17:00:20Z  Digitizer_run2090_subrun6.csv  —  2 persistent + 1 transient anomalous channel(s)  (window: 3 files)  |  bulk: 6 channels ≥ 5 threshold
+[WARN]  2026-04-08T17:00:20Z  Digitizer_run2090_subrun5.csv  —  2 persistent anomalous channel(s)  [window: 3 files, need 2 persistent for ALERT]
+                  ch1  method=statistical+IF        max_z=8.2    if_score=-0.59   features=[nPulses_std;occupancy]  [2/3 files]
+                  ch3  method=statistical           max_z=6.4    if_score=-0.65   features=[sideband_mean_median]   [2/3 files]
+[ALERT] 2026-04-08T17:00:25Z  Digitizer_run2090_subrun6.csv  —  2 persistent + 1 transient anomalous channel(s)  (window: 3 files)  |  bulk: 6 channels ≥ 5 threshold
                   ch1  method=statistical+IF        max_z=8.2    if_score=-0.59   features=[nPulses_std;occupancy]  [3/3 files]
                   ch3  method=statistical           max_z=6.4    if_score=-0.65   features=[sideband_mean_median]   [3/3 files]
                  ch57  method=isolation_forest      max_z=4.1    if_score=-0.71   features=[]                       [1/3 files]
 ```
 
-With `alert_consecutive_n = 1` (persistence check disabled) the `[k/N files]` annotations are omitted, `[PEND]` never fires, and the output matches the original single-file format.
+`[OK]` is immediate for clean subruns and for subruns whose only anomalies are transient (streak not established). `[WARN]` fires when at least one channel has a confirmed sub-threshold persistent anomaly. With `alert_consecutive_n = 1` (persistence check disabled) the `[k/N files]` annotations are omitted and the output matches the original single-file format.
 
 ### 4. Classify runs
 
@@ -559,11 +557,11 @@ Files are ordered by **run number then subrun number** in all log plots.
 
 | File | Description |
 |---|---|
-| `log_anomaly_rate.png` | Anomalous channel count per file, sorted by run/subrun. Red bars = ALERT (any of the three alert conditions fired), orange/dark-orange = WARN, light-blue = PEND (probationary — first N−1 files of each run with no anomalies), steel-blue = OK. A second dashed threshold line marks the bulk single-file threshold. Each x-axis label is coloured to match its bar, so zero-count files remain visible. |
+| `log_anomaly_rate.png` | Anomalous channel count per file, sorted by run/subrun. Red bars = ALERT (any of the three alert conditions fired), orange = WARN (sub-threshold persistent anomaly), light-blue = PEND (anomalous, but run too short to verify persistence), steel-blue = OK (clean or purely transient). A second dashed threshold line marks the bulk single-file threshold. Each x-axis label is coloured to match its bar, so zero-count files remain visible. |
 | `log_channel_frequency.png` | Bar chart of the 40 most frequently flagged channels across all processed files. Persistent entries point to channels with chronic issues rather than transient noise. |
 | `log_feature_frequency.png` | Bar chart of the 20 most frequently triggered features. Identifies which metrics are driving alerts — useful for diagnosing systematic hardware problems (e.g. TDC drift, occupancy loss, trigger rate shifts). |
 | `log_run_summary.png` | Bar chart with one bar per run showing what fraction of its subruns are non-ALERT (0–100%), based on raw per-file anomaly counts. Blue = all good, orange = partial, red = all bad. Each bar is annotated with the raw count. |
-| `log_persistence_subrun_grid.png` | Heatmap of every (run, subrun) cell coloured by its persistence-aware status: blue = OK, light-blue = PEND (probationary, first N−1 files of the run), orange = WARN (transient anomaly, streak incomplete), red = ALERT (any alert condition fired — persistent, bulk, or extreme). Grey = no data. Shows at a glance which subruns are anomalous only transiently versus truly persistent, and which are probationary at run start. |
+| `log_persistence_subrun_grid.png` | Heatmap of every (run, subrun) cell coloured by its persistence-aware status: blue = OK (clean, or transient anomaly in a long-enough run), light-blue = PEND (anomalous channel(s) in a run too short to verify persistence), orange = WARN (sub-threshold persistent anomaly), red = ALERT (any alert condition fired — persistent, bulk, or extreme). Grey = no data. |
 | `log_persistence_run_summary.png` | Same as `log_run_summary.png` but subrun badness is determined by the full alert logic (persistent + bulk + extreme conditions): a subrun is counted as bad only if it reaches ALERT level. Runs with only transient spikes appear fully good here while showing anomalies in `log_run_summary.png`. |
 
 Options for the `log` subcommand:
@@ -1044,12 +1042,13 @@ so the full history is always available for offline analysis via `report.py` and
 
 > **Caveats**
 >
-> - **Run boundaries**: channel history is **reset at every run boundary**. The helper
->   `_run_number()` extracts the run number from the filename. When a new run number is
->   detected, the streak counters and `channel_history` dict are cleared and `run_file_index`
->   resets to zero. The first `alert_consecutive_n − 1` files of each run are classified
->   `[PEND]` if nominal (insufficient history to confirm OK), or escalate directly to
->   `[ALERT]` if a bulk or extreme single-file condition fires.
+> - **Run boundaries**: channel history is **reset at every run boundary**. When a new run
+>   number is detected, the streak counters and `channel_history` dict are cleared.
+>   Clean subruns always print `[OK]` immediately. Subruns with only transient anomalies
+>   (streak not yet established) also print `[OK]`. `[WARN]` fires only when at least one
+>   channel has a confirmed sub-threshold persistent anomaly. In the plots, subruns belonging
+>   to runs with fewer than `alert_consecutive_n` files total are labelled PEND
+>   retrospectively, since persistence can never be verified for those runs.
 >
 > - **Test mode / random sampling**: in test mode files are randomly sampled then
 >   processed in run/subrun order. If the sample skips subruns (e.g. picks subruns 1, 5,

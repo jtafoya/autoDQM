@@ -43,7 +43,7 @@ thresholds_json_path:  /eos/experiment/milliqan/run3/slab/configs/thresholds.jso
 # Supported variables: triggerBoard.trigger, triggerBoard.prescale,
 #   triggerBoard.trigger_mask, triggerBoard.dead_time, triggerBoard.coincidence_time,
 #   triggerBoard.nLayerThreshold, triggerBoard.nHitThreshold, triggerBoard.zero_bias
-includeConfigInfo_Trigger: false
+includeConfigInfo_Trigger: true
 includeConfigVariables_Trigger:
   - "triggerBoard.trigger"
   - "triggerBoard.prescale"
@@ -53,7 +53,7 @@ includeConfigVariables_Trigger:
 # Set includeConfigInfo_DAQ: false to exclude entirely; the model tag will
 # gain the suffix _ignoreDAQConfig.
 # Supported variables: channel.triggerThreshold
-includeConfigInfo_DAQ: true
+includeConfigInfo_DAQ: false
 includeConfigVariables_DAQ:
   - "channel.triggerThreshold"
 

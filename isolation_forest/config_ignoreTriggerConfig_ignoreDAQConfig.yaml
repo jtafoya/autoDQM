@@ -53,7 +53,7 @@ includeConfigVariables_Trigger:
 # Set includeConfigInfo_DAQ: false to exclude entirely; the model tag will
 # gain the suffix _ignoreDAQConfig.
 # Supported variables: channel.triggerThreshold
-includeConfigInfo_DAQ: true
+includeConfigInfo_DAQ: false
 includeConfigVariables_DAQ:
   - "channel.triggerThreshold"
 

@@ -1,0 +1,35 @@
+# HTCondor submission file — autoDQM isolation forest pipeline
+# Loose quality, ignoreTriggerConfig
+#
+# Submits one job per feature variant (4 jobs total).
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit__ignoreTriggerConfig_Loose.sub
+
+universe   = vanilla
+executable = condor/run_pipeline__ignoreTriggerConfig_Loose.sh
+arguments  = $(VARIANT)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = condor/logs/$(Cluster).$(Process).$(VARIANT).out
+error  = condor/logs/$(Cluster).$(Process).$(VARIANT).err
+log    = condor/logs/condor.log
+
+request_cpus   = 4
+request_memory = 4096
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
+
++ProjectName = "local"
+
+notify_user  = j.tafoya.vargas@cern.ch
+notification = Complete
+
+queue VARIANT from (
+    trigger_lvds
+    trigger_nolvds
+    notrigger_lvds
+    notrigger_nolvds
+)

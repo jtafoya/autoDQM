@@ -1,0 +1,53 @@
+# HTCondor submission file — autoDQM isolation forest pipeline
+#
+# Submits one job per feature variant (4 jobs total):
+#   trigger_lvds      trigger rates + LVDS counts (full feature set, 101 features)
+#   trigger_nolvds    trigger rates only           (50 features)
+#   notrigger_lvds    LVDS counts only             (86 features)
+#   notrigger_nolvds  Digitizer only               (35 features)
+#
+# Prerequisites:
+#   Run 'bash setup.sh' once on lxplus to install Python dependencies into
+#   ~/.local (pip --user). The run script makes those packages visible on
+#   worker nodes via PYTHONPATH.
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit.sub
+
+universe   = vanilla
+executable = condor/run_pipeline__ignoreTriggerConfig_ignoreDAQConfig.sh
+arguments  = $(VARIANT)
+
+# Run from the isolation_forest/ directory so all relative paths resolve correctly
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+# Per-job stdout/stderr; shared job event log
+# $(Cluster).$(Process) ensures each submission gets its own output files
+output = condor/logs/$(Cluster).$(Process).$(VARIANT).out
+error  = condor/logs/$(Cluster).$(Process).$(VARIANT).err
+log    = condor/logs/condor.log
+
+# IsolationForest uses n_jobs=-1; give it cores to work with.
+# Training on all good-list files may use ~2–4 GB.
+request_cpus   = 4
+request_memory = 4096
+
+# longlunch = 2 h wall time; increase to "workday" (8 h) if the full
+# good-list training takes longer than expected.
++JobFlavour = "workday"
+
+# AFS and EOS are mounted on lxplus condor nodes — no file transfer needed.
+should_transfer_files = NO
+
+# Forward Kerberos credentials so EOS reads work on worker nodes.
++ProjectName = "local"
+
+notify_user  = j.tafoya.vargas@cern.ch
+notification = Complete
+
+queue VARIANT from (
+    trigger_lvds
+    trigger_nolvds
+    notrigger_lvds
+    notrigger_nolvds
+)
