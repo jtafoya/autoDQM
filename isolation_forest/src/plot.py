@@ -908,10 +908,10 @@ def _compute_persistence_status(
     Status values returned:
         'alert' — any alert condition fired
         'warn'  — sub-threshold persistent anomaly (n_persistent > 0 but below alert threshold)
-        'pend'  — anomalous channels present but run too short to verify persistence
-                  (within the first alert_consecutive_n-1 files of the run)
-        'ok'    — no anomalous channels, or purely transient anomalies in a run long
-                  enough that the streak has been definitively broken
+        'pend'  — anomalous channels present but the run has fewer than
+                  alert_consecutive_n files total, so persistence can never be verified
+        'ok'    — no anomalous channels, or purely transient anomalies in a run that
+                  has enough files for the streak to have been definitively broken
     """
     from collections import deque
 
@@ -928,9 +928,14 @@ def _compute_persistence_status(
         valid_z            = anom_grp["max_z"].dropna()
         file_max_z[fname]  = float(valid_z.max()) if not valid_z.empty else 0.0
 
-    channel_history: dict      = {}
-    current_run:     object    = None   # reset history at run boundaries
-    run_file_index:  int       = 0
+    # Pre-compute how many files each run contributes (used for short-run pend check).
+    run_file_counts: dict = {}
+    for fname in files_sorted:
+        run_k, _ = run_subrun_sort_key(fname)
+        run_file_counts[run_k] = run_file_counts.get(run_k, 0) + 1
+
+    channel_history: dict = {}
+    current_run:     object = None   # reset history at run boundaries
     rows = []
 
     for fname in files_sorted:
@@ -940,7 +945,6 @@ def _compute_persistence_status(
         # the persistence window never spans two different runs.
         if run_k != current_run:
             current_run     = run_k
-            run_file_index  = 0
             channel_history = {}
 
         anom_chs = anom_sets.get(fname, set())
@@ -970,18 +974,18 @@ def _compute_persistence_status(
         is_bulk    = single_file_alert_n_channels > 0 and n_bad >= single_file_alert_n_channels
         is_extreme = single_file_alert_max_z > 0 and file_max_z.get(fname, 0.0) >= single_file_alert_max_z
 
-        n_probationary = max(0, alert_consecutive_n - 1)
+        # PEND only when the run has fewer files than the persistence window:
+        # persistence can never be confirmed for any channel in such a run.
+        # Transient anomalies in a long-enough run are OK (streak was broken).
+        run_too_short = run_file_counts.get(run_k, 0) < alert_consecutive_n
         if n_persistent >= file_alert_n_channels or is_bulk or is_extreme:
             status = "alert"
         elif n_persistent > 0:
             status = "warn"
-        elif n_transient > 0 and run_file_index < n_probationary:
-            # Anomalous but run ended before persistence could be verified.
+        elif n_transient > 0 and run_too_short:
             status = "pend"
         else:
             status = "ok"
-
-        run_file_index += 1
 
         rows.append({
             "filename":     fname,
