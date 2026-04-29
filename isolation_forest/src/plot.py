@@ -73,7 +73,7 @@ from .run_list import run_subrun_sort_key
 # ── shared style ────────────────────────────────────────────────────────────
 
 plt.rcParams.update({
-    "figure.dpi": 150,
+    "figure.dpi": 200,
     "font.size": 9,
     "axes.titlesize": 10,
     "axes.labelsize": 9,
@@ -1050,7 +1050,8 @@ def plot_log(
               for fn in per_file["filename"]]
 
     n_files = len(per_file)
-    # Cap width to avoid matplotlib's 2^16 pixel limit at 150 DPI (~436 inches).
+    # Cap width so the figure stays below matplotlib's 2^16-pixel Agg limit
+    # (at 200 DPI the limit is ~327 inches; the cap of 80 leaves a large margin).
     # Above 150 files the x-labels become unreadable anyway, so drop them.
     LABEL_THRESHOLD = 150
     fig_w = min(max(8, n_files * 0.5), 80)
@@ -1660,8 +1661,26 @@ def step_plots(
 # Helpers
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Figures whose PNG would exceed this pixel count on any side are saved as PDF
+# instead, regardless of the requested fmt.  At 200 DPI this corresponds to
+# 100 inches, which matches the ~100-run threshold for log_run_summary plots.
+# Heatmaps and capped plots (log_anomaly_rate ≤ 80 in = 16 000 px) are
+# unaffected.  PDF is vector so run count does not affect file size or legibility.
+_AUTO_PDF_PX_THRESHOLD = 20_000
+
+
 def _save(fig: plt.Figure, path: Path, fmt: str = "png") -> None:
-    """Save fig to path with the suffix replaced by fmt, then close it."""
+    """Save fig to path with the suffix replaced by fmt, then close it.
+
+    When fmt is "png" and the figure would exceed _AUTO_PDF_PX_THRESHOLD pixels
+    on either side, the format is promoted to "pdf" automatically so that large
+    bar-chart plots remain crisp without hitting raster size limits.
+    """
+    if fmt == "png":
+        w_px = fig.get_figwidth() * fig.get_dpi()
+        h_px = fig.get_figheight() * fig.get_dpi()
+        if max(w_px, h_px) > _AUTO_PDF_PX_THRESHOLD:
+            fmt = "pdf"
     path = Path(path).with_suffix(f".{fmt}")
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)

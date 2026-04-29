@@ -36,9 +36,12 @@ includeConfigInfo_Trigger  Use per-run trigger board config to transform
                             for disabled trigger types (expected-zero rate is
                             not anomalous).
                           • triggerBoard.trigger_mask → NaN all features for
-                            channels whose LVDS pin is masked (pin p covers
-                            channels 2p and 2p+1; masked channels should not
-                            register activity).
+                            channels whose LVDS pin is masked.  The 8-byte
+                            mask is indexed by physical pin number; LVDS data
+                            channels are numbered consecutively, skipping dead
+                            physical pins 32–39 and 43.  LVDS channel l (the
+                            l-th non-dead physical pin) covers digitizer
+                            channels 2l and 2l+1.
                         When False, behaviour is identical to the pre-config
                         code path and "_ignoreTriggerConfig" is appended to
                         the model tag.

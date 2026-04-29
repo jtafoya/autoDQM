@@ -679,7 +679,7 @@ Three transformations are applied when the corresponding variable is listed in
 |---|---|
 | `triggerBoard.prescale` | `triggerRate_bit{N}` → `raw_rate / prescale[N-1]` (physics rate before prescaling). Runs with different prescale settings become directly comparable. |
 | `triggerBoard.trigger` | `triggerRate_bit{N}` → NaN for disabled trigger types. A zero rate from an inactive trigger is expected, not anomalous. |
-| `triggerBoard.trigger_mask` | All features for channels `2p` and `2p+1` → NaN when LVDS pin `p` is masked. Masked channels are excluded from the reference and not scored. Pin mapping: `p = channel // 2` (pins 0–47 cover channels 0–95). |
+| `triggerBoard.trigger_mask` | All features for digitizer channels `2l` and `2l+1` → NaN when LVDS channel `l` is masked. The 8-byte mask is indexed by **physical pin number** (bit k of byte b → physical pin b·8+k). LVDS data channels are numbered **consecutively**, skipping dead physical pins 32–39 and 43 (the physical routing already omits them). LVDS channel `l` is therefore the l-th non-dead physical pin, **not** physical pin `l` itself. Example: physical pins 32–39 are dead → physical pin 40 (active in the default mask) becomes LVDS channel 32 → signal channels 64–65, not 80–81. The default mask `[0xff, 0xff, 0xff, 0xff, 0x00, 0xf7, 0xff, 0xc1]` has zero bits only for dead physical pins, so all 96 signal channels are active. |
 
 When either config flag is False, behaviour is identical to the pre-config code path and
 `_ignoreTriggerConfig` / `_ignoreDAQConfig` is appended to the model tag.

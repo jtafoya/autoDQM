@@ -36,11 +36,14 @@ They are never added to the feature vector and are never scored.
       Up to 16 trigger types (bits 0–15) are supported.
 
   triggerBoard.trigger_mask (if in trigger_config_vars):
-      Each LVDS pin p maps to digitizer channels 2p and 2p+1.  When pin p is
-      masked (bit = 0), all features for channels 2p and 2p+1 are set to NaN.
-      Masked channels have no expected trigger activity; NaN features are
-      transparently skipped by the Welford reference and produce NaN z-scores
-      that do not contribute to anomaly detection.
+      The 8-byte mask is indexed by physical pin number (bit k of byte b →
+      physical pin b*8+k).  LVDS data channels are numbered consecutively,
+      skipping dead physical pins; LVDS channel l is the l-th non-dead
+      physical pin.  When a non-dead physical pin is masked (bit = 0), all
+      features for digitizer channels 2l and 2l+1 are set to NaN.  Dead
+      physical pins carry no data and are skipped when building the mapping.
+      NaN features are transparently skipped by the Welford reference and
+      produce NaN z-scores that do not contribute to anomaly detection.
 
 Scalability: reads one file at a time, no global state.
 """
@@ -74,6 +77,20 @@ _DIGI_COLS = [f"{m}_{s}" for m in METRIC_COLS for s in AGG_FUNCS] + ["occupancy"
 
 # LVDSpin: pin = channel // 2  (ch0,ch1 share pin0; ch2,ch3 share pin1; etc.)
 _LVDS_PIN_COL = ["LVDSpin"]
+
+# ── LVDS trigger-mask mapping ─────────────────────────────────────────────────
+
+# Physical pins that are dead on the trigger board.  The physical routing
+# already accounts for these, so LVDS data channels are numbered consecutively
+# with the dead pins removed.  The trigger_mask is indexed by physical pin
+# number, so these must be skipped when mapping mask bits to signal channels.
+_DEAD_PHYSICAL_PINS: frozenset = frozenset({32, 33, 34, 35, 36, 37, 38, 39, 43})
+
+# Number of consecutive LVDS signal pins (each carries two digitizer channels).
+# Pins 0..(_N_SIGNAL_LVDS_PINS-1) in consecutive LVDS numbering cover
+# digitizer channels 0..95.  Physical pins beyond the 48th non-dead pin are
+# non-digitizer (panels, etc.) and are not mapped to signal channels.
+_N_SIGNAL_LVDS_PINS: int = 48
 
 # ── Pseudo-channel feature groups ────────────────────────────────────────────
 
@@ -166,8 +183,9 @@ def extract_features(
 
       triggerBoard.prescale → prescale-normalised trigger rates (physics rate).
       triggerBoard.trigger  → NaN for disabled trigger types.
-      triggerBoard.trigger_mask → NaN all features for channels whose LVDS pin
-          is masked (pin p = channel // 2; masked pin → channels 2p, 2p+1).
+      triggerBoard.trigger_mask → NaN all features for channels whose LVDS
+          pin is masked.  Physical pin → LVDS channel mapping skips dead
+          physical pins; LVDS channel l → signal channels 2l and 2l+1.
 
     include_daq_config is accepted for API consistency and tag-suffix logic but
     currently applies no transformation (no analytical normalisation available
@@ -244,17 +262,23 @@ def extract_features(
             if trig_cfg_feats.get(f"cfg_trigger_bit{i}", 1.0) == 0.0:
                 _disabled_triggers.add(i + 1)
 
-    # LVDS trigger-mask: pin p = channel // 2; masked pin → NaN all features for
-    # channels 2p and 2p+1.  Pins 0..47 cover digitizer channels 0..95.
-    # Pins 48..63 map to non-digitizer components (panels, etc.) and are ignored.
+    # LVDS trigger-mask: the mask is indexed by physical pin number, but LVDS
+    # data channels are numbered consecutively after skipping dead physical pins.
+    # Walk physical pins in order; skip _DEAD_PHYSICAL_PINS while incrementing
+    # the consecutive LVDS channel counter.  Stop once all signal pins are covered.
     if trig_cfg_feats is not None and "triggerBoard.trigger_mask" in trigger_config_vars:
-        masked_channels = [
-            ch
-            for p in range(48)
-            if trig_cfg_feats.get(f"cfg_mask_ch{p}", 1.0) == 0.0
-            for ch in (2 * p, 2 * p + 1)
-            if ch in agg.index
-        ]
+        masked_channels: list = []
+        lvds_ch = 0
+        for phys_pin in range(64):
+            if phys_pin in _DEAD_PHYSICAL_PINS:
+                continue
+            if lvds_ch >= _N_SIGNAL_LVDS_PINS:
+                break
+            if trig_cfg_feats.get(f"cfg_mask_ch{phys_pin}", 1.0) == 0.0:
+                for ch in (2 * lvds_ch, 2 * lvds_ch + 1):
+                    if ch in agg.index:
+                        masked_channels.append(ch)
+            lvds_ch += 1
         if masked_channels:
             agg.loc[masked_channels, :] = np.nan
 

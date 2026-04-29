@@ -52,9 +52,11 @@ trigger_config_vars):
      features are transparent to both the Welford reference and z-scoring.
 
   3. LVDS channel masking (triggerBoard.trigger_mask):
-         All features for channels 2p and 2p+1 → NaN when LVDS pin p is masked.
+         All features for channels 2l and 2l+1 → NaN when LVDS channel l is masked.
+     LVDS channel l is the l-th non-dead physical pin; dead physical pins
+     32–39 and 43 are skipped because the physical routing already omits them
+     and they carry no data.  The mask is indexed by physical pin number.
      Masked channels do not contribute to the reference or anomaly score.
-     Pin p covers digitizer channels 2p and 2p+1 (pins 0–47 → channels 0–95).
 
 The DAQ config flag (include_daq_config) is accepted for API and tag-suffix
 purposes but currently applies no transformation (no analytical normalisation
