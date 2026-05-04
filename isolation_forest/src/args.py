@@ -66,7 +66,7 @@ def preparse_config(argv=None) -> tuple:
     when wiring the full argument set.
     """
     pre = argparse.ArgumentParser(add_help=False)
-    pre.add_argument("--config", default="config.yaml")
+    pre.add_argument("--config", default="configs/config.yaml")
     config_path = pre.parse_known_args(argv)[0].config
     return config_path, load_config(config_path)
 
@@ -76,8 +76,8 @@ def preparse_config(argv=None) -> tuple:
 def add_config(parser: argparse.ArgumentParser) -> None:
     """Add --config to the full parser (mirrors the pre-parse default)."""
     parser.add_argument(
-        "--config", default="config.yaml",
-        help="Path to YAML configuration file (default: config.yaml)",
+        "--config", default="configs/config.yaml",
+        help="Path to YAML configuration file (default: configs/config.yaml)",
     )
 
 

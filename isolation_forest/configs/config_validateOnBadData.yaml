@@ -1,0 +1,4 @@
+# Applies the model to the known-bad run list to measure detection rate.
+base: config.yaml
+model_tag:  ValidateOnBadData
+apply_list: /afs/cern.ch/user/t/tafoyava/autoDQM/data/bad_run_list_EOS.txt

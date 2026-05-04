@@ -1,0 +1,8 @@
+base: config.yaml
+model_tag: sweep__ifContamination_0p01__zThreshold_7sigma
+
+includeConfigInfo_Trigger: true
+includeConfigInfo_DAQ: true
+
+z_threshold:      7.0
+if_contamination: 0.01

@@ -224,19 +224,32 @@ def print_banner(script: str, config_path: str, fields: list[tuple[str, str]]) -
     print()
 
 
-def load_config(path: str = "config.yaml") -> dict:
+def load_config(path: str = "configs/config.yaml") -> dict:
     """
     Load configuration from a YAML file, merged on top of DEFAULTS.
 
     If the file does not exist, returns a copy of DEFAULTS unchanged.
     Unknown keys in the file are passed through (scripts ignore what they
     don't use, so adding new keys never breaks old scripts).
+
+    If the YAML contains a 'base' key, that file is loaded first (resolved
+    relative to the directory of the config file), then the remaining keys
+    override it.  This lets sweep configs be minimal override files:
+
+        base: config.yaml
+        z_threshold: 5.0
+        if_contamination: 0.005
+        model_tag: sweep__ifContamination_0p005__zThreshold_5sigma
     """
     cfg = dict(DEFAULTS)
     p = Path(path)
     if p.exists():
-        with open(p) as fh:
-            cfg.update(yaml.safe_load(fh))
+        data = yaml.safe_load(p.read_text()) or {}
+        if "base" in data:
+            base_path = (p.parent / data.pop("base")).resolve()
+            if base_path.exists():
+                cfg.update(yaml.safe_load(base_path.read_text()) or {})
+        cfg.update(data)
     return cfg
 
 

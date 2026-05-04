@@ -1,0 +1,84 @@
+# HTCondor submission file — autoDQM isolation-forest parameter sweep
+#
+# Submits 48 jobs: 4 trigger/DAQ config variants × 4 if_contamination × 3 z_threshold.
+# Each job runs the full pipeline (train → apply → evaluate → report → log plots)
+# using configs/config*__ifContamination_*__zThreshold_*.yaml.
+# Per-subrun diagnostic plots are skipped (--skip-subrun-plots) to save storage.
+#
+# Model tags follow the pattern:
+#   sweep__ifContamination_<X>__zThreshold_<Y>sigma[_Tight][_ignoreTriggerConfig][_ignoreDAQConfig]
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit_sweep.sub
+
+universe   = vanilla
+executable = condor/run_sweep.sh
+arguments  = $(CONFIG)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = condor/logs/$(Cluster).$(Process).$(CONFIG:configs/=:yaml=).out
+error  = condor/logs/$(Cluster).$(Process).$(CONFIG:configs/=:yaml=).err
+log    = condor/logs/condor.log
+
+request_cpus   = 4
+request_memory = 4096
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notify_user  = j.tafoya.vargas@cern.ch
+notification = Complete
+
+queue CONFIG from (
+    configs/config__ifContamination_0p005__zThreshold_5sigma.yaml
+    configs/config__ifContamination_0p005__zThreshold_6sigma.yaml
+    configs/config__ifContamination_0p005__zThreshold_7sigma.yaml
+    configs/config__ifContamination_0p01__zThreshold_5sigma.yaml
+    configs/config__ifContamination_0p01__zThreshold_6sigma.yaml
+    configs/config__ifContamination_0p01__zThreshold_7sigma.yaml
+    configs/config__ifContamination_0p02__zThreshold_5sigma.yaml
+    configs/config__ifContamination_0p02__zThreshold_6sigma.yaml
+    configs/config__ifContamination_0p02__zThreshold_7sigma.yaml
+    configs/config__ifContamination_0p05__zThreshold_5sigma.yaml
+    configs/config__ifContamination_0p05__zThreshold_6sigma.yaml
+    configs/config__ifContamination_0p05__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p005__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p005__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p005__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p01__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p01__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p01__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p02__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p02__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p02__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p05__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p05__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig__ifContamination_0p05__zThreshold_7sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_5sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_6sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_5sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_6sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p02__zThreshold_5sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p02__zThreshold_6sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p02__zThreshold_7sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p05__zThreshold_5sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p05__zThreshold_6sigma.yaml
+    configs/config_ignoreDAQConfig__ifContamination_0p05__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p02__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p02__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p02__zThreshold_7sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p05__zThreshold_5sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p05__zThreshold_6sigma.yaml
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p05__zThreshold_7sigma.yaml
+)

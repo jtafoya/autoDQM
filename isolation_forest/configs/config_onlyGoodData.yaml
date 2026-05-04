@@ -1,0 +1,4 @@
+# Applies the model to the good run list to measure the false positive rate.
+base: config.yaml
+model_tag:  ValidateOnGoodData
+apply_list: /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_EOS.txt

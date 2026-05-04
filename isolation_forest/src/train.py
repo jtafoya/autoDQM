@@ -59,14 +59,15 @@ args.resolve_feature_flags() for the same reason.
 
 import argparse
 import json
-import shutil
 import sys
 from pathlib import Path
+
+import yaml
 
 from .run_list import resolve_run_list, resolve_full_sample
 from .reference import ReferenceModel, build_reference
 from .detector import AnomalyDetector
-from .config import print_step_header, print_banner, build_training_metadata
+from .config import print_step_header, print_banner, build_training_metadata, load_config
 from .args import (preparse_config, add_config, add_features,
                    add_model_thresholds, add_test_mode,
                    add_full_sample_args, validate_full_sample_args, add_plot_format,
@@ -238,7 +239,10 @@ def step_train(
 
     # ---- Config snapshot and training metadata ----
     if config_path:
-        shutil.copy2(config_path, models_dir / "config.yaml")
+        resolved = load_config(config_path)
+        (models_dir / "config.yaml").write_text(
+            yaml.dump(resolved, default_flow_style=False, sort_keys=False)
+        )
         print(f"  Config snapshot saved → {models_dir}/config.yaml")
     if training_metadata is not None:
         meta_path = models_dir / "training_metadata.json"
