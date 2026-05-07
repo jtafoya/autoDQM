@@ -51,6 +51,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
+from matplotlib.ticker import MultipleLocator, NullLocator
 
 # ── Sweep dimensions ──────────────────────────────────────────────────────────
 
@@ -64,6 +65,19 @@ VARIANT_META = {
     (True,  False): ("+ trigger rates",     "#1f77b4"),
     (False, True):  ("+ LVDS counts",       "#ff7f0e"),
     (True,  True):  ("+ trigger + LVDS",    "#2ca02c"),
+}
+
+# ── Y-axis range ──────────────────────────────────────────────────────────────
+# Set FIX_Y_RANGE = False for automatic (data-driven) limits.
+# When True the ranges below are applied; lines to out-of-range points are clipped
+# at the axes edge so they point toward (but don't draw) out-of-bounds markers.
+FIX_Y_RANGE = True
+
+Y_RANGE_FIXED = {
+    "fp_pct_subruns": (0,   55),
+    "fp_pct_runs":    (40, 100),
+    "tn_pct_subruns": (40, 100),
+    "tn_pct_runs":    (0,   40),
 }
 
 # ── Tag parsing ───────────────────────────────────────────────────────────────
@@ -249,7 +263,8 @@ def _make_figure(rows_data: list[dict],
                  y_run_key: str,
                  quality: str,
                  y_label_base: str,
-                 title_prefix: str) -> plt.Figure:
+                 title_prefix: str,
+                 is_rel: bool = False) -> plt.Figure:
     """
     Build one page (figure) for the given quality tier.
     2 rows × 3 columns: rows = [subrun, run], cols = z_threshold.
@@ -279,8 +294,19 @@ def _make_figure(rows_data: list[dict],
             ax.set_xscale("log")
             ax.set_xticks(CONTAMINATIONS)
             ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
-                               fontsize=8, rotation=45, ha="right")
-            ax.grid(True, alpha=0.3)
+                               fontsize=8, rotation=0, ha="center")
+            ax.xaxis.set_minor_locator(NullLocator())
+            if is_rel:
+                ax.yaxis.set_major_locator(MultipleLocator(10))
+                ax.yaxis.set_minor_locator(MultipleLocator(5))
+                ax.grid(True, which="major", alpha=0.3)
+                ax.yaxis.grid(True, which="minor", alpha=0.15)
+                if FIX_Y_RANGE and col_idx == 0:
+                    y_range = Y_RANGE_FIXED.get(y_key)
+                    if y_range:
+                        ax.set_ylim(*y_range)
+            else:
+                ax.grid(True, alpha=0.3)
 
             subset = [r for r in rows_data if r["quality"] == quality
                                            and r["z_threshold"] == z]
@@ -327,12 +353,13 @@ def make_pdf(rows_data: list[dict],
              y_run_key: str,
              y_label_base: str,
              title_prefix: str,
-             out_path: Path) -> None:
+             out_path: Path,
+             is_rel: bool = False) -> None:
     from matplotlib.backends.backend_pdf import PdfPages
     with PdfPages(out_path) as pdf:
         for quality in QUALITIES:
             fig = _make_figure(rows_data, y_subrun_key, y_run_key,
-                               quality, y_label_base, title_prefix)
+                               quality, y_label_base, title_prefix, is_rel)
             pdf.savefig(fig, bbox_inches="tight")
             plt.close(fig)
     print(f"  Saved → {out_path}")
@@ -410,6 +437,7 @@ def main() -> None:
         y_label_base  = "% known-good flagged as bad",
         title_prefix  = "False positive rate — % known-good subruns/runs flagged as alert",
         out_path      = out_dir / "fp_sweep_260429_onTrainingSample_rel.pdf",
+        is_rel        = True,
     )
 
     # ── PDF 4: TN rate (good subruns/runs correctly classified, as percentage) ─
@@ -421,6 +449,7 @@ def main() -> None:
         y_label_base  = "% known-good classified as ok",
         title_prefix  = "True negative rate — % known-good subruns/runs correctly classified",
         out_path      = out_dir / "tn_sweep_260429_onTrainingSample_rel.pdf",
+        is_rel        = True,
     )
 
     print("Done.")

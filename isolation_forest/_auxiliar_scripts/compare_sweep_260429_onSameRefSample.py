@@ -48,7 +48,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import MultipleLocator, NullLocator
 
 # ── Sweep dimensions ──────────────────────────────────────────────────────────
 
@@ -272,7 +272,8 @@ def _make_figure(rows: list[dict],
             ax.set_xscale("log")
             ax.set_xticks(CONTAMINATIONS)
             ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
-                               fontsize=8, rotation=45, ha="right")
+                               fontsize=8, rotation=0, ha="center")
+            ax.xaxis.set_minor_locator(NullLocator())
             ax.yaxis.set_major_locator(MultipleLocator(10))
             ax.yaxis.set_minor_locator(MultipleLocator(5))
             ax.grid(True, which="major", alpha=0.3)

@@ -1,19 +1,29 @@
 #!/bin/bash
-# Run one cell of the 2026-04-29 parameter sweep — apply-to-runs mode.
+# Run one batch of the 2026-04-29 parameter sweep — apply-to-runs mode.
 #
 # Arguments:
 #   $1 - CONFIG  : path to sweep config YAML (relative to initialdir)
 #   $2 - VARIANT : trigger_lvds | trigger_nolvds | notrigger_lvds | notrigger_nolvds
 #   $3 - QUALITY : Loose | Medium | Tight
-#   $4 - PROCESS : HTCondor $(Process) — run number = 1422 + (PROCESS % 855)
+#   $4 - PROCESS : HTCondor $(Process) — first run of batch = 1422 + PROCESS * 10
+#
+# Each job processes up to 10 consecutive runs (1422 + PROCESS*10 through
+# 1422 + PROCESS*10 + 9, capped at 2276).
+#
+# To avoid continuous AFS writes, per-run logs are written to local scratch
+# ($TMPDIR) during the job. A single bulk copy to AFS is done at job exit.
 #
 # Skips training; uses models already produced by submit_sweep_260429.sub.
 # Applies to 20 % of each run's files and writes per-run logs to
-# logs/applyToRuns_260429/<tag>_run<N>.csv, keeping them separate from the
-# training-list logs in logs/.
+# logs/applyToRuns_260429/<tag>_run<N>.csv.
 #
 # Submit from the isolation_forest/ directory:
-#   condor_submit condor/submit_sweep_260429_applyToRuns.sub
+#   condor_submit -name bigbird11.cern.ch condor/submit_sweep_260429_applyToRuns.sub \
+#       CONFIG=... VARIANT=... QUALITY=...
+
+RUNS_PER_JOB=10
+FIRST_RUN=1422
+LAST_RUN=2276
 
 set -euo pipefail
 
@@ -22,8 +32,9 @@ VARIANT=${2:?}
 QUALITY=${3:?}
 PROCESS=${4:?}
 
-# Each cluster is a single model's 855-job array; Process runs 0–854 directly.
-RUN=$((1422 + PROCESS))
+BASE_RUN=$(( FIRST_RUN + PROCESS * RUNS_PER_JOB ))
+END_RUN=$(( BASE_RUN + RUNS_PER_JOB - 1 ))
+if (( END_RUN > LAST_RUN )); then END_RUN=$LAST_RUN; fi
 
 SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
 INSTALLATION_PATH="${SCRIPT_DIR}/.."
@@ -35,7 +46,7 @@ echo "  autoDQM sweep 260429 — apply to runs"
 echo "    config  : $CONFIG"
 echo "    variant : $VARIANT"
 echo "    quality : $QUALITY"
-echo "    process : $PROCESS  →  run $RUN"
+echo "    process : $PROCESS  →  runs $BASE_RUN–$END_RUN"
 echo "  Host : $(hostname)"
 echo "  Start: $(date -u)"
 echo "============================================================"
@@ -56,9 +67,6 @@ python3 -c "import pandas, sklearn, numpy, scipy, watchdog" || {
 echo "  Dependencies: OK"
 echo ""
 
-# Read model_tag from config and append date suffix — must match the tag used
-# during training (run_sweep_260429.sh).  The pipeline appends _<Quality>,
-# _noTrigger, _noLVDS, _ignoreTriggerConfig, _ignoreDAQConfig after this.
 MODEL_TAG=$(python3 -c "
 import yaml
 with open('${CONFIG}') as f:
@@ -67,7 +75,6 @@ print(d.get('model_tag', 'sweep') + '_260429')
 ")
 echo "  Model tag (before pipeline suffixes): $MODEL_TAG"
 
-# Map variant name to feature-flag arguments
 FLAGS=()
 case $VARIANT in
     trigger_lvds)     ;;
@@ -80,21 +87,60 @@ case $VARIANT in
         ;;
 esac
 echo "  Feature flags: ${FLAGS[*]:-'(none — full feature set)'}"
-echo "  Applying to run: $RUN  (fraction 0.2)"
 echo ""
 
-python3 -m src.pipeline \
-    --config "$CONFIG" \
-    --model-tag "$MODEL_TAG" \
-    --train-goodRunList \
-    --train-goodRunList-quality "$QUALITY" \
-    --skip-train \
-    --apply-specific-run "$RUN" \
-    --apply-specific-run-fraction 0.2 \
-    --logs-dir logs/applyToRuns_260429 \
-    "${FLAGS[@]}"
+# ── Local scratch (avoids continuous AFS writes) ──────────────────────────────
+LOCAL_TMP="${TMPDIR:-/tmp}/applyToRuns_${$}"
+LOCAL_LOGS="${LOCAL_TMP}/logs"
+mkdir -p "${LOCAL_LOGS}"
+
+AFS_LOGS="${INSTALLATION_PATH}/logs/applyToRuns_260429"
+mkdir -p "${AFS_LOGS}"
+
+# ── Apply loop ─────────────────────────────────────────────────────────────────
+N_OK=0
+N_FAIL=0
+
+for (( i=0; i<RUNS_PER_JOB; i++ )); do
+    RUN=$(( BASE_RUN + i ))
+    if (( RUN > LAST_RUN )); then
+        break
+    fi
+
+    echo "--- Run $RUN  ($((i+1))/$RUNS_PER_JOB) ---"
+
+    if python3 -m src.pipeline \
+            --config "$CONFIG" \
+            --model-tag "$MODEL_TAG" \
+            --train-goodRunList \
+            --train-goodRunList-quality "$QUALITY" \
+            --skip-train \
+            --apply-specific-run "$RUN" \
+            --apply-specific-run-fraction 0.2 \
+            --logs-dir "${LOCAL_LOGS}" \
+            "${FLAGS[@]}"; then
+        N_OK=$(( N_OK + 1 ))
+    else
+        echo "WARNING: run $RUN failed (exit $?) — continuing" >&2
+        N_FAIL=$(( N_FAIL + 1 ))
+    fi
+done
+
+# ── Bulk copy scratch → AFS ────────────────────────────────────────────────────
+echo ""
+echo "Copying outputs from scratch to AFS ($AFS_LOGS) ..."
+find "${LOCAL_LOGS}" -maxdepth 1 -type f -exec cp {} "${AFS_LOGS}/" \;
+echo "  Copy complete."
+
+rm -rf "${LOCAL_TMP}"
 
 echo ""
 echo "============================================================"
-echo "  Done: $CONFIG  $VARIANT  $QUALITY  run $RUN  $(date -u)"
+echo "  Done: $CONFIG  $VARIANT  $QUALITY"
+echo "  Runs $BASE_RUN–$END_RUN  |  OK: $N_OK  Failed: $N_FAIL"
+echo "  $(date -u)"
 echo "============================================================"
+
+if (( N_FAIL > 0 )); then
+    exit 1
+fi

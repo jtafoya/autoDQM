@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compare 260429 applyToRuns outputs — FP/TN/TP counts and rates against a fixed goodRunsList quality.
+Compare 260429 applyToRuns outputs — FP/TN and not-listed ok/alert counts and rates.
 
 Models are applied to the full run-by-run dataset (not just the training sample).
 This covers a small subset of the sweep:
@@ -10,15 +10,19 @@ Unlike compare_applyToRuns_260429_onTrainingSample.py (not yet written), this sc
 evaluates all models against all three catalogue qualities in a single run, so training
 qualities can be compared on equal footing.
 
-Metrics (against fixed catalogue ground truth):
-  FP : known-good subruns/runs flagged as alert  (want low)
-  TN : known-good subruns/runs correctly called ok  (want high)
-  TP : not-certified subruns/runs flagged as alert  (want high)
+Metrics:
+  FP        : known-good subruns/runs flagged as alert  (want low)
+  TN        : known-good subruns/runs correctly called ok  (want high)
+  NL-GOOD   : not-listed subruns/runs (absent from catalogue) classified as ok
+  NL-ALERT  : not-listed subruns/runs (absent from catalogue) triggering alert
+
+  known-good  = (run, subrun) present in catalogue with the active quality flag True
+  not-listed  = (run, subrun) absent from the catalogue entirely
 
 Layout per PDF:
   pages   : one per trigger-config variant (with / without triggerConfig)
   rows    : top = subrun level, bottom = run level
-  columns : FP | TN | TP
+  columns : FP | TN | NL-GOOD | NL-ALERT
   lines   : 4 feature variants (colour) × 3 training qualities (line style)
   x-axis  : contamination (only the two data points 0.005 and 0.01 are shown)
 
@@ -48,6 +52,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
+from matplotlib.ticker import MultipleLocator
 
 # ── Sweep dimensions ──────────────────────────────────────────────────────────
 
@@ -74,8 +79,10 @@ METRIC_COLS_COUNTS = [
      "FP count\n# known-good flagged as alert"),
     ("tn_count_subruns", "tn_count_runs",
      "TN count\n# known-good correctly called ok"),
-    ("tp_count_subruns", "tp_count_runs",
-     "TP count\n# not-certified flagged as alert"),
+    ("nl_good_count_subruns", "nl_good_count_runs",
+     "not-listed: GOOD\n# not-listed called ok"),
+    ("nl_alert_count_subruns", "nl_alert_count_runs",
+     "not-listed: ALERT\n# not-listed triggering alert"),
 ]
 
 METRIC_COLS_REL = [
@@ -83,8 +90,10 @@ METRIC_COLS_REL = [
      "FP rate\n% known-good flagged as alert"),
     ("tn_rel_subruns", "tn_rel_runs",
      "TN rate\n% known-good correctly called ok"),
-    ("tp_rel_subruns", "tp_rel_runs",
-     "TP rate\n% not-certified flagged as alert"),
+    ("nl_good_rel_subruns", "nl_good_rel_runs",
+     "not-listed: GOOD rate\n% not-listed called ok"),
+    ("nl_alert_rel_subruns", "nl_alert_rel_runs",
+     "not-listed: ALERT rate\n% not-listed triggering alert"),
 ]
 
 # ── Tag parsing ───────────────────────────────────────────────────────────────
@@ -152,12 +161,18 @@ def find_catalogue(reports_base: Path) -> "Path | None":
 
 def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict | None":
     """
-    Compute FP/TN on known-good and TP on not-certified at subrun and run level.
+    Compute FP/TN on known-good subruns/runs and ok/alert counts on not-listed ones.
 
-    known-good     = (run, subrun) where catalogue[cat_quality] is True
-    not-certified  = (run, subrun) in catalogue where catalogue[cat_quality] is False
-    is_alert       = all three quality cols in framework_good_runs.json are 0
-    is_ok          = tight col (col 4) is 1
+    known-good  = (run, subrun) present in catalogue with cat_quality flag True
+    not-listed  = (run, subrun) absent from catalogue entirely
+    is_alert    = all three quality cols in framework_good_runs.json are 0
+    is_ok       = tight col (col 4) is 1
+
+    Run-level aggregation:
+      fp_runs        : runs where any known-good subrun is alert
+      tn_runs        : runs where all known-good subruns are ok
+      nl_alert_runs  : runs where any not-listed subrun is alert
+      nl_good_runs   : runs where all not-listed subruns are ok
 
     Returns None if framework_good_runs.json is missing or unreadable.
     """
@@ -173,22 +188,29 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
     q_key = cat_quality.lower()
 
     kg_fp = kg_tn = kg_total = 0
-    nc_tp = nc_total = 0
-
     run_kg_alerts: dict = defaultdict(list)
     run_kg_oks:    dict = defaultdict(list)
-    run_nc_alerts: dict = defaultdict(list)
+
+    nl_good_sr = nl_alert_sr = nl_total = 0
+    run_nl_goods:  dict = defaultdict(list)
+    run_nl_alerts: dict = defaultdict(list)
 
     for row in fw.get("data", []):
         run, subrun = int(row[0]), int(row[1])
         cat_entry = catalogue.get((run, subrun))
-        if cat_entry is None:
-            continue  # unknown — skip
 
         is_alert = (row[2] == 0 and row[3] == 0 and row[4] == 0)
         is_ok    = bool(row[4])
 
-        if cat_entry.get(q_key, False):
+        if cat_entry is None:
+            nl_total += 1
+            if is_ok:
+                nl_good_sr += 1
+            if is_alert:
+                nl_alert_sr += 1
+            run_nl_goods[run].append(is_ok)
+            run_nl_alerts[run].append(is_alert)
+        elif cat_entry.get(q_key, False):
             kg_total += 1
             if is_alert:
                 kg_fp += 1
@@ -196,41 +218,42 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
                 kg_tn += 1
             run_kg_alerts[run].append(is_alert)
             run_kg_oks[run].append(is_ok)
-        else:
-            nc_total += 1
-            if is_alert:
-                nc_tp += 1
-            run_nc_alerts[run].append(is_alert)
+        # else: in catalogue but not certified as good at this quality — skip
 
-    if kg_total == 0 and nc_total == 0:
+    if kg_total == 0 and nl_total == 0:
         return None
 
     n_kg_runs = len(run_kg_alerts)
-    n_nc_runs = len(run_nc_alerts)
+    fp_runs   = sum(1 for alerts in run_kg_alerts.values() if any(alerts))
+    tn_runs   = sum(1 for oks    in run_kg_oks.values()    if all(oks))
 
-    fp_runs = sum(1 for alerts in run_kg_alerts.values() if any(alerts))
-    tn_runs = sum(1 for oks    in run_kg_oks.values()    if all(oks))
-    tp_runs = sum(1 for alerts in run_nc_alerts.values() if any(alerts))
+    n_nl_runs      = len(run_nl_goods)
+    nl_good_runs   = sum(1 for oks    in run_nl_goods.values()  if all(oks))
+    nl_alert_runs  = sum(1 for alerts in run_nl_alerts.values() if any(alerts))
 
     return {
         "n_kg_subruns":   kg_total,
-        "n_nc_subruns":   nc_total,
         "n_kg_runs":      n_kg_runs,
-        "n_nc_runs":      n_nc_runs,
+        "n_nl_subruns":   nl_total,
+        "n_nl_runs":      n_nl_runs,
         # counts
-        "fp_count_subruns": kg_fp,
-        "tn_count_subruns": kg_tn,
-        "tp_count_subruns": nc_tp,
-        "fp_count_runs":    fp_runs,
-        "tn_count_runs":    tn_runs,
-        "tp_count_runs":    tp_runs,
+        "fp_count_subruns":       kg_fp,
+        "tn_count_subruns":       kg_tn,
+        "nl_good_count_subruns":  nl_good_sr,
+        "nl_alert_count_subruns": nl_alert_sr,
+        "fp_count_runs":          fp_runs,
+        "tn_count_runs":          tn_runs,
+        "nl_good_count_runs":     nl_good_runs,
+        "nl_alert_count_runs":    nl_alert_runs,
         # rates
-        "fp_rel_subruns": 100 * kg_fp    / kg_total   if kg_total  else None,
-        "tn_rel_subruns": 100 * kg_tn    / kg_total   if kg_total  else None,
-        "tp_rel_subruns": 100 * nc_tp    / nc_total   if nc_total  else None,
-        "fp_rel_runs":    100 * fp_runs  / n_kg_runs  if n_kg_runs else None,
-        "tn_rel_runs":    100 * tn_runs  / n_kg_runs  if n_kg_runs else None,
-        "tp_rel_runs":    100 * tp_runs  / n_nc_runs  if n_nc_runs else None,
+        "fp_rel_subruns":       100 * kg_fp          / kg_total   if kg_total  else None,
+        "tn_rel_subruns":       100 * kg_tn          / kg_total   if kg_total  else None,
+        "nl_good_rel_subruns":  100 * nl_good_sr     / nl_total   if nl_total  else None,
+        "nl_alert_rel_subruns": 100 * nl_alert_sr    / nl_total   if nl_total  else None,
+        "fp_rel_runs":          100 * fp_runs         / n_kg_runs  if n_kg_runs else None,
+        "tn_rel_runs":          100 * tn_runs         / n_kg_runs  if n_kg_runs else None,
+        "nl_good_rel_runs":     100 * nl_good_runs    / n_nl_runs  if n_nl_runs else None,
+        "nl_alert_rel_runs":    100 * nl_alert_runs   / n_nl_runs  if n_nl_runs else None,
     }
 
 
@@ -274,6 +297,7 @@ def _make_figure(rows: list[dict],
         sharey="row",
         constrained_layout=True,
     )
+    fig.set_constrained_layout_pads(h_pad=0.15)
     fig.suptitle(
         f"applyToRuns 260429  (z = 7σ)  |  ground truth: {cat_quality} goodRunsList  |  {tc_label}",
         fontsize=12, fontweight="bold",
@@ -292,9 +316,17 @@ def _make_figure(rows: list[dict],
             ax.set_xscale("log")
             ax.set_xticks(CONTAMINATIONS)
             ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
-                               fontsize=9, rotation=45, ha="right")
+                               fontsize=9, rotation=0, ha="center")
             ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
-            ax.grid(True, alpha=0.3)
+            if y_axis_unit == "%":
+                ax.yaxis.set_major_locator(MultipleLocator(20))
+                ax.yaxis.set_minor_locator(MultipleLocator(10))
+                ax.grid(True, which="major", alpha=0.3)
+                ax.yaxis.grid(True, which="minor", alpha=0.15)
+                if col_idx == 0:
+                    ax.set_ylim(0, 100)
+            else:
+                ax.grid(True, alpha=0.3)
 
             for (use_trigger, use_lvds), (var_label, colour) in VARIANT_META.items():
                 for qual, (qual_label, linestyle) in QUALITY_STYLE.items():

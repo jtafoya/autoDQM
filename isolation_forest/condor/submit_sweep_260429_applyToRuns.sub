@@ -2,13 +2,15 @@
 #
 # Single-model template: submit once per model via the wrapper script.
 # CONFIG, VARIANT, QUALITY are passed on the condor_submit command line;
-# each submission creates one cluster of 855 jobs (runs 1422–2276, 20 % each).
+# each submission creates one cluster of 86 jobs (runs 1422–2276, 10 runs per job, 20 % each).
+# Per-run logs are written to local scratch ($TMPDIR) inside each job to avoid
+# continuous AFS writes; a single bulk copy to AFS happens at job exit.
 #
 # Do not submit this file directly — use the wrapper instead:
 #   bash condor/submit_sweep_260429_applyToRuns_all.sh
 #
 # To submit a single model manually:
-#   condor_submit condor/submit_sweep_260429_applyToRuns.sub \
+#   condor_submit -name bigbird11.cern.ch condor/submit_sweep_260429_applyToRuns.sub \
 #       CONFIG=configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml \
 #       VARIANT=trigger_lvds \
 #       QUALITY=Tight
@@ -40,4 +42,4 @@ should_transfer_files = NO
 #notify_user  = j.tafoya.vargas@cern.ch
 #notification = Complete
 
-queue 855
+queue 86

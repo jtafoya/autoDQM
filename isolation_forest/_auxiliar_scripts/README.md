@@ -22,9 +22,11 @@ Produces six PDFs in `plots/` (two per catalogue quality):
 - `fp_sweep_260429_on{Loose,Medium,Tight}_rel.pdf` / `tn_sweep_260429_on{Loose,Medium,Tight}_rel.pdf`
 
 ### `compare_applyToRuns_260429_onSameRefSample.py`
-Plots FP/TN/TP counts and rates for models applied to the full run-by-run dataset (applyToRuns),
+Plots four metrics for models applied to the full run-by-run dataset (applyToRuns),
 covering contamination ∈ {0.005, 0.01} × z = 7σ. Runs over all three catalogue qualities in a
 single go; all three training qualities shown as separate line styles on the same axes.
+Columns per page: FP | TN (known-good subruns/runs) | NL-GOOD | NL-ALERT (subruns/runs absent
+from the goodRunsList entirely). Relative plots fix the y-axis to 0–100 %.
 Produces six PDFs in `plots/` (one per quality × one per counts/rel):
 - `applyToRuns_260429_on{Loose,Medium,Tight}_counts.pdf`
 - `applyToRuns_260429_on{Loose,Medium,Tight}_rel.pdf`
