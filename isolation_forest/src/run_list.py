@@ -6,7 +6,8 @@ Six functions are provided:
 1. parse_run_subrun(path)
    Parse (run, subrun) from a Digitizer filename.  Returns (int, int) on
    success or (None, None) if the pattern is absent.  Canonical implementation
-   shared by evaluate.py and report.py.
+   shared by evaluate.py and report.py.  The underlying regex ``_RUN_SUBRUN_RE``
+   is also imported directly by features.py for TriggerBoard filename matching.
 
 2. run_subrun_sort_key(path)
    Return (run, subrun) as a sort key.  On failure returns (inf, inf) so that

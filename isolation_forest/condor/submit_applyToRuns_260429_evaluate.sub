@@ -1,0 +1,63 @@
+universe   = vanilla
+executable = condor/run_applyToRuns_260429_evaluate.sh
+arguments  = $(CONFIG) $(VARIANT) $(QUALITY)
+
+initialdir    = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+output        = /dev/null
+error         = /dev/null
+log           = /dev/null
+
+request_cpus   = 1
+request_memory = 2048
++JobFlavour    = "longlunch"
+
+queue CONFIG, VARIANT, QUALITY from (
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Tight
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Loose
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Medium
+    configs/config_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_lvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml trigger_nolvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_lvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml notrigger_nolvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_lvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml trigger_nolvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_lvds Tight
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Loose
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Medium
+    configs/config_ignoreTriggerConfig_ignoreDAQConfig__ifContamination_0p01__zThreshold_7sigma.yaml notrigger_nolvds Tight
+)

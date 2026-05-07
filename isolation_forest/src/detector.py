@@ -81,6 +81,13 @@ from .reference import ReferenceModel
 
 
 class AnomalyDetector:
+    """
+    Wraps a ReferenceModel and a trained IsolationForest to score new Digitizer files.
+
+    Call train_isolation_forest() once after building the reference, then
+    analyze_file() for each new subrun.  Save/load round-trips the IF weights
+    and thresholds; the reference is kept separate and passed back on load.
+    """
 
     def __init__(
         self,
@@ -294,6 +301,7 @@ class AnomalyDetector:
     # ------------------------------------------------------------------
 
     def save(self, path: str) -> None:
+        """Pickle the IF model weights and decision thresholds to *path*."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "wb") as fh:
@@ -308,6 +316,7 @@ class AnomalyDetector:
 
     @classmethod
     def load(cls, path: str, reference: ReferenceModel) -> "AnomalyDetector":
+        """Restore from a pickled file, binding the detector to an already-loaded *reference*."""
         with open(path, "rb") as fh:
             data = pickle.load(fh)
         det = cls(

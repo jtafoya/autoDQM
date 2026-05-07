@@ -17,9 +17,9 @@ arguments  = $(CONFIG)
 
 initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
 
-output = condor/logs/$(Cluster).$(Process).$(CONFIG:configs/=:yaml=).out
-error  = condor/logs/$(Cluster).$(Process).$(CONFIG:configs/=:yaml=).err
-log    = condor/logs/condor.log
+output = /dev/null
+error  = /dev/null
+log    = /dev/null
 
 request_cpus   = 4
 request_memory = 4096

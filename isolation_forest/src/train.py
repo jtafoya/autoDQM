@@ -103,7 +103,12 @@ def step_train(
     training_metadata: "dict | None" = None,
     fmt: str = "png",
 ) -> bool:
+    """
+    Build the ReferenceModel and train the IsolationForest from a set of good runs.
 
+    Auto-skips if models already exist in *models_dir* and *update* is False.
+    Returns True if training ran, False if skipped.
+    """
     print_step_header("STEP 1 — TRAIN")
 
     if (models_dir / "detector.pkl").exists() and not update:
@@ -253,6 +258,7 @@ def step_train(
 
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.train``."""
     _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(

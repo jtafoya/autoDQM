@@ -58,8 +58,8 @@ from .run_list import (
 )
 
 
-_STAT_ORDER = ["ok", "warn", "pend", "alert"]          # canonical predicted-status ordering
-_GT_ORDER   = ["known_good", "not_certified", "unknown"]  # canonical ground-truth category ordering
+_STAT_ORDER = ["ok", "warn", "pend", "alert"]            # canonical predicted-status ordering; also imported by plot.py
+_GT_ORDER   = ["known_good", "not_certified", "unknown"]  # canonical ground-truth category ordering; also imported by plot.py
 
 
 def _load_catalogue(json_path: str) -> dict:
@@ -306,6 +306,7 @@ def _write_framework_json(eval_df: "pd.DataFrame", out_dir: Path) -> None:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.evaluate``."""
     import argparse
     from .args import preparse_config, add_config, add_alert_thresholds
 

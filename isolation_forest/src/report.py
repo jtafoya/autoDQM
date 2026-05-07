@@ -249,6 +249,7 @@ def step_report(log_file: Path, reports_dir: Path, file_alert_n_channels: int) -
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.report``."""
     _, cfg = preparse_config()
 
     tag = cfg["model_tag"]

@@ -49,6 +49,10 @@ plot_config_state(filepath, detector, out_dir, fmt)
         channels, coloured red/blue by anomaly status.
 plot_log(log_path, out_dir, ...)  — anomaly log summary
 plot_eval_confusion(confusion_data_path, plots_dir, fmt)  — confusion bar chart
+
+The status-ordering constants ``_EVAL_STAT_ORDER`` and ``_EVAL_GT_ORDER`` used
+by the confusion plot are imported (under those local aliases) from evaluate.py,
+which is their canonical definition.
 """
 
 import argparse
@@ -65,6 +69,7 @@ import pandas as pd
 
 from .args import preparse_config, add_config, add_plot_format
 from .config import print_step_header
+from .evaluate import _STAT_ORDER as _EVAL_STAT_ORDER, _GT_ORDER as _EVAL_GT_ORDER
 from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .features import extract_features, METRIC_COLS
@@ -605,7 +610,8 @@ def plot_config_state(
         return
 
     from .features import (PSEUDO_TRIGGER, TRIGGER_COLS, extract_features,
-                           _DIGI_COLS, _DIGI_RE)
+                           _DIGI_COLS)
+    from .run_list import _RUN_SUBRUN_RE as _DIGI_RE
     from .run_config import parse_trigger_config
 
     stem = Path(filepath).stem
@@ -1252,6 +1258,12 @@ def _plot_persistence_subrun_grid(
     fig_h  = max(4, n_runs * cell_h + 2.5)
     fig_w  = max(6, n_subs * cell_w + 3.5)
 
+    _MAX_PX = 65535
+    if fig_w * 100 > _MAX_PX or fig_h * 100 > _MAX_PX:
+        print(f"  [SKIP] Persistence subrun grid — figure would be "
+              f"{fig_w*100:.0f}×{fig_h*100:.0f} px (exceeds matplotlib 65535 px limit).")
+        return
+
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
 
     cmap  = mcolors.ListedColormap([
@@ -1398,8 +1410,6 @@ _EVAL_PREDICT_COLORS = {   # bar fill colours keyed by predicted status
     "pend":  "lightsteelblue",
     "alert": "tomato",
 }
-_EVAL_STAT_ORDER = ["ok", "warn", "pend", "alert"]           # bar stack order (bottom → top)
-_EVAL_GT_ORDER   = ["known_good", "not_certified", "unknown"] # x-axis bar order
 
 
 def plot_eval_confusion(
@@ -1706,6 +1716,7 @@ def _load_models(models_dir: str) -> AnomalyDetector:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.plot``."""
     _, cfg = preparse_config()
 
     tag = cfg["model_tag"]

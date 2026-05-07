@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """
-Compare 288-job parameter sweep results (submitted 2026-04-29).
+Compare parameter sweep results (submitted 2026-04-29, including EXT extension).
+
+Covers both the original 260429 sweep and the 260429 EXT extension:
+  original : contamination ∈ {0.005, 0.01, 0.02, 0.05}, z ∈ {5, 6, 7}σ
+  EXT      : contamination ∈ {0.001, 0.002},             z ∈ {5, 6, 7, 8, 9}σ
+             contamination ∈ {0.005, 0.01, 0.02, 0.05}, z ∈ {8, 9}σ
+
+Full grid: contamination ∈ {0.001, 0.002, 0.005, 0.01, 0.02, 0.05} × z ∈ {5…9}σ
 
 For each completed sweep model, reads:
   models/<tag>/eval_confusion_data.json  — subrun-level FP/TN counts
   models/<tag>/framework_good_runs.json  — per-subrun predicted status
   goodRunsListSlab.json catalogue        — ground truth per (run, subrun)
 
-Produces two multi-page PDFs in --out-dir:
-  fp_counts_260429.pdf  — # known-good subruns/runs misclassified as bad (alert)
-  tn_counts_260429.pdf  — # known-good subruns/runs correctly classified as good (ok)
+Produces four multi-page PDFs in _auxiliar_scripts/plots/:
+  fp_sweep_260429_onTrainingSample_counts.pdf — # known-good subruns/runs misclassified as bad (alert)
+  tn_sweep_260429_onTrainingSample_counts.pdf — # known-good subruns/runs correctly classified as good (ok)
+  fp_sweep_260429_onTrainingSample_rel.pdf    — same as above, as percentages
+  tn_sweep_260429_onTrainingSample_rel.pdf    — same as above, as percentages
 
 "Bad" and "good" are defined by the persistence and bulk conditions already
 encoded in framework_good_runs.json (alert = all three quality cols are 0;
@@ -18,11 +27,11 @@ ok = tight col is 1).
 Layout per PDF:
   pages   : one per goodRunsList quality (Loose / Medium / Tight)
   rows    : top = subrun level, bottom = run level
-  columns : one per z_threshold (5 / 6 / 7 sigma)
+  columns : one per z_threshold (5 / 6 / 7 / 8 / 9 sigma)
   lines   : 4 feature combinations (colour) × 2 triggerConfig settings (solid/dashed)
 
 Usage (from _auxiliar_scripts/):
-    python compare_sweep_260429.py
+    python compare_sweep_260429_onTrainingSample.py
 
 Paths are resolved relative to this script:
   models   → ../models
@@ -45,8 +54,8 @@ import matplotlib.patches as mpatches
 
 # ── Sweep dimensions ──────────────────────────────────────────────────────────
 
-CONTAMINATIONS = [0.005, 0.01, 0.02, 0.05]
-Z_THRESHOLDS   = [5, 6, 7]
+CONTAMINATIONS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05]
+Z_THRESHOLDS   = [5, 6, 7, 8, 9]
 QUALITIES      = ["Loose", "Medium", "Tight"]
 
 # (use_trigger, use_lvds) → (label, colour)
@@ -61,7 +70,7 @@ VARIANT_META = {
 
 _CONT_RE = re.compile(r"ifContamination_([0-9p]+)")
 _Z_RE    = re.compile(r"zThreshold_(\d+)sigma")
-_QUAL_RE = re.compile(r"_260429_(Loose|Medium|Tight)(?:_|$)")
+_QUAL_RE = re.compile(r"_260429(?:_EXT)?_(Loose|Medium|Tight)(?:_|$)")
 
 
 def _cont_to_float(s: str) -> float:
@@ -170,7 +179,8 @@ def load_metrics(reports_dir: Path, catalogue: "dict | None", quality: str) -> "
     except (json.JSONDecodeError, OSError):
         return None
 
-    q_key = quality.lower()
+    q_key  = quality.lower()
+    q_col  = {"loose": 2, "medium": 3, "tight": 4}[q_key]
 
     # framework row: [run, subrun, loose, medium, tight, 0, "autoDQM_IF"]
     pred_alert = {}
@@ -178,7 +188,7 @@ def load_metrics(reports_dir: Path, catalogue: "dict | None", quality: str) -> "
     for row in fw.get("data", []):
         run, subrun = int(row[0]), int(row[1])
         pred_alert[(run, subrun)] = (row[2] == 0 and row[3] == 0 and row[4] == 0)
-        pred_ok[(run, subrun)]    = bool(row[4])
+        pred_ok[(run, subrun)]    = bool(row[q_col])
 
     run_alerts: dict = defaultdict(list)
     run_oks:    dict = defaultdict(list)
@@ -245,8 +255,8 @@ def _make_figure(rows_data: list[dict],
     2 rows × 3 columns: rows = [subrun, run], cols = z_threshold.
     """
     fig, axes = plt.subplots(
-        2, 3,
-        figsize=(15, 9),
+        2, len(Z_THRESHOLDS),
+        figsize=(4.5 * len(Z_THRESHOLDS), 9),
         sharey="row",
         constrained_layout=True,
     )
@@ -268,7 +278,8 @@ def _make_figure(rows_data: list[dict],
                 ax.set_ylabel(row_label, fontsize=9)
             ax.set_xscale("log")
             ax.set_xticks(CONTAMINATIONS)
-            ax.set_xticklabels([str(c) for c in CONTAMINATIONS], fontsize=8)
+            ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
+                               fontsize=8, rotation=45, ha="right")
             ax.grid(True, alpha=0.3)
 
             subset = [r for r in rows_data if r["quality"] == quality
@@ -369,47 +380,47 @@ def main() -> None:
         return
 
     # ── PDF 1: FP counts (good subruns/runs misclassified as bad) ─────────────
-    print("Generating fp_counts_260429.pdf ...")
+    print("Generating fp_sweep_260429_onTrainingSample_counts.pdf ...")
     make_pdf(
         rows,
         y_subrun_key  = "fp_subruns",
         y_run_key     = "fp_runs",
         y_label_base  = "# known-good flagged as bad",
         title_prefix  = "False positives — known-good subruns/runs flagged as alert",
-        out_path      = out_dir / "fp_counts_260429.pdf",
+        out_path      = out_dir / "fp_sweep_260429_onTrainingSample_counts.pdf",
     )
 
     # ── PDF 2: TN counts (good subruns/runs correctly classified) ─────────────
-    print("Generating tn_counts_260429.pdf ...")
+    print("Generating tn_sweep_260429_onTrainingSample_counts.pdf ...")
     make_pdf(
         rows,
         y_subrun_key  = "tn_subruns",
         y_run_key     = "tn_runs",
         y_label_base  = "# known-good classified as ok",
         title_prefix  = "True negatives — known-good subruns/runs correctly classified",
-        out_path      = out_dir / "tn_counts_260429.pdf",
+        out_path      = out_dir / "tn_sweep_260429_onTrainingSample_counts.pdf",
     )
 
-    # ── PDF 3: FP % (good subruns/runs misclassified as bad, as percentage) ───
-    print("Generating fp_pct_260429.pdf ...")
+    # ── PDF 3: FP rate (good subruns/runs misclassified as bad, as percentage) ─
+    print("Generating fp_sweep_260429_onTrainingSample_rel.pdf ...")
     make_pdf(
         rows,
         y_subrun_key  = "fp_pct_subruns",
         y_run_key     = "fp_pct_runs",
         y_label_base  = "% known-good flagged as bad",
         title_prefix  = "False positive rate — % known-good subruns/runs flagged as alert",
-        out_path      = out_dir / "fp_rel_260429.pdf",
+        out_path      = out_dir / "fp_sweep_260429_onTrainingSample_rel.pdf",
     )
 
-    # ── PDF 4: TN % (good subruns/runs correctly classified, as percentage) ───
-    print("Generating tn_pct_260429.pdf ...")
+    # ── PDF 4: TN rate (good subruns/runs correctly classified, as percentage) ─
+    print("Generating tn_sweep_260429_onTrainingSample_rel.pdf ...")
     make_pdf(
         rows,
         y_subrun_key  = "tn_pct_subruns",
         y_run_key     = "tn_pct_runs",
         y_label_base  = "% known-good classified as ok",
         title_prefix  = "True negative rate — % known-good subruns/runs correctly classified",
-        out_path      = out_dir / "tn_rel_260429.pdf",
+        out_path      = out_dir / "tn_sweep_260429_onTrainingSample_rel.pdf",
     )
 
     print("Done.")

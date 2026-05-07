@@ -233,6 +233,7 @@ def _resolve_apply_list(args, cfg: dict) -> list:
 # ── CLI ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.pipeline``."""
     _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(

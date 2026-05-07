@@ -214,6 +214,10 @@ python3 -m src.train --train-goodRunList --train-goodRunList-quality All
 
 # Use only a random 20 % of the catalogue (reproducible via --test-seed)
 python3 -m src.train --train-goodRunList --train-goodRunList-fraction 0.2
+
+# Restrict to a run-number window (applied after quality filtering, before fraction sub-sampling)
+python3 -m src.train --train-goodRunList --train-goodRunList-min-run 1600
+python3 -m src.train --train-goodRunList --train-goodRunList-min-run 1600 --train-goodRunList-max-run 1800
 ```
 
 Statistics about the catalogue (total entries, unique runs, per-quality counts,
@@ -247,6 +251,8 @@ Options:
 | `--train-goodRunList` | off | Train on the complete slab dataset on EOS instead of the default good run list |
 | `--train-goodRunList-quality` | from config.yaml | Quality filter: `Loose`, `Medium`, `Tight`, or `All` (OR of all three). Override the config default for a single run |
 | `--train-goodRunList-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use (0 < F ≤ 1). `1.0` = use all entries |
+| `--train-goodRunList-min-run` | none (no lower bound) | Lowest run number (inclusive) to include when training from the catalogue. Applied after quality filtering and before fraction sub-sampling |
+| `--train-goodRunList-max-run` | none (no upper bound) | Highest run number (inclusive) to include when training from the catalogue. Applied after quality filtering and before fraction sub-sampling |
 | `--plot-format` | from config.yaml (`png`) | Output format for the mean feature table figure: `png`, `pdf`, or `svg`. Use `pdf` for vector output |
 
 ### 3. Monitor
@@ -896,6 +902,8 @@ Options:
 | `--train-goodRunList` | off | Train on the complete slab dataset on EOS instead of the default good run list. Appends `_<Quality>` to the model tag |
 | `--train-goodRunList-quality` | from config.yaml | Quality filter for training: `Loose`, `Medium`, `Tight`, or `All` (OR of all three) |
 | `--train-goodRunList-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to use for training (0 < F ≤ 1) |
+| `--train-goodRunList-min-run` | none (no lower bound) | Lowest run number (inclusive) to include when training from the catalogue. Applied after quality filtering and before fraction sub-sampling |
+| `--train-goodRunList-max-run` | none (no upper bound) | Highest run number (inclusive) to include when training from the catalogue. Applied after quality filtering and before fraction sub-sampling |
 | `--read-full-sample-apply` | off | Score files from the slab catalogue instead of the default apply list |
 | `--full-sample-apply-quality` | from config.yaml | Quality filter for the apply step: `Loose`, `Medium`, `Tight`, or `All` |
 | `--full-sample-apply-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to score (0 < F ≤ 1) |
@@ -903,6 +911,7 @@ Options:
 | `--apply-specific-run RUN` | off | Scan the slab directory on disk for all subruns of run RUN (catalogue-independent — any run can be targeted; requires `--train-goodRunList`). Writes output to `logs/<tag>_run<RUN>.csv`. No report or plots produced. Cannot be combined with `--apply-to-training-list` |
 | `--apply-specific-run-fraction F` | `1.0` | Fraction of the run's files to score when `--apply-specific-run` is set (0 < F ≤ 1). Decoupled from `--train-goodRunList-fraction` |
 | `--combine-specific-run-outputs PATTERN` | off | Combine per-run CSVs matching `logs/<tag>_run<PATTERN>.csv` into `logs/<tag>.csv`. Accepts shell wildcards (e.g. `'*'` for all, `'100?'` for runs 1000–1009). Exits after combining |
+| `--delete-model-tag TAG` | off | Delete all outputs for the given model tag (models, log, reports, plots) after a confirmation prompt, then exit. Cannot be combined with other flags except `--config` |
 | `--override-outputs` | off | Delete all existing outputs for the resolved model tag (models, log, reports, plots) with a confirmation prompt, then re-run the pipeline immediately. Unlike `--delete-model-tag`, does not exit after deletion |
 | `--skip-train` | off | Skip training (requires existing models) |
 | `--skip-apply` | off | Skip application (requires existing log) |

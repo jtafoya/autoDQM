@@ -1,0 +1,43 @@
+# HTCondor submission file — autoDQM isolation-forest sweep 2026-04-29, apply-to-runs mode
+#
+# Single-model template: submit once per model via the wrapper script.
+# CONFIG, VARIANT, QUALITY are passed on the condor_submit command line;
+# each submission creates one cluster of 855 jobs (runs 1422–2276, 20 % each).
+#
+# Do not submit this file directly — use the wrapper instead:
+#   bash condor/submit_sweep_260429_applyToRuns_all.sh
+#
+# To submit a single model manually:
+#   condor_submit condor/submit_sweep_260429_applyToRuns.sub \
+#       CONFIG=configs/config_ignoreDAQConfig__ifContamination_0p005__zThreshold_7sigma.yaml \
+#       VARIANT=trigger_lvds \
+#       QUALITY=Tight
+#
+# To combine all per-run logs for one model after its jobs finish:
+#   python3 -m src.pipeline --config <cfg> --model-tag <tag>_260429 \
+#       --train-goodRunList --train-goodRunList-quality <Q> \
+#       --logs-dir logs/applyToRuns_260429 \
+#       --combine-specific-run-outputs '*' [--no-trigger] [--no-trigger-LVDS]
+
+universe   = vanilla
+executable = condor/run_sweep_260429_applyToRuns.sh
+arguments  = $(CONFIG) $(VARIANT) $(QUALITY) $(Process)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = /dev/null
+error  = /dev/null
+log    = /dev/null
+
+request_cpus   = 1
+request_memory = 2048
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+#notify_user  = j.tafoya.vargas@cern.ch
+#notification = Complete
+
+queue 855

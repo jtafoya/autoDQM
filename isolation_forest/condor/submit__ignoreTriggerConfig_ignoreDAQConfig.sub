@@ -25,7 +25,7 @@ initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
 # $(Cluster).$(Process) ensures each submission gets its own output files
 output = condor/logs/$(Cluster).$(Process).$(VARIANT).out
 error  = condor/logs/$(Cluster).$(Process).$(VARIANT).err
-log    = condor/logs/condor.log
+log    = /dev/null
 
 # IsolationForest uses n_jobs=-1; give it cores to work with.
 # Training on all good-list files may use ~2–4 GB.

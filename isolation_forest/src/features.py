@@ -46,18 +46,21 @@ They are never added to the feature vector and are never scored.
       produce NaN z-scores that do not contribute to anomaly detection.
 
 Scalability: reads one file at a time, no global state.
+
+The private regex ``_RUN_SUBRUN_RE`` used by the TriggerBoard helpers to parse
+Digitizer filenames is imported from run_list rather than redefined here.
 """
 
 from __future__ import annotations
 
 import fnmatch
-import re
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Optional
 
 from .run_config import parse_trigger_config
+from .run_list import _RUN_SUBRUN_RE
 
 # ── Digitizer metrics ───────────────────────────────────────────────────────
 
@@ -238,7 +241,7 @@ def extract_features(
     # downstream block is a no-op — behaviour is identical to the pre-config path.
     trig_cfg_feats = None
     if include_trigger_config and run_configs_dir:
-        run_m = _DIGI_RE.search(Path(filepath).name)
+        run_m = _RUN_SUBRUN_RE.search(Path(filepath).name)
         run_num = int(run_m.group(1)) if run_m else None
         if run_num is not None:
             trig_cfg_feats = parse_trigger_config(
@@ -323,9 +326,6 @@ def extract_features(
 
 # ── TriggerBoard helpers ─────────────────────────────────────────────────────
 
-_DIGI_RE = re.compile(r"Digitizer_run(\d+)_subrun(\d+)", re.IGNORECASE)
-
-
 def _find_triggerboard(digitizer_path: str) -> Optional[Path]:
     """
     Locate the TriggerBoard CSV that corresponds to a Digitizer file.
@@ -334,7 +334,7 @@ def _find_triggerboard(digitizer_path: str) -> Optional[Path]:
       Digitizer_run2068_subrun1.csv  →  TriggerBoard_run2068.csv
     in the same directory.
     """
-    m = _DIGI_RE.search(Path(digitizer_path).name)
+    m = _RUN_SUBRUN_RE.search(Path(digitizer_path).name)
     if m is None:
         return None
     run = m.group(1)
@@ -371,7 +371,7 @@ def _load_triggerboard_row(digitizer_path: str) -> Optional[dict]:
     given Digitizer file. Returns None if the TriggerBoard file is absent
     or the subrun is not found.
     """
-    m = _DIGI_RE.search(Path(digitizer_path).name)
+    m = _RUN_SUBRUN_RE.search(Path(digitizer_path).name)
     if m is None:
         return None
 
@@ -404,7 +404,7 @@ def _find_lvds(digitizer_path: str) -> Optional[Path]:
       Digitizer_run2068_subrun1.csv  →  TriggerBoardSlab_run2068_LVDSCounts.csv
     in the same directory.
     """
-    m = _DIGI_RE.search(Path(digitizer_path).name)
+    m = _RUN_SUBRUN_RE.search(Path(digitizer_path).name)
     if m is None:
         return None
     run = m.group(1)
@@ -418,7 +418,7 @@ def _load_lvds_row(digitizer_path: str) -> Optional[dict]:
     matching the given Digitizer file. Returns None if the LVDSCounts file
     is absent or the subrun entry is missing.
     """
-    m = _DIGI_RE.search(Path(digitizer_path).name)
+    m = _RUN_SUBRUN_RE.search(Path(digitizer_path).name)
     if m is None:
         return None
 

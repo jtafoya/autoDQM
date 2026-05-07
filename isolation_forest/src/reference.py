@@ -109,6 +109,7 @@ class ReferenceModel:
         return mean, std
 
     def known_channels(self) -> list:
+        """Return the list of channel keys (int channels and pseudo-channel strings) seen during training."""
         return list(self._state.keys())
 
     def n_files(self, channel) -> int:
@@ -143,6 +144,7 @@ class ReferenceModel:
     # ------------------------------------------------------------------
 
     def save(self, path: str) -> None:
+        """Persist the Welford state and all config flags to a NumPy .npz archive at *path*."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         channels = list(self._state.keys())
@@ -168,6 +170,7 @@ class ReferenceModel:
 
     @classmethod
     def load(cls, path: str) -> "ReferenceModel":
+        """Restore a ReferenceModel from a .npz archive written by save()."""
         data = np.load(path, allow_pickle=True)
         use_trigger             = bool(data["use_trigger"][0])             if "use_trigger"             in data else True
         use_lvds                = bool(data["use_lvds"][0])                if "use_lvds"                in data else False

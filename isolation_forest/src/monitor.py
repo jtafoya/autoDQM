@@ -645,6 +645,12 @@ def step_apply(
     single_file_alert_max_z: float = 0.0,
     show_banner: bool = True,
 ) -> bool:
+    """
+    Score *all_files* with the trained detector and write results to *log_file*.
+
+    Auto-skips if *log_file* already exists.
+    Returns True if the apply step ran, False if skipped.
+    """
     if show_banner:
         print_step_header("STEP 2 — APPLY")
 
@@ -684,6 +690,7 @@ def step_apply(
 
 
 def main() -> None:
+    """CLI entry point: ``python3 -m src.monitor``."""
     _, cfg = preparse_config()
 
     parser = argparse.ArgumentParser(
