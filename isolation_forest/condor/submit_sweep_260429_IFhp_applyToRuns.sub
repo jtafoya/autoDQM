@@ -1,0 +1,33 @@
+# HTCondor submission file — autoDQM IFhp sweep apply-to-runs (one cluster per model)
+#
+# Submits 86 jobs for one (CONFIG, VARIANT, QUALITY) combination.
+# Each job processes 10 consecutive runs (1422–2276, 855 runs total).
+#
+# Driven by submit_sweep_260429_IFhp_applyToRuns_all.sh which loops over
+# all 108 model combinations and calls:
+#   condor_submit condor/submit_sweep_260429_IFhp_applyToRuns.sub \
+#       CONFIG=<cfg> VARIANT=<var> QUALITY=<q>
+#
+# Submit from the isolation_forest/ directory via the _all.sh script.
+
+universe   = vanilla
+executable = condor/run_sweep_260429_IFhp_applyToRuns.sh
+arguments  = $(CONFIG) $(VARIANT) $(QUALITY) $(Process)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = /dev/null
+error  = /dev/null
+log    = condor/logs/condor.log
+
+request_cpus   = 1
+request_memory = 2048
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notification = Never
+
+queue 86

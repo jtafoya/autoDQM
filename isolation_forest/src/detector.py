@@ -94,10 +94,16 @@ class AnomalyDetector:
         reference: ReferenceModel,
         z_threshold: float = 5.0,
         if_contamination: float = 0.05,
+        if_n_estimators: int = 200,
+        if_max_samples: "int | str" = "auto",
+        if_max_features: float = 1.0,
     ) -> None:
         self.reference = reference
         self.z_threshold = z_threshold
         self.if_contamination = if_contamination
+        self.if_n_estimators = if_n_estimators
+        self.if_max_samples = if_max_samples
+        self.if_max_features = if_max_features
         self._if_model: Optional[IsolationForest] = None
         self._use_trigger: bool              = getattr(reference, "_use_trigger",             True)
         self._use_lvds: bool                 = getattr(reference, "_use_lvds",                False)
@@ -174,7 +180,9 @@ class AnomalyDetector:
             X = X[idx]
 
         self._if_model = IsolationForest(
-            n_estimators=200,
+            n_estimators=self.if_n_estimators,
+            max_samples=self.if_max_samples,
+            max_features=self.if_max_features,
             contamination=self.if_contamination,
             random_state=42,
             n_jobs=-1,
@@ -307,9 +315,12 @@ class AnomalyDetector:
         with open(path, "wb") as fh:
             pickle.dump(
                 {
-                    "if_model": self._if_model,
-                    "z_threshold": self.z_threshold,
+                    "if_model":        self._if_model,
+                    "z_threshold":     self.z_threshold,
                     "if_contamination": self.if_contamination,
+                    "if_n_estimators": self.if_n_estimators,
+                    "if_max_samples":  self.if_max_samples,
+                    "if_max_features": self.if_max_features,
                 },
                 fh,
             )
@@ -321,8 +332,11 @@ class AnomalyDetector:
             data = pickle.load(fh)
         det = cls(
             reference,
-            z_threshold=data["z_threshold"],
-            if_contamination=data["if_contamination"],
+            z_threshold     = data["z_threshold"],
+            if_contamination = data["if_contamination"],
+            if_n_estimators = data.get("if_n_estimators", 200),
+            if_max_samples  = data.get("if_max_samples",  "auto"),
+            if_max_features = data.get("if_max_features", 1.0),
         )
         det._if_model = data["if_model"]
         return det

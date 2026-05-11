@@ -512,6 +512,9 @@ def main() -> None:
         ("ignore features",      str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
         ("z threshold",          f"{args.z_threshold}σ"),
         ("IF contamination",     str(args.if_contamination)),
+        ("IF n_estimators",      str(args.if_n_estimators)),
+        ("IF max_samples",       str(args.if_max_samples)),
+        ("IF max_features",      str(args.if_max_features)),
         ("alert threshold",          f"{args.file_alert_n_channels} channels"),
         ("alert window",             f"{args.alert_consecutive_n} consecutive file(s)"),
         ("single-file bulk alert",   f"{args.single_file_alert_n_channels} ch"
@@ -538,6 +541,7 @@ def main() -> None:
         step_train(
             args.good_list, models_dir,
             args.z_threshold, args.if_contamination,
+            args.if_n_estimators, args.if_max_samples, args.if_max_features,
             args.test_train,
             use_trigger=use_trigger,
             use_lvds=use_lvds,

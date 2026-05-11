@@ -1,0 +1,10 @@
+base: config.yaml
+model_tag: sweep__ifContamination_0p002__zThreshold_7sigma__nEst_500__maxSamp_1024
+
+includeConfigInfo_Trigger: true
+includeConfigInfo_DAQ: false
+
+z_threshold:      7.0
+if_contamination: 0.002
+if_n_estimators:  500
+if_max_samples:   1024

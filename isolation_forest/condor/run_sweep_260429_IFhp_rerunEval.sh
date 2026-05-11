@@ -1,0 +1,83 @@
+#!/bin/bash
+# Re-run the apply-to-training-list step for IFhp models whose training job
+# completed (model saved) but whose eval CSV is missing.
+#
+# Arguments:
+#   $1 - CONFIG  : path to sweep config YAML (relative to initialdir)
+#   $2 - VARIANT : trigger_lvds only for this sweep
+#   $3 - QUALITY : Loose | Medium | Tight
+#
+# Skips training; loads existing model and applies to the same 10% training
+# sample to produce the eval CSV in logs/.
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit_sweep_260429_IFhp_rerunEval.sub
+
+set -euo pipefail
+
+CONFIG=${1:?Usage: run_sweep_260429_IFhp_rerunEval.sh <config> <variant> <quality>}
+VARIANT=${2:?}
+QUALITY=${3:?}
+
+SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
+INSTALLATION_PATH="${SCRIPT_DIR}/.."
+
+cd "${INSTALLATION_PATH}"
+
+echo "============================================================"
+echo "  autoDQM sweep 260429 IFhp — re-run eval"
+echo "    config  : $CONFIG"
+echo "    variant : $VARIANT"
+echo "    quality : $QUALITY"
+echo "  Host : $(hostname)"
+echo "  Start: $(date -u)"
+echo "============================================================"
+
+PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+export PYTHONUSERBASE="${HOME}/.local"
+export PATH="${HOME}/.local/bin:${PATH}"
+export PYTHONPATH="${HOME}/.local/lib/python${PYVER}/site-packages:${INSTALLATION_PATH}:${PYTHONPATH:-}"
+
+echo "  Python : $(python3 --version)  ($(which python3))"
+
+python3 -c "import pandas, sklearn, numpy, scipy, watchdog" || {
+    echo "ERROR: required packages not found." >&2
+    exit 1
+}
+echo "  Dependencies: OK"
+echo ""
+
+MODEL_TAG=$(python3 -c "
+import yaml
+with open('${CONFIG}') as f:
+    d = yaml.safe_load(f)
+print(d.get('model_tag', 'sweep') + '_260429_IFhp')
+")
+echo "  Model tag (before pipeline suffixes): $MODEL_TAG"
+
+FLAGS=()
+case $VARIANT in
+    trigger_lvds)     ;;
+    trigger_nolvds)   FLAGS=(--no-trigger-LVDS) ;;
+    notrigger_lvds)   FLAGS=(--no-trigger) ;;
+    notrigger_nolvds) FLAGS=(--no-trigger --no-trigger-LVDS) ;;
+    *)
+        echo "ERROR: unknown variant '$VARIANT'" >&2
+        exit 1
+        ;;
+esac
+
+python3 -m src.pipeline \
+    --config "$CONFIG" \
+    --model-tag "$MODEL_TAG" \
+    --train-goodRunList \
+    --train-goodRunList-quality "$QUALITY" \
+    --train-goodRunList-fraction 0.1 \
+    --skip-train \
+    --apply-to-training-list \
+    "${FLAGS[@]}"
+
+echo ""
+echo "============================================================"
+echo "  Done: $CONFIG  $VARIANT  $QUALITY  $(date -u)"
+echo "============================================================"

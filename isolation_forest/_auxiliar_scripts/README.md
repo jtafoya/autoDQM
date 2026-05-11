@@ -1,40 +1,84 @@
 # Auxiliary scripts — 260429 sweep analysis
 
-One-off analysis and plotting scripts for the 260429 parameter sweep
-(contamination × z-threshold × quality × feature variant).
+One-off analysis and plotting scripts for the 260429 parameter sweep and its extensions.
 
-## Plotting scripts
+---
+
+## Original 260429 sweep
 
 ### `compare_sweep_260429_onTrainingSample.py`
-Plots FP/TN for each model evaluated against its **own training quality** as ground truth.
-Each page of the output PDF covers one quality tier (Loose / Medium / Tight); lines are
-differentiated by feature variant (colour) and triggerConfig setting (solid/dashed).
+FP/TN for each model evaluated against its **own training quality** as ground truth.
+Pages: quality tier; lines: feature variant (colour) × triggerConfig (solid/dashed); x: contamination.
 Produces four PDFs in `plots/`:
-- `fp_sweep_260429_onTrainingSample_counts.pdf` / `tn_sweep_260429_onTrainingSample_counts.pdf` — absolute counts
-- `fp_sweep_260429_onTrainingSample_rel.pdf` / `tn_sweep_260429_onTrainingSample_rel.pdf` — rates (%)
+- `fp_sweep_260429_onTrainingSample_{counts,rel}.pdf`
+- `tn_sweep_260429_onTrainingSample_{counts,rel}.pdf`
 
 ### `compare_sweep_260429_onSameRefSample.py`
-Plots FP/TN rate for all models evaluated against all three goodRunsList qualities in a single
-run, so Loose/Medium/Tight-trained models can be compared on equal footing. All three training
-qualities appear as separate line styles on the same axes; pages separate triggerConfig variants.
-Y-axis range is controlled by the `FIX_Y_RANGE` flag at the top of the file (fixed or automatic).
+FP/TN rate for all models against each catalogue quality so training qualities can be compared.
+Pages: triggerConfig; lines: feature variant (colour) × training quality (style); x: contamination.
+`FIX_Y_RANGE` flag at the top controls y-axis limits.
 Produces six PDFs in `plots/` (two per catalogue quality):
-- `fp_sweep_260429_on{Loose,Medium,Tight}_rel.pdf` / `tn_sweep_260429_on{Loose,Medium,Tight}_rel.pdf`
+- `fp_sweep_260429_on{Loose,Medium,Tight}_rel.pdf`
+- `tn_sweep_260429_on{Loose,Medium,Tight}_rel.pdf`
 
 ### `compare_applyToRuns_260429_onSameRefSample.py`
-Plots four metrics for models applied to the full run-by-run dataset (applyToRuns),
-covering contamination ∈ {0.005, 0.01} × z = 7σ. Runs over all three catalogue qualities in a
-single go; all three training qualities shown as separate line styles on the same axes.
-Columns per page: FP | TN (known-good subruns/runs) | NL-GOOD | NL-ALERT (subruns/runs absent
-from the goodRunsList entirely). Relative plots fix the y-axis to 0–100 %.
-Produces six PDFs in `plots/` (one per quality × one per counts/rel):
-- `applyToRuns_260429_on{Loose,Medium,Tight}_counts.pdf`
-- `applyToRuns_260429_on{Loose,Medium,Tight}_rel.pdf`
-
-## Utility scripts
+FP/TN/NL-GOOD/NL-ALERT for models applied run-by-run, covering cont ∈ {0.005, 0.01} × z = 7σ.
+Reads from `reports/applyToRuns_260429/`.
+Produces six PDFs in `plots/`:
+- `applyToRuns_260429_on{Loose,Medium,Tight}_{counts,rel}.pdf`
 
 ### `combine_and_evaluate_applyToRuns_260429.sh`
-Combines and evaluates applyToRuns outputs for the 260429 sweep.
+Combines per-run CSVs and evaluates (reports + plots) for the 260429 apply-to-runs exercise.
+
+---
+
+## 260429 EXT extension (low-contamination / high-z best region)
+
+### `compare_applyToRuns_260429_EXT_onSameRefSample.py`
+FP/TN/NL-GOOD/NL-ALERT for 12 EXT models applied run-by-run
+(cont ∈ {0.001, 0.002} × z ∈ {7, 8}σ, trigger+LVDS, ignoreDAQConfig).
+Pages: one per catalogue quality; lines: z-threshold (colour) × training quality (style); x: contamination.
+Reads from `reports/applyToRuns_260429_EXT/`.
+Produces six PDFs in `plots/`:
+- `applyToRuns_260429_EXT_on{Loose,Medium,Tight}_{counts,rel}.pdf`
+
+### `combine_and_evaluate_applyToRuns_260429_EXT.sh`
+Combines per-run CSVs (`logs/applyToRuns_260429_EXT/`) and evaluates (reports only, no plots)
+for the 12 EXT apply-to-runs models. Run before the compare script above.
 
 ### `fill_missing_EXT_reports.sh`
-Fills in missing report directories for the EXT extension jobs.
+Fills in missing report directories for the full EXT training-sample evaluation.
+
+---
+
+## 260429 IFhp hyperparameter sweep (n_estimators × max_samples at the best EXT point)
+
+All three scripts share the same axes convention:
+- **x-axis**: `if_n_estimators` (200, 300, 500)
+- **columns**: `if_max_samples` (256, 1024, 4096)
+- **colour**: contamination (0.001 blue, 0.002 orange) or training quality
+- **line style**: z_threshold (7σ solid, 8σ dashed) or training quality
+
+### `compare_sweep_260429_IFhp_onTrainingSample.py`
+FP/TN for each model evaluated against its **own training quality**.
+Pages: quality; cols: max_samples; lines: contamination (colour) × z (style); x: n_estimators.
+Reads from `reports/<tag>/`.
+Produces four PDFs in `plots/`:
+- `fp_sweep_260429_IFhp_onTrainingSample_{counts,rel}.pdf`
+- `tn_sweep_260429_IFhp_onTrainingSample_{counts,rel}.pdf`
+
+### `compare_sweep_260429_IFhp_onSameRefSample.py`
+FP/TN rate for all IFhp models against each catalogue quality so training qualities can be compared.
+Pages: cont × z combo (4 pages); cols: max_samples; lines: training quality (colour + style); x: n_estimators.
+Reads from `reports/<tag>/`.
+Produces six PDFs in `plots/`:
+- `fp_sweep_260429_IFhp_on{Loose,Medium,Tight}_rel.pdf`
+- `tn_sweep_260429_IFhp_on{Loose,Medium,Tight}_rel.pdf`
+
+### `compare_applyToRuns_260429_IFhp_onSameRefSample.py`
+FP/TN/NL-GOOD/NL-ALERT for all 108 IFhp models applied run-by-run.
+Pages: cont × z combo (4 pages); cols: FP | TN | NL-GOOD | NL-ALERT;
+lines: training quality (colour + style); marker size: max_samples; x: n_estimators.
+Reads from `reports/applyToRuns_260429_IFhp/`.
+Produces six PDFs in `plots/`:
+- `applyToRuns_260429_IFhp_on{Loose,Medium,Tight}_{counts,rel}.pdf`

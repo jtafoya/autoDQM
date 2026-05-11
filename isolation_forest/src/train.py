@@ -80,6 +80,9 @@ def step_train(
     models_dir: Path,
     z_threshold: float,
     if_contamination: float,
+    if_n_estimators: int,
+    if_max_samples: int,
+    if_max_features: float,
     test_n: int,
     use_trigger: bool = True,
     use_lvds: bool = False,
@@ -230,7 +233,14 @@ def step_train(
 
     # ---- Train Isolation Forest ----
     print("Training Isolation Forest...")
-    detector = AnomalyDetector(ref, z_threshold=z_threshold, if_contamination=if_contamination)
+    detector = AnomalyDetector(
+        ref,
+        z_threshold     = z_threshold,
+        if_contamination = if_contamination,
+        if_n_estimators = if_n_estimators,
+        if_max_samples  = if_max_samples,
+        if_max_features = if_max_features,
+    )
     # In incremental mode features_cache is None; re-read all files from disk.
     detector.train_isolation_forest(all_csv, features_cache=features_cache)
     detector.save(str(models_dir / "detector.pkl"))
@@ -328,6 +338,9 @@ def main() -> None:
         ("ignore features",   str(list(cfg["ignore_features"])) if cfg["ignore_features"] else "none"),
         ("z threshold",       f"{args.z_threshold}σ"),
         ("IF contamination",  str(args.if_contamination)),
+        ("IF n_estimators",   str(args.if_n_estimators)),
+        ("IF max_samples",    str(args.if_max_samples)),
+        ("IF max_features",   str(args.if_max_features)),
         ("test mode",         f"{args.test} files" if args.test else "off (full run)"),
         ("test seed",         str(args.test_seed)),
         ("incremental",       "yes" if args.update else "no"),
@@ -346,6 +359,7 @@ def main() -> None:
     if not step_train(
         args.good_list, models_dir,
         args.z_threshold, args.if_contamination,
+        args.if_n_estimators, args.if_max_samples, args.if_max_features,
         args.test,
         use_trigger=use_trigger,
         use_lvds=use_lvds,

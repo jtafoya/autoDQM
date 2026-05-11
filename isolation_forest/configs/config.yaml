@@ -60,8 +60,14 @@ includeConfigVariables_DAQ:
 # --- Detection thresholds ---
 # z_threshold: |z-score| above which a feature is flagged.
 # if_contamination: expected anomaly fraction for IsolationForest.
+# if_n_estimators:  number of trees in the Isolation Forest ensemble.
+# if_max_samples:   samples drawn per tree (sklearn max_samples); higher = lower score variance.
+# if_max_features:  fraction of features considered per split (sklearn max_features); 1.0 = all.
 z_threshold:      6.0
 if_contamination: 0.01
+if_n_estimators:  200
+if_max_samples:   auto
+if_max_features:  1.0
 
 # Persistence-based alert (sustained degradation):
 #   file_alert_n_channels — minimum number of *persistent* anomalous channels for [ALERT].

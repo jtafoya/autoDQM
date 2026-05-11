@@ -241,6 +241,9 @@ Options:
 | `--models-dir` | from config.yaml | Where to save the trained models |
 | `--z-threshold` | from config.yaml | σ threshold for the statistical layer |
 | `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
+| `--if-n-estimators` | from config.yaml (200) | Number of trees in the Isolation Forest ensemble. More trees → more stable scores, slower training |
+| `--if-max-samples` | from config.yaml (`auto`) | Samples drawn per tree (`auto` = `min(256, n_samples)`). Higher values increase score stability but raise memory usage |
+| `--if-max-features` | from config.yaml (1.0) | Fraction of features considered at each split (sklearn `max_features`). `1.0` = all features |
 | `--no-trigger` | off | Exclude TriggerBoard features (overrides `use_trigger` in config.yaml) |
 | `--no-trigger-LVDS` | off | Exclude LVDS features: drops `LVDSpin` and the `"trigger_lvds_total"` pseudo-channel (overrides `use_lvds`) |
 | `--no-trigger-config` | off | Disable per-run trigger config integration (prescale normalisation, channel masking). Overrides `includeConfigInfo_Trigger`. Appends `_ignoreTriggerConfig` to the model tag |
@@ -749,10 +752,12 @@ The decision boundary is set by `if_contamination`: the IF will always flag the 
 `if_contamination` fraction of any scored dataset as anomalous, regardless of absolute
 score values.  Lowering `if_contamination` is therefore the most direct lever for
 reducing IF-driven false positives (see [Performance tuning](#performance-tuning)).
-The forest uses `n_estimators=200` trees, which is sufficient to produce stable scores
-for a feature space of this size.
+The number of trees (`if_n_estimators`, default 200), the per-tree sample count
+(`if_max_samples`, default `"auto"` = `min(256, n_samples)`), and the feature fraction
+per split (`if_max_features`, default 1.0) are all configurable via `config.yaml` or
+the corresponding CLI flags.
 
-Training data is capped at `max_samples=50_000` channel-file vectors; beyond that,
+Training data is capped at 50 000 channel-file vectors; beyond that,
 a random subsample is drawn. This keeps training fast regardless of corpus size.
 
 ---
@@ -895,6 +900,9 @@ Options:
 | `--no-daq-config` | off | Disable DAQ config integration. Appends `_ignoreDAQConfig` |
 | `--z-threshold` | from config.yaml | σ threshold for the statistical layer |
 | `--if-contamination` | from config.yaml | Expected anomaly fraction for Isolation Forest |
+| `--if-n-estimators` | from config.yaml (200) | Number of trees in the Isolation Forest ensemble. More trees → more stable scores, slower training |
+| `--if-max-samples` | from config.yaml (`auto`) | Samples drawn per tree (`auto` = `min(256, n_samples)`). Higher values increase score stability but raise memory usage |
+| `--if-max-features` | from config.yaml (1.0) | Fraction of features considered at each split (sklearn `max_features`). `1.0` = all features |
 | `--file-alert-n-channels` | from config.yaml | Number of *persistent* anomalous channels to trigger a file-level ALERT (persistence condition) |
 | `--alert-consecutive-n` | from config.yaml | Consecutive files a channel must be anomalous in to count as persistent. Set to `1` to disable |
 | `--single-file-alert-n-channels` | from config.yaml | Bulk alert: minimum anomalous channels in a single file for `[ALERT]`. `0` = disabled |

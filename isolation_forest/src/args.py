@@ -101,7 +101,8 @@ def add_features(parser: argparse.ArgumentParser, cfg: dict) -> None:
 
 def add_model_thresholds(parser: argparse.ArgumentParser, cfg: dict) -> None:
     """
-    Add model-building thresholds: --z-threshold and --if-contamination.
+    Add model-building thresholds: --z-threshold, --if-contamination,
+    --if-n-estimators, and --if-max-samples.
 
     Used by train and pipeline.
     """
@@ -113,9 +114,28 @@ def add_model_thresholds(parser: argparse.ArgumentParser, cfg: dict) -> None:
         "--if-contamination", type=float,
         help="Expected fraction of anomalies in training data (Isolation Forest contamination)",
     )
+    parser.add_argument(
+        "--if-n-estimators", type=int,
+        help="Number of trees in the Isolation Forest ensemble",
+    )
+    parser.add_argument(
+        "--if-max-samples",
+        type=lambda v: v if v.lower() == "auto" else int(v),
+        help="Samples drawn per tree when fitting the Isolation Forest (sklearn max_samples). "
+             "Use 'auto' (default, = min(256, n_samples)) or an integer for a fixed count. "
+             "Higher values reduce score variance at the cost of training time.",
+    )
+    parser.add_argument(
+        "--if-max-features", type=float,
+        help="Fraction of features considered per split in the Isolation Forest (sklearn max_features). "
+             "1.0 = all features; 0.5 = half.",
+    )
     parser.set_defaults(
         z_threshold      = cfg["z_threshold"],
         if_contamination = cfg["if_contamination"],
+        if_n_estimators  = cfg.get("if_n_estimators",  200),
+        if_max_samples   = cfg.get("if_max_samples",   "auto"),
+        if_max_features  = cfg.get("if_max_features",  1.0),
     )
 
 

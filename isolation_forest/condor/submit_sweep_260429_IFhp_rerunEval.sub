@@ -1,0 +1,61 @@
+# HTCondor submission file — autoDQM IFhp sweep re-run eval
+#
+# 28 jobs: models that trained successfully but whose apply-to-training-list
+# eval CSV is missing (job failure during apply step).
+#
+# Each job skips training, loads the existing model, and applies to the same
+# 10% training sample to write the eval CSV to logs/.
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit -name bigbird11.cern.ch condor/submit_sweep_260429_IFhp_rerunEval.sub
+
+universe   = vanilla
+executable = condor/run_sweep_260429_IFhp_rerunEval.sh
+arguments  = $(CONFIG) $(VARIANT) $(QUALITY)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = /dev/null
+error  = /dev/null
+log    = condor/logs/condor.log
+
+request_cpus   = 1
+request_memory = 2048
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notification = Never
+
+queue CONFIG, VARIANT, QUALITY from (
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_200__maxSamp_4096.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_300__maxSamp_1024.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_300__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_500__maxSamp_256.yaml,  trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_500__maxSamp_256.yaml,  trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_7sigma__nEst_500__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_200__maxSamp_256.yaml,  trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_200__maxSamp_4096.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_300__maxSamp_4096.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_500__maxSamp_1024.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p001__zThreshold_8sigma__nEst_500__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_200__maxSamp_4096.yaml, trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_300__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_300__maxSamp_4096.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_7sigma__nEst_500__maxSamp_4096.yaml, trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_200__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_200__maxSamp_4096.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_300__maxSamp_256.yaml,  trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_300__maxSamp_1024.yaml, trigger_lvds, Medium
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_300__maxSamp_4096.yaml, trigger_lvds, Tight
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_500__maxSamp_256.yaml,  trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_500__maxSamp_1024.yaml, trigger_lvds, Loose
+  configs/config_ignoreDAQConfig__ifContamination_0p002__zThreshold_8sigma__nEst_500__maxSamp_4096.yaml, trigger_lvds, Medium
+)
