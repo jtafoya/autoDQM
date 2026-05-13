@@ -75,6 +75,11 @@ Produces six PDFs in `plots/`:
 - `fp_sweep_260429_IFhp_on{Loose,Medium,Tight}_rel.pdf`
 - `tn_sweep_260429_IFhp_on{Loose,Medium,Tight}_rel.pdf`
 
+### `combine_and_evaluate_applyToRuns_260429_IFhp.sh`
+Combines per-run CSVs (`logs/applyToRuns_260429_IFhp/`) and evaluates (reports only, no plots)
+for all 108 IFhp apply-to-runs models. Skips models with no per-run CSVs.
+Run before the compare script below.
+
 ### `compare_applyToRuns_260429_IFhp_onSameRefSample.py`
 FP/TN/NL-GOOD/NL-ALERT for all 108 IFhp models applied run-by-run.
 Pages: cont × z combo (4 pages); cols: FP | TN | NL-GOOD | NL-ALERT;

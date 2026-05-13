@@ -68,9 +68,9 @@ Z_STYLE = {
 
 Y_RANGE_FIXED = {
     "fp_pct_subruns": (0,   15),
-    "fp_pct_runs":    (0,   15),
+    "fp_pct_runs":    (0,  100),
     "tn_pct_subruns": (85, 100),
-    "tn_pct_runs":    (85, 100),
+    "tn_pct_runs":    (0,  100),
 }
 
 # Major/minor tick interval for rel plots, keyed by metric prefix

@@ -69,9 +69,9 @@ QUALITY_META = {
 
 Y_RANGE_FIXED = {
     "fp_rel_subruns": (0,   15),
-    "fp_rel_runs":    (0,   15),
+    "fp_rel_runs":    (0,  100),
     "tn_rel_subruns": (85, 100),
-    "tn_rel_runs":    (85, 100),
+    "tn_rel_runs":    (0,  100),
 }
 
 _TICK_MAJOR = {"fp": 5, "tn": 5}

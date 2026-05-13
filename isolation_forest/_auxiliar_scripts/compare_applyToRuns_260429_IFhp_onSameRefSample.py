@@ -23,10 +23,10 @@ Layout per PDF:
   x-axis  : if_n_estimators (200, 300, 500)
 
 NOTE: Each panel shows one max_samples value per page is not feasible with 4 metric
-columns; instead max_samples is encoded as marker size:
-  256  → small marker  (size 4)
-  1024 → medium marker (size 7)
-  4096 → large marker  (size 11)
+columns; instead max_samples is encoded as hollow marker shape:
+  256  → hollow circle   (o)
+  1024 → hollow square   (s)
+  4096 → hollow triangle (^)
 Lines within the same (quality, cont, z) group connect points of the same max_samples.
 
 Produces six PDFs in _auxiliar_scripts/plots/ (two per catalogue quality):
@@ -77,12 +77,13 @@ QUALITY_META = {
     "Tight":  ("Tight",  "#d62728", "-"),
 }
 
-# max_samples → marker size
+# max_samples → hollow marker shape
 MSAMP_MARKER = {
-    256:  4,
-    1024: 7,
-    4096: 11,
+    256:  "o",
+    1024: "s",
+    4096: "^",
 }
+MSAMP_MARKERSIZE = 7
 
 METRIC_COLS_COUNTS = [
     ("fp_count_subruns", "fp_count_runs",
@@ -110,9 +111,9 @@ METRIC_COLS_REL = [
 
 Y_RANGE_FIXED = {
     "fp_rel_subruns": (0,   15),
-    "fp_rel_runs":    (0,   15),
+    "fp_rel_runs":    (0,  100),
     "tn_rel_subruns": (85, 100),
-    "tn_rel_runs":    (85, 100),
+    "tn_rel_runs":    (0,  100),
 }
 
 _TICK_MAJOR = {"fp": 5, "tn": 5}
@@ -332,7 +333,7 @@ def _make_figure(rows: list,
                     if r["if_contamination"] == cont and r["z_threshold"] == z]
 
             for qual, (qual_label, colour, linestyle) in QUALITY_META.items():
-                for ms, mksize in MSAMP_MARKER.items():
+                for ms, mkshape in MSAMP_MARKER.items():
                     pts = sorted(
                         [r for r in cell
                          if r["quality"] == qual
@@ -345,19 +346,25 @@ def _make_figure(rows: list,
                     xs = [p["if_n_estimators"] for p in pts]
                     ys = [p[y_key]             for p in pts]
                     ax.plot(xs, ys, color=colour, linestyle=linestyle,
-                            linewidth=1.4, marker="o", markersize=mksize,
+                            linewidth=1.4, marker=mkshape,
+                            markersize=MSAMP_MARKERSIZE,
+                            markerfacecolor="none", markeredgewidth=1.5,
                             alpha=0.85)
 
-    # Legend: quality (colour+style) + max_samples (marker size)
+    # Legend: quality (colour+style) + max_samples (hollow marker shape)
     qual_handles = [
         mlines.Line2D([], [], color=colour, linestyle=ls, linewidth=1.4,
-                      marker="o", markersize=7, label=f"trained {ql}")
+                      marker="o", markersize=MSAMP_MARKERSIZE,
+                      markerfacecolor="none", markeredgewidth=1.5,
+                      label=f"trained {ql}")
         for ql, (_, colour, ls) in QUALITY_META.items()
     ]
     msamp_handles = [
         mlines.Line2D([], [], color="gray", linestyle="-", linewidth=1,
-                      marker="o", markersize=mksize, label=f"max_samples={ms}")
-        for ms, mksize in MSAMP_MARKER.items()
+                      marker=mkshape, markersize=MSAMP_MARKERSIZE,
+                      markerfacecolor="none", markeredgewidth=1.5,
+                      label=f"max_samples={ms}")
+        for ms, mkshape in MSAMP_MARKER.items()
     ]
     fig.legend(
         handles=qual_handles + msamp_handles,
