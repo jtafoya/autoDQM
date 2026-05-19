@@ -128,7 +128,7 @@ done
 # ── Bulk copy scratch → AFS ────────────────────────────────────────────────────
 echo ""
 echo "Copying outputs from scratch to AFS ($AFS_LOGS) ..."
-find "${LOCAL_LOGS}" -maxdepth 1 -type f -exec cp {} "${AFS_LOGS}/" \;
+cp -rp "${LOCAL_LOGS}/." "${AFS_LOGS}/"
 echo "  Copy complete."
 
 rm -rf "${LOCAL_TMP}"

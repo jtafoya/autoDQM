@@ -6,10 +6,13 @@ Default: good-list = ../data/good_run_list_EOS.txt
 Usage — quick test (50 random files):
     python -m src.train --test
 
-Usage — custom sample size:
+Usage — custom sample size (absolute N):
     python -m src.train --test 100
 
-Usage — full training (all files):
+Usage — train on a random 10% fraction of the good run list:
+    python -m src.train --fraction 0.1
+
+Usage — full training (all files in good_list):
     python -m src.train
 
 Usage — full training on the complete slab dataset from EOS:
@@ -100,6 +103,7 @@ def step_train(
     full_sample_fraction: float = 1.0,
     full_sample_min_run: "int | None" = None,
     full_sample_max_run: "int | None" = None,
+    good_list_fraction: float = 1.0,
     test_seed: int = 42,
     update: bool = False,
     config_path: str = "",
@@ -152,6 +156,12 @@ def step_train(
     else:
         print(f"  Reading good run list from {good_list} ...")
         all_csv = resolve_run_list(good_list)
+        if good_list_fraction < 1.0:
+            import random
+            random.seed(test_seed)
+            n = max(1, int(round(len(all_csv) * good_list_fraction)))
+            all_csv = random.sample(all_csv, n)
+            print(f"  Fraction {good_list_fraction}: using {n} randomly sampled file(s).")
 
     if not all_csv:
         print("ERROR: good run list resolved to zero files. Check patterns in the list file.",
@@ -276,6 +286,13 @@ def main() -> None:
     )
     add_config(parser)
     parser.add_argument("--good-list",  help="Path to a text file listing good Digitizer CSV files")
+    parser.add_argument(
+        "--fraction",
+        type=float,
+        metavar="F",
+        help="Fraction of the good run list to use for training (0 < F ≤ 1). "
+             "Ignored when --train-goodRunList is set (use --train-goodRunList-fraction instead).",
+    )
     parser.add_argument("--models-dir", help="Directory to save models")
     parser.add_argument(
         "--update",
@@ -300,6 +317,7 @@ def main() -> None:
 
     parser.set_defaults(
         good_list  = cfg["good_list"],
+        fraction   = cfg.get("good_list_fraction", 1.0),
         models_dir = cfg["models_dir"],
     )
 
@@ -321,7 +339,8 @@ def main() -> None:
         _hi = str(args.train_goodRunList_max_run) if args.train_goodRunList_max_run is not None else "—"
         run_range = f"{_lo} … {_hi}"
     else:
-        input_source = args.good_list
+        frac_str = f"{args.fraction}" if args.fraction < 1.0 else "1.0 (full)"
+        input_source = f"{args.good_list}  [fraction={frac_str}]"
         run_range = "n/a"
 
     print_banner("train", args.config, [
@@ -377,6 +396,7 @@ def main() -> None:
         full_sample_fraction = args.train_goodRunList_fraction,
         full_sample_min_run  = args.train_goodRunList_min_run,
         full_sample_max_run  = args.train_goodRunList_max_run,
+        good_list_fraction   = args.fraction,
         test_seed            = args.test_seed,
         update               = args.update,
         config_path          = args.config,

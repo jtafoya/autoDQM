@@ -1,0 +1,128 @@
+# Good run list — training set for the Isolation Forest.
+# Each non-empty, non-comment line is a glob pattern resolved against EOS.
+# Wildcards * and ** are supported. Character-class ranges [0-9] are also supported.
+# Run 1637 is excluded: incident starts at subrun 357, so it is not safe to use as training data.
+
+# -- 1601–1616 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1601_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1602_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1603_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1604_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1605_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1606_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1607_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1608_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1609_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1610_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1611_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1612_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1613_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1614_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1615_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1616_subrun*.csv
+
+# -- 1620–1636 (1637 excluded: incident at subrun 357) -----------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1620_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1621_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1622_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1623_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1624_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1625_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1626_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1627_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1628_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1629_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1630_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1631_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1632_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1633_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1634_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1635_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1636_subrun*.csv
+
+# -- 1644–1651 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1644_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1645_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1646_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1647_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1648_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1649_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1650_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1651_subrun*.csv
+
+# -- 1658–1662 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1658_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1659_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1660_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1661_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1662_subrun*.csv
+
+# -- 1678–1691 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1678_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1679_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1680_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1681_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1682_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1683_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1684_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1685_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1686_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1687_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1688_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1689_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1690_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1691_subrun*.csv
+
+# -- 1706–1715 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1706_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1707_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1708_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1709_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1710_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1711_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1712_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1713_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1714_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1715_subrun*.csv
+
+# -- 1991–2014 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1991_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1992_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1993_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1994_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1995_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1996_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1997_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1998_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run1999_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2000_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2001_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2002_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2003_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2004_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2005_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2006_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2007_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2008_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2009_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2010_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2011_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2012_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2013_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2014_subrun*.csv
+
+# -- 2085–2089 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2085_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2086_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2087_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2088_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2089_subrun*.csv
+
+# -- 2232–2238 ----------------------------------------------------------------
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2232_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2233_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2234_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2235_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2236_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2237_subrun*.csv
+/eos/user/t/tafoyava/autoDQM/data/Digitizer_run2238_subrun*.csv

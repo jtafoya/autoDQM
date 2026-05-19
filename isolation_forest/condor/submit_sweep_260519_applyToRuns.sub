@@ -1,0 +1,31 @@
+# HTCondor submission file — autoDQM 260519 sweep — apply-to-runs (one cluster per model)
+#
+# Submits 64 jobs for one (CONFIG, VARIANT, TC) combination.
+# Each job processes 10 consecutive runs (1601–2238).
+#
+# Driven by submit_sweep_260519_applyToRuns_all.sh which calls:
+#   condor_submit condor/submit_sweep_260519_applyToRuns.sub CONFIG=... VARIANT=... TC=...
+#
+# Submit from the isolation_forest/ directory via the _all.sh script.
+
+universe   = vanilla
+executable = condor/run_sweep_260519_applyToRuns.sh
+arguments  = $(CONFIG) $(VARIANT) $(TC) $(Process)
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = /dev/null
+error  = /dev/null
+log    = /dev/null
+
+request_cpus   = 1
+request_memory = 2048
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notification = Never
+
+queue 64

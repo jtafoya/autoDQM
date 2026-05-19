@@ -3,8 +3,10 @@ Run the full autoDQM pipeline in a single command:
 
   1. Train    — build reference model and Isolation Forest from a good run list
   2. Apply    — run the detector over an application run list, log results
-  3. Evaluate — compare predicted status against goodRunsListSlab.json ground truth
+  3. Evaluate — compare predicted status against ground-truth run list
                 (TP/FP/TN/FN summary, eval_confusion_data.json, framework_good_runs.json)
+                Ground truth: good_list (text-file path) or goodRunsListSlab.json catalogue
+                (--train-goodRunList path); chosen automatically based on training mode.
   4. Report   — classify runs into good / partial / bad
   5. Plots    — reference statistics, log summary, eval confusion chart (if evaluate ran), per-file diagnostics for a sample of good and bad subruns
 
@@ -19,6 +21,9 @@ Usage — full run (all files):
 
 Usage — custom sample size:
     python3 -m src.pipeline --test-train 100 --test-apply 50
+
+Usage — train on 10% of the good run list (text-file path):
+    python3 -m src.pipeline --fraction 0.1
 
 Usage — full training on the complete slab dataset from EOS:
     python3 -m src.pipeline --train-goodRunList --train-goodRunList-quality Tight
@@ -145,7 +150,7 @@ from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
 from .evaluate import step_evaluate
 from .report import step_report
 from .plot import step_plots
-from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files, catalogue_counts
+from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files, catalogue_counts, extract_run_number
 
 
 # ── Private helpers ───────────────────────────────────────────────────────────
@@ -175,10 +180,11 @@ def _resolve_apply_list(args, cfg: dict) -> list:
     """
     Resolve the list of files to apply the model to.
 
-    Handles all four source modes:
+    Handles all five source modes:
       --apply-to-training-list   : same catalogue / quality / fraction as training
       --read-full-sample-apply   : full-sample catalogue with apply-specific quality/fraction
-      --apply-specific-run       : direct disk scan of one run's subruns
+      --apply-specific-run (+ --train-goodRunList) : direct EOS slab disk scan of one run
+      --apply-specific-run (text-list path)        : apply_list filtered to one run number
       default                    : plain text run list
     """
     if args.apply_to_training_list:
@@ -227,6 +233,15 @@ def _resolve_apply_list(args, cfg: dict) -> list:
             slab_dir = cfg["full_sample_slab_dir"],
             run      = args.apply_specific_run,
         )
+    if args.apply_specific_run is not None:
+        # Text-list path: filter the apply list to only files for this run.
+        all_paths  = resolve_run_list(args.apply_list)
+        run_paths  = [p for p in all_paths if extract_run_number(p) == args.apply_specific_run]
+        print(
+            f"  [--apply-specific-run {args.apply_specific_run}] Filtered apply list "
+            f"to {len(run_paths)} file(s) for run {args.apply_specific_run}."
+        )
+        return run_paths
     return resolve_run_list(args.apply_list)
 
 
@@ -245,6 +260,13 @@ def main() -> None:
 
     # ── Input ──
     parser.add_argument("--good-list",  help="Run list of good files for training")
+    parser.add_argument(
+        "--fraction",
+        type=float,
+        metavar="F",
+        help="Fraction of the good run list to use for training (0 < F ≤ 1). "
+             "Ignored when --train-goodRunList is set (use --train-goodRunList-fraction instead).",
+    )
     parser.add_argument("--apply-list", help="Run list of files to apply the trained model to")
 
     # ── Output tag and directories ──
@@ -296,7 +318,7 @@ def main() -> None:
     parser.add_argument("--skip-train",    action="store_true", help="Skip training step")
     parser.add_argument("--skip-apply",    action="store_true", help="Skip apply step")
     parser.add_argument("--skip-evaluate", action="store_true",
-                        help="Skip evaluation step (TP/FP/TN/FN against goodRunsListSlab.json)")
+                        help="Skip evaluation step (TP/FP/TN/FN against ground-truth run list)")
     parser.add_argument("--skip-report",   action="store_true", help="Skip report step")
     parser.add_argument("--skip-all-plots",    action="store_true",
                         help="Skip the entire plots step (no reference_*, log_*, or per-file plots)")
@@ -316,6 +338,7 @@ def main() -> None:
     # Apply config as defaults (CLI args override)
     parser.set_defaults(
         good_list   = cfg["good_list"],
+        fraction    = cfg.get("good_list_fraction", 1.0),
         apply_list  = cfg["apply_list"],
         model_tag   = cfg["model_tag"],
         models_dir  = cfg["models_dir"],
@@ -405,9 +428,12 @@ def main() -> None:
     reports_dir = Path(args.reports_dir) / tag
     plots_dir   = Path(args.plots_dir)   / tag
 
-    # Per-run mode uses a run-specific log; global mode uses the combined log.
+    # Per-run mode writes to a per-model subdirectory; global mode uses the
+    # combined log at the top level of logs_dir.
     if args.apply_specific_run is not None:
-        log_file = logs_dir_path / f"{tag}_run{args.apply_specific_run}.csv"
+        _run_logs_dir = logs_dir_path / tag
+        _run_logs_dir.mkdir(parents=True, exist_ok=True)
+        log_file = _run_logs_dir / f"{tag}_run{args.apply_specific_run}.csv"
     else:
         log_file = logs_dir_path / f"{tag}.csv"
 
@@ -417,7 +443,7 @@ def main() -> None:
             candidates = [
                 models_dir,
                 log_file,
-                logs_dir_path / f"{tag}_run{args.apply_specific_run}_paths.txt",
+                log_file.parent / f"{tag}_run{args.apply_specific_run}_paths.txt",
             ]
         else:
             candidates = [
@@ -467,7 +493,8 @@ def main() -> None:
         else:
             catalogue_summary = f"(catalogue not found: {_json_path})"
     else:
-        train_source = args.good_list
+        frac_str = f"{args.fraction}" if args.fraction < 1.0 else "1.0 (full)"
+        train_source = f"{args.good_list}  [fraction={frac_str}]"
         run_range = "n/a"
         catalogue_summary = "n/a"
 
@@ -490,6 +517,13 @@ def main() -> None:
             f"[run={args.apply_specific_run}, "
             f"fraction={args.apply_specific_run_fraction} within run, "
             f"direct disk scan]"
+        )
+    elif args.apply_specific_run is not None:
+        apply_source = (
+            f"{args.apply_list} "
+            f"[run={args.apply_specific_run}, "
+            f"fraction={args.apply_specific_run_fraction} within run, "
+            f"filtered from apply list]"
         )
     else:
         apply_source = args.apply_list
@@ -559,6 +593,7 @@ def main() -> None:
             full_sample_fraction = args.train_goodRunList_fraction,
             full_sample_min_run  = args.train_goodRunList_min_run,
             full_sample_max_run  = args.train_goodRunList_max_run,
+            good_list_fraction   = args.fraction,
             test_seed            = args.test_seed,
             config_path          = args.config,
             training_metadata    = metadata,
@@ -619,22 +654,32 @@ def main() -> None:
     _quality_explicit = "--train-goodRunList-quality" in sys.argv
     if args.apply_specific_run is not None:
         print("[SKIP] Evaluate (per-run mode — combine outputs first, then re-run without --apply-specific-run)")
-    elif not args.train_goodRunList:
-        print("[SKIP] Evaluate (requires --train-goodRunList so the quality level is known)")
-    elif not _quality_explicit:
+    elif args.train_goodRunList and not _quality_explicit:
         print("[SKIP] Evaluate (requires --train-goodRunList-quality to be explicitly set so the ground truth quality is unambiguous)")
     elif not args.skip_evaluate:
         print_step_header("STEP 3 — EVALUATE")
-        step_evaluate(
-            log_file                     = log_file,
-            json_path                    = cfg.get("goodRunsList_json", ""),
-            out_dir                      = reports_dir,
-            file_alert_n_channels        = args.file_alert_n_channels,
-            alert_consecutive_n          = args.alert_consecutive_n,
-            single_file_alert_n_channels = args.single_file_alert_n_channels,
-            single_file_alert_max_z      = args.single_file_alert_max_z,
-            gt_quality                   = args.train_goodRunList_quality,
-        )
+        if args.train_goodRunList:
+            step_evaluate(
+                log_file                     = log_file,
+                json_path                    = cfg.get("goodRunsList_json", ""),
+                out_dir                      = reports_dir,
+                file_alert_n_channels        = args.file_alert_n_channels,
+                alert_consecutive_n          = args.alert_consecutive_n,
+                single_file_alert_n_channels = args.single_file_alert_n_channels,
+                single_file_alert_max_z      = args.single_file_alert_max_z,
+                gt_quality                   = args.train_goodRunList_quality,
+            )
+        else:
+            step_evaluate(
+                log_file                     = log_file,
+                json_path                    = "",
+                good_list_path               = cfg["good_list"],
+                out_dir                      = reports_dir,
+                file_alert_n_channels        = args.file_alert_n_channels,
+                alert_consecutive_n          = args.alert_consecutive_n,
+                single_file_alert_n_channels = args.single_file_alert_n_channels,
+                single_file_alert_max_z      = args.single_file_alert_max_z,
+            )
     else:
         print("[SKIP] Evaluate")
 

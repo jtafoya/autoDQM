@@ -1,24 +1,41 @@
 """
-Evaluate the anomaly detector against the goodRunsListSlab.json ground truth.
+Evaluate the anomaly detector against a ground-truth run list.
 
 Reads the anomaly log produced by the apply step, replays the full alert logic
 (persistence + bulk + extreme) to assign per-subrun predicted status
-(ok / warn / alert), then cross-references each subrun against the
-goodRunsListSlab.json catalogue to compute:
+(ok / warn / pend / alert), then cross-references each subrun against the
+chosen ground-truth source to compute confusion counts.
 
-  Known good (quality ≥ threshold):
-    True Negative  (TN) : predicted ok
-    Mild anomaly        : predicted warn   (sub-threshold persistent anomaly)
-    Unverifiable        : predicted pend   (anomalous, run too short to verify persistence)
-    False Positive (FP) : predicted alert
+Two ground-truth sources are supported (--good-list-path takes priority):
 
-  Not certified good (in catalogue, all quality flags = 0):
-    Possible FN         : predicted ok
-    Mild anomaly        : predicted warn
-    Unverifiable        : predicted pend
-    Possible TP         : predicted alert
+  Plain-text good run list (--good-list-path):
+    Every (run, subrun) resolved from the file is treated as known_good.
+    Everything else in the log is unknown.  Use this when training used the
+    good_list text-file path (good_list config key) rather than the
+    goodRunsListSlab.json catalogue.
 
-  Unknown (not in catalogue): shown separately.
+    Known good (in training list):
+      True Negative  (TN) : predicted ok
+      Mild anomaly        : predicted warn
+      Unverifiable        : predicted pend
+      False Positive (FP) : predicted alert
+
+    Unknown (not in training list): shown separately.
+
+  goodRunsListSlab.json catalogue (--json-path, default):
+    Known good (quality ≥ threshold):
+      True Negative  (TN) : predicted ok
+      Mild anomaly        : predicted warn   (sub-threshold persistent anomaly)
+      Unverifiable        : predicted pend   (anomalous, run too short to verify persistence)
+      False Positive (FP) : predicted alert
+
+    Not certified good (in catalogue, all quality flags = 0):
+      Possible FN         : predicted ok
+      Mild anomaly        : predicted warn
+      Unverifiable        : predicted pend
+      Possible TP         : predicted alert
+
+    Unknown (not in catalogue): shown separately.
 
 Outputs:
   <out_dir>/eval_summary.txt         — printed evaluation table
@@ -33,7 +50,13 @@ Quality mapping in framework_good_runs.json (same column order as goodRunsListSl
   Loose  = predicted ok, warn, or pend (anomalous but persistence unverifiable)
   All zero → predicted alert (framework considers the subrun anomalous)
 
-Usage:
+Usage — text-list ground truth (matches good_list training path):
+    python3 -m src.evaluate \\
+        --log-file logs/myrun.csv \\
+        --good-list-path /path/to/good_run_list_TRAINING.txt \\
+        --out-dir reports/myrun/
+
+Usage — JSON catalogue ground truth:
     python3 -m src.evaluate \\
         --log-file logs/myrun_Tight.csv \\
         --json-path /path/to/goodRunsListSlab.json \\
@@ -55,6 +78,7 @@ from .run_list import (
     _COL_GOOD_RUN_LOOSE, _COL_GOOD_RUN_MEDIUM, _COL_GOOD_RUN_TIGHT,
     QUALITY_ALL_CHOICES,
     parse_run_subrun,
+    resolve_run_list,
 )
 
 
@@ -92,16 +116,26 @@ def step_evaluate(
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
     gt_quality: str = "Tight",
+    good_list_path: str = "",
 ) -> bool:
     """
-    Compare per-subrun predicted status against goodRunsListSlab.json ground truth.
+    Compare per-subrun predicted status against ground truth.
+
+    Ground truth source (mutually exclusive; good_list_path takes priority):
+      good_list_path — plain-text run list (same format as the training good_list).
+          Every (run, subrun) resolved from the file is treated as known_good;
+          everything else in the log is unknown.  Use this when training used the
+          good_list text-file path rather than the goodRunsListSlab.json catalogue.
+      json_path — goodRunsListSlab.json catalogue.  Subruns passing the quality
+          filter are known_good; those failing are not_certified; those absent are
+          unknown.
 
     Parameters
     ----------
     log_file : Path
         Anomaly log produced by the apply step.
     json_path : str
-        Path to goodRunsListSlab.json.
+        Path to goodRunsListSlab.json.  Ignored when good_list_path is set.
     out_dir : Path
         Directory for eval_summary.txt, eval_confusion_data.json, and
         framework_good_runs.json.
@@ -114,8 +148,13 @@ def step_evaluate(
     single_file_alert_max_z : float
         Extreme single-file alert threshold (0 = disabled).
     gt_quality : str
-        Quality level used to define 'known good' ground truth
-        (Loose / Medium / Tight / All).
+        Quality level used to define 'known good' ground truth when using
+        the JSON catalogue (Loose / Medium / Tight / All).
+        Ignored when good_list_path is set.
+    good_list_path : str
+        Path to a plain-text good run list.  When non-empty, overrides
+        json_path and gt_quality: the resolved (run, subrun) pairs are
+        treated as known_good, everything else is unknown.
 
     Returns
     -------
@@ -130,7 +169,8 @@ def step_evaluate(
         print(f"            Delete {out_dir}/ to regenerate.")
         return False
 
-    if not Path(json_path).exists():
+    use_text_list = bool(good_list_path)
+    if not use_text_list and not Path(json_path).exists():
         print(
             f"  [SKIP] Evaluate — catalogue not found: {json_path}\n"
             f"         Set goodRunsList_json in config.yaml to enable evaluation.",
@@ -156,8 +196,18 @@ def step_evaluate(
         single_file_alert_max_z=single_file_alert_max_z,
     )
 
-    cat = _load_catalogue(json_path)
-    print(f"  Loaded catalogue: {len(cat):,} run+subrun entries.")
+    if use_text_list:
+        good_pairs: "set[tuple[int,int]]" = set()
+        for p in resolve_run_list(good_list_path):
+            r, s = parse_run_subrun(p)
+            if r is not None:
+                good_pairs.add((r, s))
+        print(f"  Loaded text-list ground truth: {len(good_pairs):,} known-good (run, subrun) pairs.")
+        gt_label = f"text list ({good_list_path})"
+    else:
+        cat = _load_catalogue(json_path)
+        print(f"  Loaded catalogue: {len(cat):,} run+subrun entries.")
+        gt_label = f"catalogue ({gt_quality})"
 
     # Classify each subrun: ground-truth category + predicted status
     rows = []
@@ -167,7 +217,9 @@ def step_evaluate(
             continue
         pred = row["status"]
 
-        if (run, subrun) in cat:
+        if use_text_list:
+            gt = "known_good" if (run, subrun) in good_pairs else "unknown"
+        elif (run, subrun) in cat:
             q = cat[(run, subrun)]
             is_good = q["any_good"] if gt_quality == "All" else q[gt_quality.lower()]
             gt = "known_good" if is_good else "not_certified"
@@ -189,13 +241,13 @@ def step_evaluate(
         "",
         f"  {'─'*62}",
         f"  EVALUATION SUMMARY",
-        f"  Ground truth quality level : {gt_quality}",
+        f"  Ground truth source        : {gt_label}",
         f"  Total subruns in log       : {len(eval_df)}",
         f"  {'─'*62}",
     ]
 
     gt_label_long = {
-        "known_good":    f"Known good ({gt_quality}) (N={totals['known_good']})",
+        "known_good":    f"Known good ({gt_label}) (N={totals['known_good']})",
         "not_certified": f"Not certified good (N={totals['not_certified']})",
         "unknown":       f"Unknown — not in catalogue (N={totals['unknown']})",
     }
@@ -253,9 +305,10 @@ def step_evaluate(
     with open(confusion_path, "w") as fh:
         json.dump(
             {
-                "gt_quality": gt_quality,
-                "counts":     {g: dict(counts[g]) for g in _GT_ORDER},
-                "totals":     totals,
+                "gt_quality":  gt_quality if not use_text_list else "text_list",
+                "gt_source":   gt_label,
+                "counts":      {g: dict(counts[g]) for g in _GT_ORDER},
+                "totals":      totals,
             },
             fh,
             indent=2,
@@ -317,9 +370,10 @@ def main() -> None:
         description="Evaluate the anomaly detector against goodRunsListSlab.json ground truth."
     )
     add_config(parser)
-    parser.add_argument("--log-file",  help="Anomaly log produced by the apply step")
-    parser.add_argument("--json-path", help="Path to goodRunsListSlab.json")
-    parser.add_argument("--out-dir",   help="Directory for eval_summary.txt, eval_confusion_data.json, and framework_good_runs.json")
+    parser.add_argument("--log-file",       help="Anomaly log produced by the apply step")
+    parser.add_argument("--json-path",      help="Path to goodRunsListSlab.json (JSON catalogue ground truth)")
+    parser.add_argument("--good-list-path", help="Path to a plain-text good run list (text-list ground truth; overrides --json-path)")
+    parser.add_argument("--out-dir",        help="Directory for eval_summary.txt, eval_confusion_data.json, and framework_good_runs.json")
     parser.add_argument(
         "--gt-quality",
         choices=QUALITY_ALL_CHOICES,
@@ -329,10 +383,11 @@ def main() -> None:
     add_alert_thresholds(parser, cfg)
 
     parser.set_defaults(
-        log_file   = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
-        json_path  = cfg.get("goodRunsList_json", ""),
-        out_dir    = str(Path(cfg["reports_dir"]) / tag),
-        gt_quality = "Tight",
+        log_file        = str(Path(cfg["logs_dir"])    / f"{tag}.csv"),
+        json_path       = cfg.get("goodRunsList_json", ""),
+        good_list_path  = "",
+        out_dir         = str(Path(cfg["reports_dir"]) / tag),
+        gt_quality      = "Tight",
     )
 
     args = parser.parse_args()
@@ -340,9 +395,9 @@ def main() -> None:
     from .config import print_banner
     print_banner("evaluate", args.config, [
         ("log file",             args.log_file),
-        ("catalogue",            args.json_path),
+        ("gt source",            args.good_list_path if args.good_list_path else args.json_path),
         ("out dir",              args.out_dir),
-        ("gt quality",           args.gt_quality),
+        ("gt quality",           "n/a (text list)" if args.good_list_path else args.gt_quality),
         ("alert threshold",      f"{args.file_alert_n_channels} channels"),
         ("alert window",         f"{args.alert_consecutive_n} consecutive file(s)"),
         ("bulk alert",           f"{args.single_file_alert_n_channels} ch"
@@ -360,6 +415,7 @@ def main() -> None:
         single_file_alert_n_channels = args.single_file_alert_n_channels,
         single_file_alert_max_z      = args.single_file_alert_max_z,
         gt_quality                   = args.gt_quality,
+        good_list_path               = args.good_list_path,
     )
 
 

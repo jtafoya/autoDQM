@@ -56,7 +56,7 @@ FULL_TAG="${MODEL_TAG}_${QUALITY}_ignoreDAQConfig"
 echo "  Full tag: $FULL_TAG"
 
 # Skip if no per-run CSVs exist for this model
-n_csvs=$(find logs/applyToRuns_260429_IFhp/ -maxdepth 1 -name "${FULL_TAG}_run*.csv" 2>/dev/null | wc -l)
+n_csvs=$(find "logs/applyToRuns_260429_IFhp/${FULL_TAG}/" -name "${FULL_TAG}_run*.csv" 2>/dev/null | wc -l)
 if [ "$n_csvs" -eq 0 ]; then
     echo "  No per-run CSVs found — nothing to do."
     exit 0

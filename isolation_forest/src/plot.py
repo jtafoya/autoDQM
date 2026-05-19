@@ -1430,25 +1430,32 @@ def plot_eval_confusion(
         data = _json.load(fh)
 
     gt_quality = data["gt_quality"]
+    gt_source  = data.get("gt_source", f"catalogue ({gt_quality})")
     totals     = data["totals"]
     counts     = data["counts"]
 
-    _plot_eval_confusion(counts, totals, gt_quality, plots_dir / "eval_confusion.png", fmt=fmt)
+    _plot_eval_confusion(counts, totals, gt_quality, gt_source, plots_dir / "eval_confusion.png", fmt=fmt)
 
 
 def _plot_eval_confusion(
     counts: dict,
     totals: dict,
     gt_quality: str,
+    gt_source: str,
     out_path: Path,
     fmt: str = "png",
 ) -> None:
     """Stacked bar chart of predicted status per ground-truth category."""
     active = [g for g in _EVAL_GT_ORDER if totals.get(g, 0) > 0]
+    unknown_label = (
+        "Unknown\n(not in training list)"
+        if gt_quality == "text_list"
+        else "Unknown\n(not in catalogue)"
+    )
     gt_display_active = {
-        "known_good":    f"Known good\n({gt_quality})",
+        "known_good":    f"Known good\n({gt_quality})" if gt_quality != "text_list" else "Known good\n(training list)",
         "not_certified": "Not certified\ngood",
-        "unknown":       "Unknown\n(not in catalogue)",
+        "unknown":       unknown_label,
     }
 
     fig, ax = plt.subplots(figsize=(max(6, len(active) * 2.5), 5))
@@ -1493,7 +1500,7 @@ def _plot_eval_confusion(
     ax.set_ylabel("Subruns (count)", fontsize=10)
     ax.set_title(
         f"Predicted status vs. ground-truth category\n"
-        f"(ground truth: {gt_quality} quality from goodRunsListSlab.json)",
+        f"(ground truth: {gt_source})",
         fontsize=10,
     )
     ax.legend(loc="upper right", fontsize=9, title="Predicted", title_fontsize=9)

@@ -10,7 +10,7 @@ Typical workflow
 2. Apply per run (e.g. as Condor array jobs):
        python -m src.pipeline --train-goodRunList --skip-train --apply-specific-run 1234
 
-   Each job writes  logs/<tag>_run<N>.csv  and  logs/<tag>_run<N>_paths.txt.
+   Each job writes  logs/<tag>/<tag>_run<N>.csv  and  logs/<tag>/<tag>_run<N>_paths.txt.
 
 3. Combine:
        python -m src.pipeline --combine-specific-run-outputs '*'
@@ -51,7 +51,7 @@ def check_no_uncombined_run_outputs(logs_dir: Path, tag: str) -> None:
     Call this in the global pipeline path (i.e. when --apply-specific-run is
     NOT set) before running any step, so the user is forced to combine first.
     """
-    run_files = sorted(logs_dir.glob(f"{tag}_run*.csv"))
+    run_files = sorted((logs_dir / tag).glob(f"{tag}_run*.csv"))
     if not run_files:
         return
     combined_log = logs_dir / f"{tag}.csv"
@@ -83,7 +83,7 @@ def step_combine_specific_runs(pattern: str, logs_dir: Path, tag: str) -> None:
     print(f"{'='*60}\n")
 
     prefix = f"{tag}_run"
-    all_run_files = sorted(logs_dir.glob(f"{prefix}*.csv"))
+    all_run_files = sorted((logs_dir / tag).glob(f"{prefix}*.csv"))
     matched = [
         f for f in all_run_files
         if fnmatch.fnmatch(f.stem[len(prefix):], pattern)

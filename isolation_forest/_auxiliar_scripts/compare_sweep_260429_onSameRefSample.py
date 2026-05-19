@@ -20,7 +20,7 @@ The y-axis grid is drawn at every 10 units (labelled) and every 5 units (unlabel
 
 Layout:
   pages   : one per trigger-config variant (with / without triggerConfig)
-  rows    : top = subrun level, bottom = run level
+  single row : subrun level
   columns : one per z_threshold (5 / 6 / 7 / 8 / 9 σ)
   lines   : 4 feature variants (colour) × 3 training qualities (line style)
 
@@ -40,7 +40,6 @@ import argparse
 import json
 import re
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
@@ -79,9 +78,7 @@ FIX_Y_RANGE = True
 
 Y_RANGE_FIXED = {
     "fp_rel_subruns": (0,   55),
-    "fp_rel_runs":    (40, 100),
     "tn_rel_subruns": (40, 100),
-    "tn_rel_runs":    (0,   40),
 }
 
 # ── Tag parsing ───────────────────────────────────────────────────────────────
@@ -149,7 +146,7 @@ def find_catalogue(reports_dir: Path) -> "Path | None":
 
 def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict | None":
     """
-    Compute FP and TN at subrun and run level using a fixed catalogue quality.
+    Compute FP and TN at subrun level using a fixed catalogue quality.
 
     Known-good = (run, subrun) where catalogue[cat_quality] is True.
     Predicted alert  = all three quality cols in framework_good_runs.json are 0.
@@ -168,10 +165,7 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
 
     q_key = cat_quality.lower()
 
-    # framework row: [run, subrun, loose_ok, medium_ok, tight_ok, 0, "autoDQM_IF"]
     subrun_fp = subrun_tn = subrun_good = 0
-    run_alerts: dict = defaultdict(list)
-    run_oks:    dict = defaultdict(list)
 
     for row in fw.get("data", []):
         run, subrun = int(row[0]), int(row[1])
@@ -187,27 +181,15 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
         if is_ok:
             subrun_tn += 1
 
-        run_alerts[run].append(is_alert)
-        run_oks[run].append(is_ok)
-
     if subrun_good == 0:
         return None
-
-    n_good_runs = len(run_alerts)
-    fp_runs = sum(1 for alerts in run_alerts.values() if any(alerts))
-    tn_runs = sum(1 for oks    in run_oks.values()    if all(oks))
 
     return {
         "n_good_subruns": subrun_good,
         "fp_subruns":     subrun_fp,
         "tn_subruns":     subrun_tn,
-        "n_good_runs":    n_good_runs,
-        "fp_runs":        fp_runs,
-        "tn_runs":        tn_runs,
         "fp_rel_subruns": 100 * subrun_fp / subrun_good,
         "tn_rel_subruns": 100 * subrun_tn / subrun_good,
-        "fp_rel_runs":    100 * fp_runs   / n_good_runs if n_good_runs else None,
-        "tn_rel_runs":    100 * tn_runs   / n_good_runs if n_good_runs else None,
     }
 
 
@@ -238,8 +220,7 @@ def collect(reports_dir: Path, catalogue: dict, cat_quality: str) -> list[dict]:
 
 def _make_figure(rows: list[dict],
                  include_trigger_config: bool,
-                 y_subrun_key: str,
-                 y_run_key: str,
+                 y_key: str,
                  y_label_base: str,
                  title_prefix: str,
                  cat_quality: str) -> plt.Figure:
@@ -247,9 +228,9 @@ def _make_figure(rows: list[dict],
     subset = [r for r in rows if r["include_trigger_config"] == include_trigger_config]
 
     fig, axes = plt.subplots(
-        2, len(Z_THRESHOLDS),
-        figsize=(4.5 * len(Z_THRESHOLDS), 9),
-        sharey="row",
+        1, len(Z_THRESHOLDS),
+        figsize=(4.5 * len(Z_THRESHOLDS), 5),
+        sharey=True,
         constrained_layout=True,
     )
     fig.suptitle(
@@ -258,49 +239,44 @@ def _make_figure(rows: list[dict],
         fontsize=12, fontweight="bold",
     )
 
-    row_labels = [f"subrun level  ({y_label_base})",
-                  f"run level  ({y_label_base})"]
-    y_keys     = [y_subrun_key, y_run_key]
+    for col_idx, z in enumerate(Z_THRESHOLDS):
+        ax = axes[col_idx]
+        ax.set_title(f"z = {z}σ", fontsize=10)
+        ax.set_xlabel("if_contamination", fontsize=9)
+        if col_idx == 0:
+            ax.set_ylabel(f"subrun level  ({y_label_base})", fontsize=9)
+        ax.set_xscale("log")
+        ax.set_xticks(CONTAMINATIONS)
+        ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
+                           fontsize=8, rotation=0, ha="center")
+        ax.xaxis.set_minor_locator(NullLocator())
+        ax.yaxis.set_major_locator(MultipleLocator(10))
+        ax.yaxis.set_minor_locator(MultipleLocator(5))
+        ax.grid(True, which="major", alpha=0.3)
+        ax.yaxis.grid(True, which="minor", alpha=0.15)
+        if FIX_Y_RANGE and col_idx == 0:
+            y_range = Y_RANGE_FIXED.get(y_key)
+            if y_range:
+                ax.set_ylim(*y_range)
 
-    for row_idx, (y_key, row_label) in enumerate(zip(y_keys, row_labels)):
-        for col_idx, z in enumerate(Z_THRESHOLDS):
-            ax = axes[row_idx][col_idx]
-            ax.set_title(f"z = {z}σ", fontsize=10)
-            ax.set_xlabel("if_contamination", fontsize=9)
-            if col_idx == 0:
-                ax.set_ylabel(row_label, fontsize=9)
-            ax.set_xscale("log")
-            ax.set_xticks(CONTAMINATIONS)
-            ax.set_xticklabels([str(c) for c in CONTAMINATIONS],
-                               fontsize=8, rotation=0, ha="center")
-            ax.xaxis.set_minor_locator(NullLocator())
-            ax.yaxis.set_major_locator(MultipleLocator(10))
-            ax.yaxis.set_minor_locator(MultipleLocator(5))
-            ax.grid(True, which="major", alpha=0.3)
-            ax.yaxis.grid(True, which="minor", alpha=0.15)
-            if FIX_Y_RANGE and col_idx == 0:
-                y_range = Y_RANGE_FIXED.get(y_key)
-                if y_range:
-                    ax.set_ylim(*y_range)
+        cell = [r for r in subset if r["z_threshold"] == z]
 
-            cell = [r for r in subset if r["z_threshold"] == z]
-
-            for (use_trigger, use_lvds), (var_label, colour) in VARIANT_META.items():
-                for qual, (qual_label, linestyle) in QUALITY_STYLE.items():
-                    pts = sorted(
-                        [r for r in cell
-                         if r["use_trigger"] == use_trigger
-                         and r["use_lvds"]   == use_lvds
-                         and r["quality"]    == qual
-                         and r.get(y_key) is not None],
-                        key=lambda r: r["if_contamination"],
-                    )
-                    if not pts:
-                        continue
-                    xs = [p["if_contamination"] for p in pts]
-                    ys = [p[y_key]              for p in pts]
-                    ax.plot(xs, ys, color=colour, linestyle=linestyle,
-                            linewidth=1.6, marker="o", markersize=4)
+        for (use_trigger, use_lvds), (var_label, colour) in VARIANT_META.items():
+            for qual, (qual_label, linestyle) in QUALITY_STYLE.items():
+                pts = sorted(
+                    [r for r in cell
+                     if r["use_trigger"] == use_trigger
+                     and r["use_lvds"]   == use_lvds
+                     and r["quality"]    == qual
+                     and r.get(y_key) is not None],
+                    key=lambda r: r["if_contamination"],
+                )
+                if not pts:
+                    continue
+                xs = [p["if_contamination"] for p in pts]
+                ys = [p[y_key]              for p in pts]
+                ax.plot(xs, ys, color=colour, linestyle=linestyle,
+                        linewidth=1.6, marker="o", markersize=4)
 
     # Legend
     colour_handles = [
@@ -323,8 +299,7 @@ def _make_figure(rows: list[dict],
 
 
 def make_pdf(rows: list[dict],
-             y_subrun_key: str,
-             y_run_key: str,
+             y_key: str,
              y_label_base: str,
              title_prefix: str,
              cat_quality: str,
@@ -333,8 +308,7 @@ def make_pdf(rows: list[dict],
     with PdfPages(out_path) as pdf:
         for include_tc in [True, False]:
             fig = _make_figure(rows, include_tc,
-                               y_subrun_key, y_run_key,
-                               y_label_base, title_prefix, cat_quality)
+                               y_key, y_label_base, title_prefix, cat_quality)
             pdf.savefig(fig, bbox_inches="tight")
             plt.close(fig)
     print(f"  Saved → {out_path}")
@@ -376,19 +350,17 @@ def main() -> None:
 
         print(f"Generating fp_sweep_260429_on{quality}_rel.pdf ...")
         make_pdf(rows,
-                 y_subrun_key = "fp_rel_subruns",
-                 y_run_key    = "fp_rel_runs",
+                 y_key        = "fp_rel_subruns",
                  y_label_base = "% known-good flagged as alert",
-                 title_prefix = "False positive rate — % known-good subruns/runs flagged as alert",
+                 title_prefix = "False positive rate — % known-good subruns flagged as alert",
                  cat_quality  = quality,
                  out_path     = out_dir / f"fp_sweep_260429_on{quality}_rel.pdf")
 
         print(f"Generating tn_sweep_260429_on{quality}_rel.pdf ...")
         make_pdf(rows,
-                 y_subrun_key = "tn_rel_subruns",
-                 y_run_key    = "tn_rel_runs",
+                 y_key        = "tn_rel_subruns",
                  y_label_base = "% known-good correctly called ok",
-                 title_prefix = "True negative rate — % known-good subruns/runs correctly classified",
+                 title_prefix = "True negative rate — % known-good subruns correctly classified",
                  cat_quality  = quality,
                  out_path     = out_dir / f"tn_sweep_260429_on{quality}_rel.pdf")
 

@@ -10,7 +10,7 @@ compared on equal footing.
 Layout per PDF:
   pages   : one per contamination × z_threshold combo
             (cont=0.001,z=7σ) | (cont=0.001,z=8σ) | (cont=0.002,z=7σ) | (cont=0.002,z=8σ)
-  rows    : top = subrun level, bottom = run level
+  single row : subrun level
   columns : one per max_samples value (256 / 1024 / 4096)
   lines   : training quality (Loose / Medium / Tight)
   x-axis  : if_n_estimators (200, 300, 500)
@@ -69,9 +69,7 @@ QUALITY_META = {
 
 Y_RANGE_FIXED = {
     "fp_rel_subruns": (0,   15),
-    "fp_rel_runs":    (0,  100),
     "tn_rel_subruns": (85, 100),
-    "tn_rel_runs":    (0,  100),
 }
 
 _TICK_MAJOR = {"fp": 5, "tn": 5}
@@ -154,8 +152,6 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
 
     q_key = cat_quality.lower()
     subrun_fp = subrun_tn = subrun_good = 0
-    run_alerts: dict = defaultdict(list)
-    run_oks:    dict = defaultdict(list)
 
     for row in fw.get("data", []):
         run, subrun = int(row[0]), int(row[1])
@@ -168,21 +164,13 @@ def load_metrics(reports_dir: Path, catalogue: dict, cat_quality: str) -> "dict 
             subrun_fp += 1
         if is_ok:
             subrun_tn += 1
-        run_alerts[run].append(is_alert)
-        run_oks[run].append(is_ok)
 
     if subrun_good == 0:
         return None
 
-    n_good_runs = len(run_alerts)
-    fp_runs = sum(1 for a in run_alerts.values() if any(a))
-    tn_runs = sum(1 for o in run_oks.values()    if all(o))
-
     return {
         "fp_rel_subruns": 100 * subrun_fp / subrun_good,
         "tn_rel_subruns": 100 * subrun_tn / subrun_good,
-        "fp_rel_runs":    100 * fp_runs   / n_good_runs if n_good_runs else None,
-        "tn_rel_runs":    100 * tn_runs   / n_good_runs if n_good_runs else None,
     }
 
 
@@ -214,64 +202,59 @@ def collect(reports_dir: Path, catalogue: dict, cat_quality: str) -> list:
 def _make_figure(rows: list,
                  cont: float,
                  z: int,
-                 y_subrun_key: str,
-                 y_run_key: str,
+                 y_key: str,
                  y_label_base: str,
                  title_prefix: str,
                  cat_quality: str) -> plt.Figure:
     fig, axes = plt.subplots(
-        2, len(MAX_SAMPLES),
-        figsize=(5 * len(MAX_SAMPLES), 9),
-        sharey="row",
+        1, len(MAX_SAMPLES),
+        figsize=(5 * len(MAX_SAMPLES), 5),
+        sharey=True,
         constrained_layout=True,
     )
+    gt_label = "OR(Loose ∨ Medium ∨ Tight)" if cat_quality == "OR" else f"{cat_quality} goodRunsList"
     fig.suptitle(
         f"{title_prefix}\n"
-        f"ground truth: {cat_quality} goodRunsList  |  "
+        f"ground truth: {gt_label}  |  "
         f"cont = {cont}  |  z = {z}σ",
         fontsize=11, fontweight="bold",
     )
 
-    row_labels = [f"subrun level  ({y_label_base})",
-                  f"run level  ({y_label_base})"]
-    y_keys     = [y_subrun_key, y_run_key]
-
     subset = [r for r in rows
               if r["if_contamination"] == cont and r["z_threshold"] == z]
 
-    for row_idx, (y_key, row_label) in enumerate(zip(y_keys, row_labels)):
-        for col_idx, ms in enumerate(MAX_SAMPLES):
-            ax = axes[row_idx][col_idx]
-            ax.set_title(f"max_samples = {ms}", fontsize=10)
-            ax.set_xlabel("if_n_estimators", fontsize=9)
-            if col_idx == 0:
-                ax.set_ylabel(row_label, fontsize=9)
-            ax.set_xticks(N_ESTIMATORS)
-            ax.set_xticklabels([str(n) for n in N_ESTIMATORS], fontsize=9)
-            ax.xaxis.set_minor_locator(NullLocator())
-            prefix = y_key.split("_")[0]
-            ax.yaxis.set_major_locator(MultipleLocator(_TICK_MAJOR.get(prefix, 10)))
-            ax.yaxis.set_minor_locator(MultipleLocator(_TICK_MINOR.get(prefix, 5)))
-            ax.grid(True, which="major", alpha=0.3)
-            ax.yaxis.grid(True, which="minor", alpha=0.15)
-            y_range = Y_RANGE_FIXED.get(y_key)
-            if y_range:
-                ax.set_ylim(*y_range)
+    for col_idx, ms in enumerate(MAX_SAMPLES):
+        ax = axes[col_idx]
+        ax.set_title(f"max_samples = {ms}", fontsize=10)
+        ax.set_xlabel("if_n_estimators", fontsize=9)
+        if col_idx == 0:
+            ax.set_ylabel(f"subrun level  ({y_label_base})", fontsize=9)
+        ax.set_xticks(N_ESTIMATORS)
+        ax.set_xticklabels([str(n) for n in N_ESTIMATORS], fontsize=9)
+        ax.xaxis.set_minor_locator(NullLocator())
+        prefix = y_key.split("_")[0]
+        ax.yaxis.set_major_locator(MultipleLocator(_TICK_MAJOR.get(prefix, 10)))
+        ax.yaxis.set_minor_locator(MultipleLocator(_TICK_MINOR.get(prefix, 5)))
+        ax.grid(True, which="major", alpha=0.3)
+        ax.yaxis.grid(True, which="minor", alpha=0.15)
+        y_range = Y_RANGE_FIXED.get(y_key)
+        if y_range:
+            ax.set_ylim(*y_range)
 
-            cell = [r for r in subset if r["if_max_samples"] == ms]
+        cell = [r for r in subset if r["if_max_samples"] == ms]
 
-            for qual, (qual_label, colour, linestyle) in QUALITY_META.items():
-                pts = sorted(
-                    [r for r in cell
-                     if r["quality"] == qual and r.get(y_key) is not None],
-                    key=lambda r: r["if_n_estimators"],
-                )
-                if not pts:
-                    continue
-                xs = [p["if_n_estimators"] for p in pts]
-                ys = [p[y_key]             for p in pts]
-                ax.plot(xs, ys, color=colour, linestyle=linestyle,
-                        linewidth=1.8, marker="o", markersize=5)
+        for qual, (qual_label, colour, linestyle) in QUALITY_META.items():
+            pts = sorted(
+                [r for r in cell
+                 if r["quality"] == qual and r.get(y_key) is not None],
+                key=lambda r: r["if_n_estimators"],
+            )
+            if not pts:
+                continue
+            xs = [p["if_n_estimators"] for p in pts]
+            ys = [p[y_key]             for p in pts]
+            ax.plot(xs, ys, color=colour, linestyle=linestyle,
+                    linewidth=1.8, marker="o", markersize=5)
 
     handles = [
         mlines.Line2D([], [], color=colour, linestyle=ls, label=f"trained {ql}")
@@ -283,8 +266,7 @@ def _make_figure(rows: list,
 
 
 def make_pdf(rows: list,
-             y_subrun_key: str,
-             y_run_key: str,
+             y_key: str,
              y_label_base: str,
              title_prefix: str,
              cat_quality: str,
@@ -293,8 +275,7 @@ def make_pdf(rows: list,
     with PdfPages(out_path) as pdf:
         for cont, z in CONT_Z_COMBOS:
             fig = _make_figure(rows, cont, z,
-                               y_subrun_key, y_run_key,
-                               y_label_base, title_prefix, cat_quality)
+                               y_key, y_label_base, title_prefix, cat_quality)
             pdf.savefig(fig, bbox_inches="tight")
             plt.close(fig)
     print(f"  Saved → {out_path}")
@@ -337,20 +318,18 @@ def main() -> None:
         fp_name = f"fp_sweep_260429_IFhp_on{quality}_rel.pdf"
         print(f"Generating {fp_name} ...")
         make_pdf(rows,
-                 y_subrun_key = "fp_rel_subruns",
-                 y_run_key    = "fp_rel_runs",
+                 y_key        = "fp_rel_subruns",
                  y_label_base = "% known-good flagged as alert",
-                 title_prefix = "False positive rate — % known-good subruns/runs flagged as alert",
+                 title_prefix = "False positive rate — % known-good subruns flagged as alert",
                  cat_quality  = quality,
                  out_path     = out_dir / fp_name)
 
         tn_name = f"tn_sweep_260429_IFhp_on{quality}_rel.pdf"
         print(f"Generating {tn_name} ...")
         make_pdf(rows,
-                 y_subrun_key = "tn_rel_subruns",
-                 y_run_key    = "tn_rel_runs",
+                 y_key        = "tn_rel_subruns",
                  y_label_base = "% known-good correctly called ok",
-                 title_prefix = "True negative rate — % known-good subruns/runs correctly classified",
+                 title_prefix = "True negative rate — % known-good subruns correctly classified",
                  cat_quality  = quality,
                  out_path     = out_dir / tn_name)
 

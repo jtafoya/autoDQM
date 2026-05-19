@@ -140,6 +140,8 @@ from pathlib import Path
 DEFAULTS: dict = {
     "data_path":            "../data",
     "good_list":            "../data/good_run_list_EOS.txt",
+    "good_list_fraction":   0.1,
+    #"good_list_fraction":   1.0,
     "apply_list":           "../data/all_run_list_EOS.txt",
     #
     ### Training tag

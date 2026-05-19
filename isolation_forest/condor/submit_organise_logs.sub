@@ -1,0 +1,29 @@
+# HTCondor submit file — reorganise logs/applyToRuns_* outputs into per-model-tag subdirectories.
+#
+# Single job; parallelism would cause AFS directory-lock contention on the
+# oversized applyToRuns_260429_IFhp directory.  Already-moved files are
+# skipped atomically, so this is safe to submit even if a local run is
+# still in progress.
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit_organise_logs.sub
+
+universe   = vanilla
+executable = condor/run_organise_logs.sh
+
+initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+
+output = condor/logs/organise_logs.out
+error  = condor/logs/organise_logs.err
+log    = condor/logs/condor.log
+
+request_cpus   = 1
+request_memory = 512
+
++JobFlavour = "workday"
+
+
+should_transfer_files = NO
++ProjectName = "local"
+
+queue 1

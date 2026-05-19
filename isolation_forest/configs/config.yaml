@@ -6,8 +6,10 @@
 # Run lists: text files where each line is a glob pattern resolving to Digitizer CSV files.
 # data_path is the base directory; the individual lists are absolute paths derived from it.
 data_path:        /afs/cern.ch/user/t/tafoyava/autoDQM/data
-good_list:        /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_EOS.txt
-apply_list:       /afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EOS.txt
+#good_list:        /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_EOS.txt
+good_list:        /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_TRAINING.txt
+#apply_list:       /afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EOS.txt
+apply_list:       /afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EXTENDED.txt
 goodRunsList_json: /afs/cern.ch/user/t/tafoyava/autoDQM/data/goodRunsListSlab.json
 #goodRunsList_json: /afs/cern.ch/user/t/tafoyava/autoDQM/data/goodRunsListSlab_extended.json
 
