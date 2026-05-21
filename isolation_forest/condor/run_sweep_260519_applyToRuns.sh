@@ -17,10 +17,10 @@ LAST_RUN=2238
 
 set -euo pipefail
 
-CONFIG={1:?Usage: run_sweep_260519_applyToRuns.sh <config> <variant> <tc> <process>}
-VARIANT={2:?}
-TC={3:?}
-PROCESS={4:?}
+CONFIG=${1:?Usage: run_sweep_260519_applyToRuns.sh <config> <variant> <tc> <process>}
+VARIANT=${2:?}
+TC=${3:?}
+PROCESS=${4:?}
 
 BASE_RUN=$(( FIRST_RUN + PROCESS * RUNS_PER_JOB ))
 END_RUN=$(( BASE_RUN + RUNS_PER_JOB - 1 ))
@@ -94,8 +94,9 @@ for (( i=0; i<RUNS_PER_JOB; i++ )); do
             --config    "${CONFIG}" \
             --model-tag "$MODEL_TAG" \
             --skip-train \
+            --train-goodRunList \
             --apply-specific-run "$RUN" \
-            --apply-specific-run-fraction 0.2 \
+            --apply-specific-run-fraction 0.4 \
             --logs-dir "${LOCAL_LOGS}" \
             "${FLAGS[@]}" "${TC_FLAGS[@]}"; then
         N_OK=$(( N_OK + 1 ))

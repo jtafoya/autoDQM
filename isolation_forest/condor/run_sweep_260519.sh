@@ -67,7 +67,7 @@ echo ""
 python3 -m src.pipeline \
     --config    "$CONFIG" \
     --model-tag "$MODEL_TAG" \
-    --fraction  0.1 \
+    --fraction  0.2 \
     --skip-apply --skip-evaluate --skip-report --skip-all-plots \
     "${FLAGS[@]}" "${TC_FLAGS[@]}"
 

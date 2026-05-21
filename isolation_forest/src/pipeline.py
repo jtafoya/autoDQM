@@ -401,7 +401,7 @@ def main() -> None:
 
     # Auto-append feature-set suffix to the tag so outputs are self-documenting
     tag = args.model_tag
-    if args.train_goodRunList:
+    if args.train_goodRunList and not args.skip_train:
         tag += f"_{args.train_goodRunList_quality}"
     if not use_trigger:
         tag += "_noTrigger"
