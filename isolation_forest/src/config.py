@@ -221,7 +221,7 @@ DEFAULTS: dict = {
     "llm_enabled":          False,
     "llm_provider":         "anthropic",
     "llm_model":            "claude-haiku-4-5-20251001",
-    "llm_knowledge_base":   "data/llm_knowledge_base.yaml",
+    "llm_knowledge_base":   "../data/llm_knowledge_base.yaml",
     "llm_historical_log":   "",   # defaults to the current apply/monitor log when empty
 }
 

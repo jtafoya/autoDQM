@@ -79,11 +79,10 @@ isolation_forest/
     all_run_list_EOS.txt     — all classified runs combined (good + bad); default --apply-list
     goodRunsListSlab.json    — full good-runs catalogue for the slab dataset on EOS
                                (used by --train-goodRunList; path set by goodRunsList_json in config)
-  requirements.txt   — Python dependencies
-  data/
     llm_knowledge_base.yaml  — human-maintained list of known bad runs (category,
                                cause, action, recovery); anomaly snapshots are
                                injected automatically from the log at call time
+  requirements.txt   — Python dependencies
 ```
 
 ---
@@ -361,7 +360,7 @@ no overhead, no import, no change to any existing output.
 1. `monitor.py` detects a confirmed `[ALERT]` (persistent, bulk, or extreme condition).
 2. `src/llm.py` is called with the in-memory anomaly data for the current file (channels,
    `max_z`, `if_score`, `triggered_features`) and the list of alert conditions that fired.
-3. For each entry in `data/llm_knowledge_base.yaml`, the anomaly snapshot for that historical
+3. For each entry in `../data/llm_knowledge_base.yaml`, the anomaly snapshot for that historical
    run is **auto-injected** from the existing anomaly log CSV by filtering on run number.
    You never write feature values into the knowledge base manually.
 4. A prompt is assembled with three sections: current alert, historical cases with
@@ -376,7 +375,7 @@ The anomaly log CSV is never modified.
 
 #### Maintaining the knowledge base
 
-`data/llm_knowledge_base.yaml` is the only file you need to maintain. Add one entry every
+`../data/llm_knowledge_base.yaml` is the only file you need to maintain. Add one entry every
 time a bad run is understood and resolved. Write only the human knowledge — the anomaly
 snapshot is fetched automatically.
 
@@ -403,7 +402,7 @@ Add to `config.yaml`:
 llm_enabled:        true
 llm_provider:       anthropic          # only supported provider currently
 llm_model:          claude-haiku-4-5-20251001   # or claude-sonnet-4-6 for better reasoning
-llm_knowledge_base: data/llm_knowledge_base.yaml
+llm_knowledge_base: ../data/llm_knowledge_base.yaml
 llm_historical_log: ""                 # path to a pre-existing batch apply log for historical
                                        # snapshots; if empty, defaults automatically to the
                                        # log produced by the current apply/monitor run
