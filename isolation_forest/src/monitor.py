@@ -106,7 +106,7 @@ from .reference import ReferenceModel
 from .detector import AnomalyDetector
 from .args import preparse_config, add_config, add_alert_thresholds, add_test_mode, add_plot_format
 from .config import print_step_header
-from .run_list import resolve_run_list, run_subrun_sort_key, extract_run_number, append_to_live_good_list
+from .run_list import resolve_run_list, run_subrun_sort_key, extract_run_number, append_to_live_good_list, parse_run_subrun
 
 
 LOG_FIELDS = [
@@ -164,6 +164,12 @@ def process_file(
     fmt: str = "png",
     live_good_list: str = "",
     pending_good_files: "list | None" = None,
+    llm_enabled: bool = False,
+    llm_provider: str = "",
+    llm_model: str = "",
+    llm_knowledge_base: str = "",
+    llm_historical_log: str = "",
+    llm_suggestions_path: str = "",
 ) -> bool:
     """
     Analyze one file and append per-channel results to the log.
@@ -332,6 +338,32 @@ def process_file(
                 f"extreme z={worst_z_val:.1f} on {_ch_label(worst_z_ch)}"
             )
         print(f"[ALERT] {timestamp}  {filename}  —  {'  |  '.join(reasons)}")
+
+        # ── Optional LLM categorization ───────────────────────────────────────
+        if llm_enabled and llm_suggestions_path:
+            run_num, sub_num = parse_run_subrun(filename)
+            from .llm import query_llm
+            suggestion = query_llm(
+                run                 = int(run_num) if run_num is not None else -1,
+                subrun              = int(sub_num) if sub_num is not None else -1,
+                alert_reasons       = reasons,
+                anomalous_df        = anomalies,
+                knowledge_base_path = llm_knowledge_base,
+                historical_log_path = llm_historical_log or log_path,
+                suggestions_path    = llm_suggestions_path,
+                model               = llm_model,
+                provider            = llm_provider,
+            )
+            candidates = suggestion.get("candidates", [])
+            if not candidates:
+                print("[LLM]   (no candidates returned)")
+            for c in candidates:
+                rank = c.get("rank", "?")
+                cat  = c.get("category", "unknown")
+                conf = c.get("confidence", "?")
+                act  = c.get("suggested_action", "")
+                print(f"[LLM]   [{rank}] category={cat}  confidence={conf}  action={act[:80]}")
+
         for ch in sorted(persistent_chs, key=str):
             _print_channel(ch)
         for ch in sorted(transient_chs, key=str):
@@ -446,6 +478,11 @@ def watch_directory(
     single_file_alert_max_z: float = 0.0,
     fmt: str = "png",
     live_good_list: str = "",
+    llm_enabled: bool = False,
+    llm_provider: str = "",
+    llm_model: str = "",
+    llm_knowledge_base: str = "",
+    llm_historical_log: str = "",
 ) -> None:
     """
     Poll watch_dir for new Digitizer_*.csv files and process each one.
@@ -475,6 +512,11 @@ def watch_directory(
     current_run:       "int | None" = None
     run_file_index:    int          = 0
     pending_good_files: list        = []
+
+    llm_suggestions_path = (
+        str(Path(log_path).with_name(Path(log_path).stem + "_llm_suggestions.json"))
+        if llm_enabled else ""
+    )
 
     # ── Test mode: sample N files and exit ───────────────────────────────────
     if test_n > 0:
@@ -506,6 +548,12 @@ def watch_directory(
                 fmt=fmt,
                 live_good_list=live_good_list,
                 pending_good_files=pending_good_files,
+                llm_enabled=llm_enabled,
+                llm_provider=llm_provider,
+                llm_model=llm_model,
+                llm_knowledge_base=llm_knowledge_base,
+                llm_historical_log=llm_historical_log,
+                llm_suggestions_path=llm_suggestions_path,
             )
             run_file_index += 1
         print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
@@ -553,6 +601,12 @@ def watch_directory(
                         fmt=fmt,
                         live_good_list=live_good_list,
                         pending_good_files=pending_good_files,
+                        llm_enabled=llm_enabled,
+                        llm_provider=llm_provider,
+                        llm_model=llm_model,
+                        llm_knowledge_base=llm_knowledge_base,
+                        llm_historical_log=llm_historical_log,
+                        llm_suggestions_path=llm_suggestions_path,
                     )
                     run_file_index += 1
                     n_processed += 1
@@ -589,6 +643,12 @@ def process_files_batch(
     progress_every: int = 100,
     fmt: str = "png",
     live_good_list: str = "",
+    llm_enabled: bool = False,
+    llm_provider: str = "",
+    llm_model: str = "",
+    llm_knowledge_base: str = "",
+    llm_historical_log: str = "",
+    llm_suggestions_path: str = "",
 ) -> None:
     """
     Process an ordered list of files through the detector, maintaining per-run
@@ -629,6 +689,12 @@ def process_files_batch(
             fmt=fmt,
             live_good_list=live_good_list,
             pending_good_files=pending_good_files,
+            llm_enabled=llm_enabled,
+            llm_provider=llm_provider,
+            llm_model=llm_model,
+            llm_knowledge_base=llm_knowledge_base,
+            llm_historical_log=llm_historical_log,
+            llm_suggestions_path=llm_suggestions_path,
         )
         run_file_index += 1
         if progress_every and i % progress_every == 0:
@@ -644,6 +710,11 @@ def step_apply(
     single_file_alert_n_channels: int = 0,
     single_file_alert_max_z: float = 0.0,
     show_banner: bool = True,
+    llm_enabled: bool = False,
+    llm_provider: str = "",
+    llm_model: str = "",
+    llm_knowledge_base: str = "",
+    llm_historical_log: str = "",
 ) -> bool:
     """
     Score *all_files* with the trained detector and write results to *log_file*.
@@ -676,6 +747,11 @@ def step_apply(
     log_file.parent.mkdir(parents=True, exist_ok=True)
     path_cache.write_text("\n".join(str(f) for f in all_files))
 
+    llm_suggestions_path = (
+        str(log_file.with_name(log_file.stem + "_llm_suggestions.json"))
+        if llm_enabled else ""
+    )
+
     all_sorted = sorted(all_files, key=run_subrun_sort_key)
     log_file.unlink(missing_ok=True)
     process_files_batch(
@@ -684,6 +760,12 @@ def step_apply(
         alert_consecutive_n=alert_consecutive_n,
         single_file_alert_n_channels=single_file_alert_n_channels,
         single_file_alert_max_z=single_file_alert_max_z,
+        llm_enabled=llm_enabled,
+        llm_provider=llm_provider,
+        llm_model=llm_model,
+        llm_knowledge_base=llm_knowledge_base,
+        llm_historical_log=llm_historical_log,
+        llm_suggestions_path=llm_suggestions_path,
     )
     print(f"\n  Log written → {log_file}")
     return True
@@ -737,6 +819,13 @@ def main() -> None:
              "The file is created on first write; its format is identical to the training "
              "good run list and can be fed directly to --good-list. "
              "Off by default.",
+    )
+    parser.add_argument(
+        "--llm-historical-log",
+        metavar="PATH",
+        help="Anomaly log CSV to pull historical run snapshots from when building LLM prompts. "
+             "Overrides llm_historical_log in the config. "
+             "Defaults to the live log produced by this run.",
     )
 
     parser.set_defaults(
@@ -811,6 +900,16 @@ def main() -> None:
             progress_every=0,
             fmt=args.plot_format,
             live_good_list=args.live_good_list,
+            llm_enabled=cfg.get("llm_enabled", False),
+            llm_provider=cfg.get("llm_provider", "anthropic"),
+            llm_model=cfg.get("llm_model", ""),
+            llm_knowledge_base=cfg.get("llm_knowledge_base", ""),
+            llm_historical_log=args.llm_historical_log or cfg.get("llm_historical_log") or args.log_file,
+            llm_suggestions_path=(
+                str(Path(args.log_file).with_name(
+                    Path(args.log_file).stem + "_llm_suggestions.json"
+                )) if cfg.get("llm_enabled") else ""
+            ),
         )
         print(f"\n[TEST MODE] Done. Processed {len(sample)} file(s).")
         return
@@ -832,6 +931,11 @@ def main() -> None:
         single_file_alert_max_z=args.single_file_alert_max_z,
         fmt=args.plot_format,
         live_good_list=args.live_good_list,
+        llm_enabled=cfg.get("llm_enabled", False),
+        llm_provider=cfg.get("llm_provider", "anthropic"),
+        llm_model=cfg.get("llm_model", ""),
+        llm_knowledge_base=cfg.get("llm_knowledge_base", ""),
+        llm_historical_log=args.llm_historical_log or cfg.get("llm_historical_log") or args.log_file,
     )
 
 

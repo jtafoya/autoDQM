@@ -18,8 +18,11 @@ $PYTHON -m pip install --user \
     "numpy>=1.23" \
     "scipy>=1.9" \
     "watchdog>=3.0" \
-    "pyyaml>=6.0"
+    "pyyaml>=6.0" \
+    "anthropic>=0.40.0"
 
 echo ""
 echo "Dependencies installed. Verify with:"
-echo "  $PYTHON -c \"import pandas, sklearn, numpy, scipy, watchdog, yaml; print('OK')\""
+echo "  $PYTHON -c \"import pandas, sklearn, numpy, scipy, watchdog, yaml, anthropic; print('OK')\""
+echo ""
+echo "Note: LLM categorization (llm_enabled: true) also requires ANTHROPIC_API_KEY in the environment."

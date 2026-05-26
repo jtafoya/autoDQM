@@ -129,6 +129,26 @@ full_sample_apply_quality  Default quality level for the apply step when
 full_sample_apply_fraction Fraction of the quality-filtered catalogue to use for the
                            apply step (0 < value ≤ 1).  Defaults to 1.0 (score all
                            matching files).
+
+LLM anomaly categorization (optional, triggered on [ALERT] only)
+----------------------------------------------------------------
+llm_enabled          When True, query an LLM on every [ALERT] to categorize the
+                     anomaly and suggest an action based on historical bad runs.
+                     Default False — zero overhead when disabled.
+llm_provider         LLM provider to use.  Currently supported: "anthropic".
+                     To add a new provider, implement one elif branch in
+                     src/llm.py:_call_api() and install its package.
+llm_model            Model ID passed to the provider API.
+                     Default: "claude-haiku-4-5-20251001" (fast, cheap).
+                     Swap to e.g. "claude-sonnet-4-6" for better reasoning.
+llm_knowledge_base   Path to the YAML file mapping bad run numbers to human
+                     annotations (category, cause, action, recovery).  Anomaly
+                     snapshots for referenced runs are injected automatically
+                     from the anomaly log — do not write feature values here.
+llm_historical_log   Path to an existing anomaly log CSV used to fetch historical
+                     run snapshots.  Typically a combined batch apply log.
+                     If empty ("") or omitted, defaults automatically to the
+                     live log produced by the current apply/monitor run.
 """
 
 import yaml
@@ -196,6 +216,13 @@ DEFAULTS: dict = {
     "train_goodRunList_max_run":   None,
     "full_sample_apply_quality":   "Medium",
     "full_sample_apply_fraction":  1.0,
+    #
+    ### LLM anomaly categorization
+    "llm_enabled":          False,
+    "llm_provider":         "anthropic",
+    "llm_model":            "claude-haiku-4-5-20251001",
+    "llm_knowledge_base":   "data/llm_knowledge_base.yaml",
+    "llm_historical_log":   "",   # defaults to the current apply/monitor log when empty
 }
 
 

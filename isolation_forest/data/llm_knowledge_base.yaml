@@ -1,0 +1,47 @@
+# Human-maintained list of known bad runs with cause and fix.
+#
+# Each entry references a run that has been processed by the pipeline (so its
+# anomaly data exists in the anomaly log).  Write only the human knowledge here:
+# category, cause, action, recovery.  Anomaly snapshots (z-scores, channels,
+# triggered features) are injected automatically from the log at call time.
+#
+# Add a new entry every time a bad run is understood and resolved.
+# The more specific the cause/action/recovery, the better the LLM match quality.
+#
+# Fields
+# ------
+# run      : integer run number (must exist in the anomaly log for auto-injection)
+# category : short snake_case label, e.g. hv_instability, dead_channels,
+#            trigger_misconfiguration, noisy_run, unknown
+# cause    : one or two sentences describing what went wrong
+# action   : specific actionable step to investigate or resolve
+# recovery : observable indicator that the issue is resolved
+
+# ── Add entries below ─────────────────────────────────────────────────────────
+
+# Example (replace with real documented runs):
+#
+# - run: 1648
+#   category: hv_instability
+#   cause: HV trip at run start; all channels show correlated mean_charge drop
+#   action: >
+#     Check HV log for a trip near the run timestamp.
+#     Inspect cfg_daq_threshold in Run{N}DAQDefault.py — a post-trip ramp often
+#     leaves thresholds mismatched.
+#   recovery: mean_charge returns to nominal range; triggerRate_bit2 drops below 2σ
+#
+# - run: 1353
+#   category: dead_channels
+#   cause: Multiple digitizer channels disconnected or stuck mid-run
+#   action: >
+#     Check physical channel mapping and cable connections for the flagged channels.
+#     If confirmed dead, add them to ignore_features in config.yaml.
+#   recovery: Flagged channels absent from anomaly log for ≥ 3 consecutive runs
+#
+# - run: 1042
+#   category: trigger_misconfiguration
+#   cause: Prescale not updated in TriggerDefault.py after a config change; trigger rates appear artificially high
+#   action: >
+#     Verify prescale values in Run{N}TriggerDefault.py match the expected physics
+#     rate for each trigger bit.  Re-run apply with includeConfigInfo_Trigger: true.
+#   recovery: triggerRate_bitN z-scores return to below 2σ after prescale correction

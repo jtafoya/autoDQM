@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compare 260519 applyToRuns outputs — FP/TN rates and per-run ok-rate profiles.
+Compare 260521 applyToRuns outputs — FP/TN rates and per-run ok-rate profiles.
 
 Models are applied run-by-run to runs 1601–2238, scoring 20 % of each run's
 subruns.  This script shows:
@@ -20,15 +20,15 @@ Layout per PDF:
   per-run goodness panel: run number — fixed contamination (--contamination)
 
 Produces two PDFs in _auxiliar_scripts/plots/:
-  applyToRuns_260519_counts.pdf  — FP/TN absolute counts + per-run profile
-  applyToRuns_260519_rel.pdf     — FP/TN rates (%) + per-run profile
+  applyToRuns_260521_counts.pdf  — FP/TN absolute counts + per-run profile
+  applyToRuns_260521_rel.pdf     — FP/TN rates (%) + per-run profile
 
 Usage (from _auxiliar_scripts/):
-    python compare_applyToRuns_260519.py
-    python compare_applyToRuns_260519.py --contamination 0.001
+    python compare_applyToRuns_260521.py
+    python compare_applyToRuns_260521.py --contamination 0.001
 
 Paths are resolved relative to this script:
-  reports  → ../reports/applyToRuns_260519
+  reports  → ../reports/applyToRuns_260521
   plots    → _auxiliar_scripts/plots/
 """
 
@@ -93,7 +93,7 @@ def _cont_to_float(s: str) -> float:
 
 
 def parse_tag(tag: str) -> "dict | None":
-    if "260519" not in tag:
+    if "260521" not in tag:
         return None
     mc = _CONT_RE.search(tag)
     mz = _Z_RE.search(tag)
@@ -236,8 +236,8 @@ def _make_figure(rows: list[dict],
         constrained_layout=True,
     )
     fig.suptitle(
-        f"applyToRuns 260519  |  ground truth: training text list  |  {tc_label}\n"
-        f"FP/TN columns: z = {z_for_fp_tn}σ  |  per-run goodness @ contamination = {cont_for_profile}",
+        f"applyToRuns 260521  |  ground truth: training text list  |  {tc_label}\n"
+        f"FP/TN columns: z = {z_for_fp_tn}σ",
         fontsize=11, fontweight="bold",
     )
 
@@ -281,9 +281,9 @@ def _make_figure(rows: list[dict],
 
     # ── Per-run ok-rate profile panel ─────────────────────────────────────────
     ax_run = axes[2]
-    ax_run.set_title("% ok subruns per run", fontsize=10)
+    ax_run.set_title(f"% ok subruns per run  (@ contamination = {cont_for_profile})", fontsize=10)
     ax_run.set_xlabel("run number", fontsize=9)
-    ax_run.set_ylabel("% ok subruns (tight)", fontsize=9)
+    ax_run.set_ylabel("% ok subruns", fontsize=9)
     ax_run.set_ylim(0, 100)
     ax_run.yaxis.set_major_locator(MultipleLocator(20))
     ax_run.yaxis.set_minor_locator(MultipleLocator(10))
@@ -337,6 +337,151 @@ def _make_figure(rows: list[dict],
     return fig
 
 
+def _model_label(row: dict) -> str:
+    """Short human-readable label for a model row."""
+    v  = VARIANT_META[(row["use_trigger"], row["use_lvds"])][0]
+    tc = "withTC" if row["include_trigger_config"] else "noTC"
+    return (f"c={row['if_contamination']}, z={row['z_threshold']}σ, "
+            f"n_consec={row['alert_consecutive_n']}, {v}, {tc}")
+
+
+def _make_best_fp_figure(rows: list[dict],
+                         top_n: int,
+                         training_runs: "set[int] | None" = None) -> "plt.Figure | None":
+    """Per-run ok-rate profiles for the top_n models with lowest FP rate."""
+    eligible = [r for r in rows
+                if r.get("fp_rel_subruns") is not None and r.get("run_ok_rates")]
+    if not eligible:
+        return None
+    ranked = sorted(eligible, key=lambda r: r["fp_rel_subruns"])[:top_n]
+
+    fig, ax = plt.subplots(figsize=(16, 6), constrained_layout=True)
+    fig.suptitle(
+        f"Top {top_n} models — lowest FP rate (% known-good subruns flagged as alert)",
+        fontsize=12, fontweight="bold",
+    )
+    ax.set_title("% ok subruns per run", fontsize=10)
+    ax.set_xlabel("run number", fontsize=9)
+    ax.set_ylabel("% ok subruns", fontsize=9)
+    ax.set_ylim(0, 100)
+    ax.yaxis.set_major_locator(MultipleLocator(20))
+    ax.yaxis.set_minor_locator(MultipleLocator(10))
+    ax.grid(True, which="major", alpha=0.3)
+    ax.yaxis.grid(True, which="minor", alpha=0.15)
+
+    if training_runs:
+        for start, end in _consecutive_blocks(training_runs):
+            ax.axvspan(start - 0.5, end + 0.5,
+                       color="lightgray", alpha=0.35, linewidth=0, zorder=0)
+
+    import matplotlib.cm as cm
+    for i, r in enumerate(ranked):
+        rr  = r["run_ok_rates"]
+        xs  = sorted(rr.keys())
+        ys  = [rr[x] for x in xs]
+        lbl = f"{_model_label(r)}  [FP = {r['fp_rel_subruns']:.2f}%]"
+        ax.plot(xs, ys, color=cm.tab10(i % 10), linewidth=1.5, alpha=0.85, label=lbl)
+
+    ax.legend(fontsize=7.5, loc="lower left", framealpha=0.9)
+    return fig
+
+
+def _make_best_fp_per_z_figure(rows: list[dict],
+                               top_n_per_z: int,
+                               training_runs: "set[int] | None" = None) -> "plt.Figure | None":
+    """Per-run ok-rate for the top top_n_per_z models by FP rate within each z-threshold.
+    Colour encodes z-threshold; line style encodes rank within that z group."""
+    eligible = [r for r in rows
+                if r.get("fp_rel_subruns") is not None and r.get("run_ok_rates")]
+    if not eligible:
+        return None
+
+    import matplotlib.cm as cm
+    z_colour  = {z: cm.tab10(i) for i, z in enumerate(Z_THRESHOLDS)}
+    rank_style = ["-", "--", "-."]
+
+    fig, ax = plt.subplots(figsize=(16, 6), constrained_layout=True)
+    fig.suptitle(
+        f"Top {top_n_per_z} models per z-threshold — lowest FP rate  "
+        f"({top_n_per_z * len(Z_THRESHOLDS)} models total)",
+        fontsize=12, fontweight="bold",
+    )
+    ax.set_title("% ok subruns per run", fontsize=10)
+    ax.set_xlabel("run number", fontsize=9)
+    ax.set_ylabel("% ok subruns", fontsize=9)
+    ax.set_ylim(0, 100)
+    ax.yaxis.set_major_locator(MultipleLocator(20))
+    ax.yaxis.set_minor_locator(MultipleLocator(10))
+    ax.grid(True, which="major", alpha=0.3)
+    ax.yaxis.grid(True, which="minor", alpha=0.15)
+
+    if training_runs:
+        for start, end in _consecutive_blocks(training_runs):
+            ax.axvspan(start - 0.5, end + 0.5,
+                       color="lightgray", alpha=0.35, linewidth=0, zorder=0)
+
+    for z in Z_THRESHOLDS:
+        z_rows = sorted(
+            [r for r in eligible if r["z_threshold"] == z],
+            key=lambda r: r["fp_rel_subruns"],
+        )[:top_n_per_z]
+        for rank, r in enumerate(z_rows):
+            rr  = r["run_ok_rates"]
+            xs  = sorted(rr.keys())
+            ys  = [rr[x] for x in xs]
+            lbl = f"z={z}σ rank{rank+1}: {_model_label(r)}  [FP = {r['fp_rel_subruns']:.2f}%]"
+            ax.plot(xs, ys, color=z_colour[z], linestyle=rank_style[rank],
+                    linewidth=1.5, alpha=0.85, label=lbl)
+
+    ax.legend(fontsize=7.5, loc="lower left", framealpha=0.9)
+    return fig
+
+
+def _make_best_coverage_figure(rows: list[dict],
+                                top_n: int,
+                                training_runs: "set[int] | None" = None) -> "plt.Figure | None":
+    """Per-run ok-rate profiles for the top_n models with highest mean ok-rate (coverage)."""
+    eligible = [r for r in rows if r.get("run_ok_rates")]
+    if not eligible:
+        return None
+    ranked = sorted(
+        eligible,
+        key=lambda r: sum(r["run_ok_rates"].values()) / len(r["run_ok_rates"]),
+        reverse=True,
+    )[:top_n]
+
+    fig, ax = plt.subplots(figsize=(16, 6), constrained_layout=True)
+    fig.suptitle(
+        f"Top {top_n} models — highest mean % ok subruns integrated over all runs (best coverage)",
+        fontsize=12, fontweight="bold",
+    )
+    ax.set_title("% ok subruns per run", fontsize=10)
+    ax.set_xlabel("run number", fontsize=9)
+    ax.set_ylabel("% ok subruns", fontsize=9)
+    ax.set_ylim(0, 100)
+    ax.yaxis.set_major_locator(MultipleLocator(20))
+    ax.yaxis.set_minor_locator(MultipleLocator(10))
+    ax.grid(True, which="major", alpha=0.3)
+    ax.yaxis.grid(True, which="minor", alpha=0.15)
+
+    if training_runs:
+        for start, end in _consecutive_blocks(training_runs):
+            ax.axvspan(start - 0.5, end + 0.5,
+                       color="lightgray", alpha=0.35, linewidth=0, zorder=0)
+
+    import matplotlib.cm as cm
+    for i, r in enumerate(ranked):
+        rr      = r["run_ok_rates"]
+        xs      = sorted(rr.keys())
+        ys      = [rr[x] for x in xs]
+        mean_ok = sum(ys) / len(ys)
+        lbl     = f"{_model_label(r)}  [mean ok = {mean_ok:.1f}%]"
+        ax.plot(xs, ys, color=cm.tab10(i % 10), linewidth=1.5, alpha=0.85, label=lbl)
+
+    ax.legend(fontsize=7.5, loc="lower left", framealpha=0.9)
+    return fig
+
+
 def make_pdf(rows: list[dict],
              metric_cols: list,
              y_axis_unit: str,
@@ -352,6 +497,18 @@ def make_pdf(rows: list[dict],
                                    training_runs=training_runs)
                 pdf.savefig(fig, bbox_inches="tight")
                 plt.close(fig)
+        fig = _make_best_fp_figure(rows, 5, training_runs)
+        if fig is not None:
+            pdf.savefig(fig, bbox_inches="tight")
+            plt.close(fig)
+        fig = _make_best_fp_per_z_figure(rows, 3, training_runs)
+        if fig is not None:
+            pdf.savefig(fig, bbox_inches="tight")
+            plt.close(fig)
+        fig = _make_best_coverage_figure(rows, 5, training_runs)
+        if fig is not None:
+            pdf.savefig(fig, bbox_inches="tight")
+            plt.close(fig)
     print(f"  Saved → {out_path}")
 
 
@@ -371,7 +528,7 @@ def main() -> None:
                         help="path to training good run list (used to shade trained runs in profile panel)")
     args = parser.parse_args()
 
-    reports_dir = _REPO_DIR / "reports" / "applyToRuns_260519"
+    reports_dir = _REPO_DIR / "reports" / "applyToRuns_260521"
     out_dir     = _SCRIPT_DIR / "plots"
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -387,20 +544,20 @@ def main() -> None:
     training_runs = load_training_runs(args.good_run_list)
     print(f"  {len(training_runs)} training run(s) found.")
 
-    print(f"Generating applyToRuns_260519_counts.pdf  (all z, cont={cnt} for per-run goodness) ...")
+    print(f"Generating applyToRuns_260521_counts.pdf  (all z, cont={cnt} for per-run goodness) ...")
     make_pdf(rows,
              metric_cols      = METRIC_COLS_COUNTS,
              y_axis_unit      = "#",
              cont_for_profile = cnt,
-             out_path         = out_dir / "applyToRuns_260519_counts.pdf",
+             out_path         = out_dir / "applyToRuns_260521_counts.pdf",
              training_runs    = training_runs)
 
-    print(f"Generating applyToRuns_260519_rel.pdf ...")
+    print(f"Generating applyToRuns_260521_rel.pdf ...")
     make_pdf(rows,
              metric_cols      = METRIC_COLS_REL,
              y_axis_unit      = "%",
              cont_for_profile = cnt,
-             out_path         = out_dir / "applyToRuns_260519_rel.pdf",
+             out_path         = out_dir / "applyToRuns_260521_rel.pdf",
              training_runs    = training_runs)
 
     print("\nDone.")

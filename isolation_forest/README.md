@@ -80,6 +80,10 @@ isolation_forest/
     goodRunsListSlab.json    — full good-runs catalogue for the slab dataset on EOS
                                (used by --train-goodRunList; path set by goodRunsList_json in config)
   requirements.txt   — Python dependencies
+  data/
+    llm_knowledge_base.yaml  — human-maintained list of known bad runs (category,
+                               cause, action, recovery); anomaly snapshots are
+                               injected automatically from the log at call time
 ```
 
 ---
@@ -108,13 +112,17 @@ or any working directory. CLI arguments always override config.yaml values.
 bash setup.sh
 ```
 
-This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, `watchdog`, and `pyyaml` into your user
-site-packages (`--user`, no root needed). Works on lxplus/AFS.
+This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, `watchdog`, `pyyaml`, and `anthropic`
+into your user site-packages (`--user`, no root needed). Works on lxplus/AFS.
 
 Verify:
 ```bash
-python3 -c "import pandas, sklearn, numpy, scipy, watchdog, yaml; print('OK')"
+python3 -c "import pandas, sklearn, numpy, scipy, watchdog, yaml, anthropic; print('OK')"
 ```
+
+> **LLM categorization** requires `ANTHROPIC_API_KEY` to be set in the environment.
+> The `anthropic` package is installed by `setup.sh` but the feature is disabled by default
+> (`llm_enabled: false` in `config.yaml`) — the package is never called unless you opt in.
 
 ---
 
@@ -340,6 +348,124 @@ Terminal output (with `alert_consecutive_n = 3`, `single_file_alert_n_channels =
 ```
 
 `[OK]` is immediate for clean subruns and for subruns whose only anomalies are transient (streak not established). `[WARN]` fires when at least one channel has a confirmed sub-threshold persistent anomaly. With `alert_consecutive_n = 1` (persistence check disabled) the `[k/N files]` annotations are omitted and the output matches the original single-file format.
+
+### 3b. LLM anomaly categorization (optional)
+
+When `llm_enabled: true` is set in `config.yaml`, every `[ALERT]` event triggers a call to
+a language model that categorizes the anomaly against a curated list of historical bad runs
+and suggests an action.  The feature is **off by default** and completely inert when disabled —
+no overhead, no import, no change to any existing output.
+
+#### How it works
+
+1. `monitor.py` detects a confirmed `[ALERT]` (persistent, bulk, or extreme condition).
+2. `src/llm.py` is called with the in-memory anomaly data for the current file (channels,
+   `max_z`, `if_score`, `triggered_features`) and the list of alert conditions that fired.
+3. For each entry in `data/llm_knowledge_base.yaml`, the anomaly snapshot for that historical
+   run is **auto-injected** from the existing anomaly log CSV by filtering on run number.
+   You never write feature values into the knowledge base manually.
+4. A prompt is assembled with three sections: current alert, historical cases with
+   auto-injected snapshots + human annotations, task instruction.
+5. The LLM returns structured JSON with a ranked `candidates` list — one entry per
+   plausible failure mode, ordered best-match first, each with its own `confidence`.
+   A top-level `reasoning` field explains the match and any ambiguity.
+6. The result is appended to `logs/<tag>_llm_suggestions.json` (one entry per alert).
+   One `[LLM]` line per candidate is printed to stdout alongside the `[ALERT]` line.
+
+The anomaly log CSV is never modified.
+
+#### Maintaining the knowledge base
+
+`data/llm_knowledge_base.yaml` is the only file you need to maintain. Add one entry every
+time a bad run is understood and resolved. Write only the human knowledge — the anomaly
+snapshot is fetched automatically.
+
+```yaml
+- run: 1648
+  category: hv_instability
+  cause: HV trip at run start; all channels show correlated mean_charge drop
+  action: >
+    Check HV log for a trip near the run timestamp.
+    Inspect cfg_daq_threshold in Run{N}DAQDefault.py — a post-trip ramp often
+    leaves thresholds mismatched.
+  recovery: mean_charge returns to nominal range; triggerRate_bit2 drops below 2σ
+```
+
+The referenced run must exist in the anomaly log (i.e. it has been processed by the pipeline
+at some point). If it is absent, the snapshot slot says "not found" and the LLM falls back
+to the human annotation alone, returning `confidence: low`.
+
+#### Enabling
+
+Add to `config.yaml`:
+
+```yaml
+llm_enabled:        true
+llm_provider:       anthropic          # only supported provider currently
+llm_model:          claude-haiku-4-5-20251001   # or claude-sonnet-4-6 for better reasoning
+llm_knowledge_base: data/llm_knowledge_base.yaml
+llm_historical_log: ""                 # path to a pre-existing batch apply log for historical
+                                       # snapshots; if empty, defaults automatically to the
+                                       # log produced by the current apply/monitor run
+```
+
+Set `ANTHROPIC_API_KEY` in your environment before running `monitor.py` or `pipeline.py`.
+
+#### Adding a new LLM provider
+
+All provider-specific code is isolated in `src/llm.py:_call_api()`.  To add a new provider:
+
+1. Add an `elif provider == "<name>":` branch in `_call_api()` that accepts `(system, user, model) → str`.
+2. Install the provider's Python package and add it to `requirements.txt`.
+3. Set `llm_provider: <name>` in `config.yaml`.
+
+Nothing else in the pipeline needs to change.
+
+#### Output: `logs/<tag>_llm_suggestions.json`
+
+A JSON list, one entry per `[ALERT]`, co-located with the anomaly log:
+
+```json
+[
+  {
+    "run": 1648,
+    "subrun": 1,
+    "candidates": [
+      {
+        "rank": 1,
+        "category": "hv_instability",
+        "likely_cause": "HV trip at run start, correlated drop across all channels",
+        "suggested_action": "Check HV log for a trip near the run timestamp; inspect cfg_daq_threshold",
+        "matched_runs": [1648],
+        "confidence": "high"
+      },
+      {
+        "rank": 2,
+        "category": "noise_burst",
+        "likely_cause": "External EM pickup on bar layer",
+        "suggested_action": "Check shielding and grounding log",
+        "matched_runs": [1712],
+        "confidence": "low"
+      }
+    ],
+    "reasoning": "Bulk mean_charge drop strongly matches run 1648; occupancy spike partially overlaps noise_burst pattern"
+  }
+]
+```
+
+The number of candidates is variable — one if the cause is clear, several if ambiguous.
+When all candidates have `confidence: low` and `matched_runs` is empty, the alert is a
+pattern not yet in the knowledge base — add an entry once the cause is understood.
+
+#### Degradation behaviour
+
+| Situation | Behaviour |
+|---|---|
+| `llm_enabled: false` | Feature completely disabled; `anthropic` package never imported |
+| Knowledge base run not in log | Snapshot "not found"; LLM uses human annotation only; `confidence: low` |
+| No historical case matches | Single candidate with `matched_runs: []`, `confidence: low` — signals a new failure mode |
+| API unreachable / error | Error written to sidecar and stderr; pipeline continues unaffected |
+| Knowledge base file missing | LLM call skipped with a warning; pipeline continues unaffected |
 
 ### 4. Classify runs
 

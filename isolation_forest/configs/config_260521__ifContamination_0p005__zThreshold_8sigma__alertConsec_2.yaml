@@ -1,0 +1,6 @@
+base: config.yaml
+model_tag: 260521__ifContamination_0p005__zThreshold_8sigma__alertConsec_2
+
+z_threshold:          8.0
+if_contamination:     0.005
+alert_consecutive_n:  2

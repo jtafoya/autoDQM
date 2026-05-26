@@ -332,6 +332,14 @@ def main() -> None:
              "good subruns. -1 = no limit (plots every file — prints a loud warning).",
     )
 
+    parser.add_argument(
+        "--llm-historical-log",
+        metavar="PATH",
+        help="Anomaly log CSV to pull historical run snapshots from when building LLM prompts. "
+             "Overrides llm_historical_log in the config. "
+             "Defaults to the log produced by this apply run.",
+    )
+
     # ── Plot format ──
     add_plot_format(parser, cfg)
 
@@ -638,6 +646,11 @@ def main() -> None:
             single_file_alert_n_channels=args.single_file_alert_n_channels,
             single_file_alert_max_z=args.single_file_alert_max_z,
             show_banner=False,
+            llm_enabled=cfg.get("llm_enabled", False),
+            llm_provider=cfg.get("llm_provider", "anthropic"),
+            llm_model=cfg.get("llm_model", ""),
+            llm_knowledge_base=cfg.get("llm_knowledge_base", ""),
+            llm_historical_log=args.llm_historical_log or cfg.get("llm_historical_log") or str(log_file),
         )
     else:
         print("[SKIP] Apply")
