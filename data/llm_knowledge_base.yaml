@@ -21,27 +21,46 @@
 
 # Example (replace with real documented runs):
 #
-# - run: 1648
-#   category: hv_instability
-#   cause: HV trip at run start; all channels show correlated mean_charge drop
-#   action: >
-#     Check HV log for a trip near the run timestamp.
-#     Inspect cfg_daq_threshold in Run{N}DAQDefault.py — a post-trip ramp often
-#     leaves thresholds mismatched.
-#   recovery: mean_charge returns to nominal range; triggerRate_bit2 drops below 2σ
-#
-# - run: 1353
-#   category: dead_channels
-#   cause: Multiple digitizer channels disconnected or stuck mid-run
-#   action: >
-#     Check physical channel mapping and cable connections for the flagged channels.
-#     If confirmed dead, add them to ignore_features in config.yaml.
-#   recovery: Flagged channels absent from anomaly log for ≥ 3 consecutive runs
-#
-# - run: 1042
-#   category: trigger_misconfiguration
-#   cause: Prescale not updated in TriggerDefault.py after a config change; trigger rates appear artificially high
-#   action: >
-#     Verify prescale values in Run{N}TriggerDefault.py match the expected physics
-#     rate for each trigger bit.  Re-run apply with includeConfigInfo_Trigger: true.
-#   recovery: triggerRate_bitN z-scores return to below 2σ after prescale correction
+- run: 1640
+  category: broken_PMT_base
+  cause: Damaged PMT base due to unknown reasons, possibly power grid fluctuations propagating through the LV supplies; appeared first as change of channel ch32/33 behaviour (both are coupled through the same LVDS pin) leading e.g. to smaller VMax readouts; eventually the channel HV tripped and completely turned off contributions from these channels/LVDS
+  action: >
+    Check the HV current draw
+    Check HV log for a trip near the run timestamp.
+    If channel current draws are unstable or different from nominal, switch it off until a physical intervention can be carried out.
+    Physical intervention: Check continuity of all HV cables between HVPS and involved channels.
+    Physical intervention: Disconnect the HV off all the relevant PMT bases. Connect one at a time and turn HV on noting which ones don't draw nominal current values. This allows to indentify the faulty HV paths (problem can be either in the cables, at the connectors, or at the base.
+    Physical intervention: Use a validated healthy HV cable to power the problematic base. If draws are nominal, then the culprit is most likely in the HV cable and/or connector between the HV splitter box and the base. If the current draw is not nominal, then try replacing the base for a new one. N.B. be sure to use the same base version and set exactly the same gain with the switches to match the broken base!
+    Physical intervention: If the problem is in the cables/connectors, do further eliminatory testing to determine isolate the issue. E.g. plug a healthy cable into the output of the HV splitter originally leading to the issue, and use it to power a healtyh PMT. If draws are nominal, the issue is at the original cable not currently being used.
+  recovery: HV draw back to nominal and stable values, LVDS counts non-zero, VMax recovers for the involved channels
+
+- run: 1642
+  category: broken_PMT_base
+  cause: Damaged PMT base due to unknown reasons, possibly power grid fluctuations propagating through the LV supplies (continuation of issue seen at run 1640); channel HV already tripped, no pulse contributions from these channels/LVDS
+  action: >
+    Check the HV current draw
+    Check HV log for a trip near the run timestamp.
+    If channel current draws are unstable or different from nominal, switch it off until a physical intervention can be carried out.
+    Physical intervention: Check continuity of all HV cables between HVPS and involved channels.
+    Physical intervention: Disconnect the HV off all the relevant PMT bases. Connect one at a time and turn HV on noting which ones don't draw nominal current values. This allows to indentify the faulty HV paths (problem can be either in the cables, at the connectors, or at the base.
+    Physical intervention: Use a validated healthy HV cable to power the problematic base. If draws are nominal, then the culprit is most likely in the HV cable and/or connector between the HV splitter box and the base. If the current draw is not nominal, then try replacing the base for a new one. N.B. be sure to use the same base version and set exactly the same gain with the switches to match the broken base!
+    Physical intervention: If the problem is in the cables/connectors, do further eliminatory testing to determine isolate the issue. E.g. plug a healthy cable into the output of the HV splitter originally leading to the issue, and use it to power a healtyh PMT. If draws are nominal, the issue is at the original cable not currently being used.
+  recovery: HV draw back to nominal and stable values, LVDS counts non-zero, VMax recovers for the involved channels
+
+- run: 2068
+  category: LVDS_noise
+  cause: Unclear. Possible charge collection in LVDS pins, or mechanical failure of the LVDS jumper wires needing readjustment; higher trigger rates than usual
+  action: >
+    Physical intervention: Carefully check whether all the LVDS pins are fully seated into the trigger board and digitizer
+    Physical intervention: Carefully press in all the jumper wires while the run is off, and check again by starting a new run. It may take a few iterations.
+    Check physical channel mapping and cable connections for the flagged channels.
+  recovery: Trigger rates recover to nominal values
+
+- run: 2071
+  category: LVDS_noise
+  cause: Unclear. Possible charge collection in LVDS pins, or mechanical failure of the LVDS jumper wires needing readjustment; higher trigger rates than usual. Continuation of issue at run 2068, slightly improved by moving LVDS cables but still not fully recovered.
+  action: >
+    Physical intervention: Carefully check whether all the LVDS pins are fully seated into the trigger board and digitizer
+    Physical intervention: Carefully press in all the jumper wires while the run is off, and check again by starting a new run. It may take a few iterations.
+    Check physical channel mapping and cable connections for the flagged channels.
+  recovery: Trigger rates recover to nominal values
