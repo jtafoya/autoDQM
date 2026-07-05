@@ -5,21 +5,21 @@
 # --- Input ---
 # Run lists: text files where each line is a glob pattern resolving to Digitizer CSV files.
 # data_path is the base directory; the individual lists are absolute paths derived from it.
-data_path:        /afs/cern.ch/user/t/tafoyava/autoDQM/data
+data_path:        /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/
 #good_list:        /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_EOS.txt
-good_list:        /afs/cern.ch/user/t/tafoyava/autoDQM/data/good_run_list_TRAINING.txt
+good_list:        /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/good_run_list_TRAINING.txt
 #apply_list:       /afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EOS.txt
-apply_list:       /afs/cern.ch/user/t/tafoyava/autoDQM/data/all_run_list_EXTENDED.txt
-goodRunsList_json: /afs/cern.ch/user/t/tafoyava/autoDQM/data/goodRunsListSlab.json
+apply_list:       /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/all_run_list_EXTENDED.txt
+goodRunsList_json: /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/goodRunsListSlab.json
 #goodRunsList_json: /afs/cern.ch/user/t/tafoyava/autoDQM/data/goodRunsListSlab_extended.json
 
 # --- Output ---
 # model_tag namespaces all outputs: models/<tag>/, logs/<tag>.csv, reports/<tag>/, plots/<tag>/.
 model_tag:   default
-models_dir:  /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/models
-logs_dir:    /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/logs
-reports_dir: /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/reports
-plots_dir:   /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/plots
+models_dir:  /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/models
+logs_dir:    /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/logs
+reports_dir: /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/reports
+plots_dir:   /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/plots
 
 # --- Features ---
 # use_trigger includes TriggerBoard rate features; use_lvds includes LVDS pin-count features.
@@ -66,7 +66,7 @@ includeConfigVariables_DAQ:
 # if_max_samples:   samples drawn per tree (sklearn max_samples); higher = lower score variance.
 # if_max_features:  fraction of features considered per split (sklearn max_features); 1.0 = all.
 z_threshold:      6.0
-if_contamination: 0.01
+if_contamination: 0.001
 if_n_estimators:  200
 if_max_samples:   auto
 if_max_features:  1.0

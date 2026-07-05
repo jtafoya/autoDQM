@@ -928,7 +928,7 @@ def _compute_persistence_status(
     all_sets:     dict = {}
     file_max_z:   dict = {}   # fname → max max_z among anomalous channels
     for fname, grp in df.groupby("filename"):
-        anom_grp           = grp[grp["anomalous"]]
+        anom_grp           = grp[grp["anomalous"].fillna(False).astype(bool)]
         anom_sets[fname]   = set(anom_grp["channel"])
         all_sets[fname]    = set(grp["channel"])
         valid_z            = anom_grp["max_z"].dropna()
@@ -1088,7 +1088,7 @@ def plot_log(
     _save(fig, out_dir / "log_anomaly_rate.png", fmt)
 
     # ── 3b. Most frequently anomalous channels ───────────────────────────────
-    anomalous_df = df[df["anomalous"]]
+    anomalous_df = df[df["anomalous"].fillna(False).astype(bool)]
     if anomalous_df.empty:
         print("  No anomalous channels in log — skipping channel frequency plot.")
     else:

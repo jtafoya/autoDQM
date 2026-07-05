@@ -180,7 +180,8 @@ def step_evaluate(
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    df = pd.read_csv(str(log_file))
+    df = pd.read_csv(str(log_file), low_memory=False)
+    df["anomalous"] = df["anomalous"].map({True: True, False: False, "True": True, "False": False, "true": True, "false": False}).fillna(False).astype(bool)
     if df.empty:
         print("  [evaluate] Log file is empty — skipping.")
         return True

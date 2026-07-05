@@ -19,7 +19,7 @@ executable = condor/run_pipeline.sh
 arguments  = $(VARIANT)
 
 # Run from the isolation_forest/ directory so all relative paths resolve correctly
-initialdir = /afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest
+initialdir = /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/
 
 # Per-job stdout/stderr; shared job event log
 # $(Cluster).$(Process) ensures each submission gets its own output files
@@ -34,7 +34,7 @@ request_memory = 4096
 
 # longlunch = 2 h wall time; increase to "workday" (8 h) if the full
 # good-list training takes longer than expected.
-+JobFlavour = "workday"
++JobFlavour = "tomorrow"
 
 # AFS and EOS are mounted on lxplus condor nodes — no file transfer needed.
 should_transfer_files = NO
@@ -42,7 +42,7 @@ should_transfer_files = NO
 # Forward Kerberos credentials so EOS reads work on worker nodes.
 +ProjectName = "local"
 
-notify_user  = j.tafoya.vargas@cern.ch
+notify_user  = lbailloe@cern.ch
 notification = Complete
 
 queue VARIANT from (

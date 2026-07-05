@@ -67,7 +67,8 @@ def classify_runs(log_path: str, file_alert_n_channels: int = 2) -> dict:
         "n_bad"            : int,
     }
     """
-    df = pd.read_csv(log_path)
+    df = pd.read_csv(log_path, low_memory=False)
+    df["anomalous"] = df["anomalous"].map({True: True, False: False, "True": True, "False": False, "true": True, "false": False}).fillna(False).astype(bool)
     if df.empty:
         return {}
 

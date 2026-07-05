@@ -15,7 +15,7 @@ set -euo pipefail
 
 VARIANT=${1:?Usage: run_pipeline.sh <variant>}
 
-SCRIPT_DIR="/afs/cern.ch/user/t/tafoyava/autoDQM/isolation_forest/condor"
+SCRIPT_DIR="/afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/condor"
 INSTALLATION_PATH="${SCRIPT_DIR}/.."
 
 cd "${INSTALLATION_PATH}"
@@ -72,15 +72,30 @@ echo ""
 #    --model-tag "condor" \
 #    "${FLAGS[@]}"
 
-python3 -m src.pipeline \
-	--config configs/config.yaml \
-	--model-tag condor_full_260428 \
-	--train-goodRunList \
-	--train-goodRunList-quality Tight \
-	--train-goodRunList-fraction 0.1 \
-	--apply-to-training-list \
-	"${FLAGS[@]}"
+# python3 -m src.pipeline \
+# 	--config configs/config.yaml \
+# 	--model-tag condor_full_260428 \
+# 	--fraction 0.1 \
+# 	"${FLAGS[@]}"
 
+# python3 -m src.pipeline \
+# 	--config configs/config.yaml \
+# 	--model-tag condor_repo \
+# 	--train-goodRunList \
+# 	--train-goodRunList-quality Tight \
+# 	--train-goodRunList-fraction 0.1 \
+# 	--apply-to-training-list \
+# 	"${FLAGS[@]}"
+
+python3 -m src.pipeline \
+--config configs/config.yaml \
+--model-tag condor_extended \
+--train-goodRunList \
+--train-goodRunList-quality Tight \
+--train-goodRunList-fraction 0.1 \
+--apply-list /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/small_run.txt \
+"${FLAGS[@]}"
+	
 echo ""
 echo "============================================================"
 echo "  Done: $VARIANT  $(date -u)"
