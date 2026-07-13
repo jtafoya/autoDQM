@@ -1,0 +1,5 @@
+condor_scan_trainFrac0p1
+condor_scan_trainFrac0p2
+condor_scan_trainFrac0p3
+condor_scan_trainFrac0p4
+condor_scan_trainFrac0p5

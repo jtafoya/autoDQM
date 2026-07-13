@@ -87,3 +87,18 @@ lines: training quality (colour + style); marker size: max_samples; x: n_estimat
 Reads from `reports/applyToRuns_260429_IFhp/`.
 Produces six PDFs in `plots/`:
 - `applyToRuns_260429_IFhp_on{Loose,Medium,Tight}_{counts,rel}.pdf`
+
+---
+
+## Training-fraction scan (batch_submit.sh DAG)
+
+### `compare_scan_trainFrac.py`
+Collapses the per-fraction reports of the training-fraction scan into one summary figure.
+Panels: known-good | not-certified subruns; lines: verdict rate (ok/warn/pend/alert, colour);
+x: training fraction. Ground truth: Tight good-run text list (from `eval_confusion_data.json`).
+Reads from `reports/scan_trainFracSweep/` (override with `--reports-dir`).
+Produces one PDF in `plots/`:
+- `scan_trainFrac_summary_rel.pdf`
+
+Also prints a per-fraction table of raw counts. Run after the scan's combine phase has
+finished for every fraction (partially-finished fractions are skipped with a warning).
