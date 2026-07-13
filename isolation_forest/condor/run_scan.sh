@@ -107,12 +107,12 @@ case "$PHASE" in
         done
         echo ""
         echo "  Apply summary: OK=$n_ok  FAILED=$n_fail  of ${#RUNS[@]}"
-        # Fail the job only if nothing succeeded (systemic problem, e.g. missing
-        # model); otherwise let the combine phase merge whatever completed.
-        if [ "$n_ok" -eq 0 ]; then
-            echo "ERROR: every run in this group failed." >&2
-            exit 1
-        fi
+        # Never exit non-zero for per-run failures: all apply jobs are procs of
+        # ONE DAG node, and DAGMan fails the node — and aborts the whole DAG —
+        # if ANY proc exits non-zero.  A single run with no files on EOS (e.g.
+        # run 1617) must not kill the scan; the combine phase merges whatever
+        # CSVs exist.  Systemic problems are still caught: the dependency check
+        # above exits 1 before this phase, and combine fails if no CSVs landed.
         ;;
 
     # ── Phase 3: combine per-run outputs, then evaluate/report/plots ─────────

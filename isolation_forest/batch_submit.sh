@@ -36,12 +36,12 @@ set -euo pipefail
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
 FRACTIONS=(0.1 0.2 0.3 0.4 0.5)               # --train-goodRunList-fraction values
-RUNS_PER_JOB=1                                # runs per apply job. 1 = fully run-by-run
-                                              # (max parallelism, one Condor job per run).
-                                              # Raise it to submit fewer, chunkier jobs at
-                                              # the cost of wall time — each run is a
-                                              # separate python process either way, so
-                                              # grouping saves scheduler load, not compute.
+RUNS_PER_JOB=6                                # runs per apply job (processed sequentially
+                                              # within the job — each run is a separate
+                                              # python process either way, so grouping
+                                              # saves scheduler load, not compute).
+                                              # Lower it for more parallelism at the cost
+                                              # of more Condor jobs; 1 = one job per run.
 EOS_PREFIX="/eos/experiment/milliqan/run3_MilliMon/slab/"
 MODEL_TAG_PREFIX="condor_scan"                # BASE_TAG = <prefix>_trainFrac<F>
 RUN_LIST_NAME="all_run_list_EXTENDED.txt"     # apply list (under data/) to draw run numbers from
