@@ -87,12 +87,15 @@ echo ""
 # 	--apply-to-training-list \
 # 	"${FLAGS[@]}"
 
+# Plain training mode (no --train-goodRunList): training files come from the
+# good_list text file set in configs/config.yaml — data/good_run_list_TRAINING.txt.
+# --fraction is plain mode's counterpart of --train-goodRunList-fraction.
+# Note: without goodRunList mode no "_<quality>" suffix is appended, so outputs
+# land under models/condor_extended* (feature-variant suffixes still apply).
 python3 -m src.pipeline \
 --config configs/config.yaml \
 --model-tag condor_extended \
---train-goodRunList \
---train-goodRunList-quality Tight \
---train-goodRunList-fraction 0.1 \
+--fraction 0.1 \
 --apply-list /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/small_run.txt \
 "${FLAGS[@]}"
 	

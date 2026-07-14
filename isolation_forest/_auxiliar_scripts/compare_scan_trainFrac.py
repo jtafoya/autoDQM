@@ -6,8 +6,8 @@ Collapses the per-fraction reports produced by the batch_submit.sh scan
 (train → apply → combine DAG) into a single PDF, instead of five separate
 report/plot directories.
 
-Ground truth: the Tight good-run text list (the combine phase evaluates with
---train-goodRunList).  All metrics are read from each model's
+Ground truth: the good_run_list_TRAINING.txt text list (the same list the
+models are trained on).  All metrics are read from each model's
 eval_confusion_data.json — nothing is recomputed here.
 
 Scan dimension:
@@ -136,7 +136,7 @@ def make_figure(rows: list[dict]) -> plt.Figure:
 
     fig.suptitle(
         "Training-fraction scan — verdict rates per fraction\n"
-        "ground truth: Tight good-run text list  |  one model per fraction, "
+        "ground truth: training text list  |  one model per fraction, "
         "applied to the full run list",
         fontsize=12, fontweight="bold",
     )

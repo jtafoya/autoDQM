@@ -65,7 +65,7 @@ includeConfigVariables_DAQ:
 # if_n_estimators:  number of trees in the Isolation Forest ensemble.
 # if_max_samples:   samples drawn per tree (sklearn max_samples); higher = lower score variance.
 # if_max_features:  fraction of features considered per split (sklearn max_features); 1.0 = all.
-z_threshold:      6.0
+z_threshold:      7.0
 if_contamination: 0.001
 if_n_estimators:  200
 if_max_samples:   auto

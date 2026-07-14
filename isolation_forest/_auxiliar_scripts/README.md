@@ -95,7 +95,7 @@ Produces six PDFs in `plots/`:
 ### `compare_scan_trainFrac.py`
 Collapses the per-fraction reports of the training-fraction scan into one summary figure.
 Panels: known-good | not-certified subruns; lines: verdict rate (ok/warn/pend/alert, colour);
-x: training fraction. Ground truth: Tight good-run text list (from `eval_confusion_data.json`).
+x: training fraction. Ground truth: good_run_list_TRAINING.txt (from `eval_confusion_data.json`).
 Reads from `reports/scan_trainFracSweep/` (override with `--reports-dir`).
 Produces one PDF in `plots/`:
 - `scan_trainFrac_summary_rel.pdf`
