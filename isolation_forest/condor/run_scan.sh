@@ -33,9 +33,15 @@ set -euo pipefail
 # ── Constants shared by all phases ────────────────────────────────────────────
 CONFIG="configs/config.yaml"
 QUALITY="Tight"                    # training/ground-truth quality level
-SCAN_SUBDIR="scan_trainFracSweep"  # logs/<SUBDIR>, reports/<SUBDIR>, plots/<SUBDIR>
+SCAN_SUBDIR="scan_trainFracSweep"  # reports/<SUBDIR>, plots/<SUBDIR> (small, stay on AFS)
 APPLY_FRAC="1.0"                   # --apply-specific-run-fraction (1.0 = all subruns)
 INSTALLATION_PATH="/afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest"
+# Bulk scan CSVs live on EOS, not AFS: per-run outputs are ~1 GB per fraction
+# and the combine step writes an equal-sized merged log per fraction (~9 GB
+# working set for 5 fractions) — more than any AFS home quota.  EOS is mounted
+# on the batch workers, and these are large sequential writes (the
+# fuse-friendly case).
+SCAN_LOGS_DIR="/eos/user/l/lbailloe/autoDQM_scan/logs/${SCAN_SUBDIR}"
 
 PHASE=${1:?Usage: run_scan.sh <train|apply|combine> ...}
 shift
@@ -51,6 +57,14 @@ export PYTHONPATH="${HOME}/.local/lib/python${PYVER}/site-packages:${INSTALLATIO
 python3 -c "import pandas, sklearn, numpy, scipy, watchdog" || {
     echo "ERROR: required packages not found." >&2
     echo "Run 'bash setup.sh' on lxplus before submitting condor jobs." >&2
+    exit 1
+}
+
+# EOS must be reachable and the scan output dir must exist before any phase
+# writes to it; failing here (exit 1) is deliberate — it is a systemic
+# problem, unlike a single run with missing data.
+mkdir -p "${SCAN_LOGS_DIR}" || {
+    echo "ERROR: cannot create scan logs dir on EOS: ${SCAN_LOGS_DIR}" >&2
     exit 1
 }
 
@@ -98,7 +112,7 @@ case "$PHASE" in
                     --skip-train \
                     --apply-specific-run "$RUN" \
                     --apply-specific-run-fraction "$APPLY_FRAC" \
-                    --logs-dir "logs/${SCAN_SUBDIR}"; then
+                    --logs-dir "${SCAN_LOGS_DIR}"; then
                 n_ok=$((n_ok + 1))
             else
                 echo "WARNING: run $RUN failed (exit $?) — continuing" >&2
@@ -126,7 +140,7 @@ case "$PHASE" in
             --config "$CONFIG" \
             --model-tag "$MODEL_TAG" \
             --skip-train \
-            --logs-dir "logs/${SCAN_SUBDIR}" \
+            --logs-dir "${SCAN_LOGS_DIR}" \
             --combine-specific-run-outputs '*'
 
         echo ""
@@ -137,7 +151,7 @@ case "$PHASE" in
             --train-goodRunList \
             --train-goodRunList-quality "$QUALITY" \
             --skip-train --skip-apply \
-            --logs-dir    "logs/${SCAN_SUBDIR}" \
+            --logs-dir    "${SCAN_LOGS_DIR}" \
             --reports-dir "reports/${SCAN_SUBDIR}" \
             --plots-dir   "plots/${SCAN_SUBDIR}"
         ;;

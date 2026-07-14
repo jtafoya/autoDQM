@@ -169,4 +169,23 @@ fi
 
 # ── Step 5: submit the DAG (from isolation_forest/ so relative paths resolve) ─
 cd "${SCRIPT_DIR}"
+
+# Refuse to submit while a DAGMan for this DAG is still in the queue: a second
+# instance would die on the lock file, and cleaning the bookkeeping below would
+# blind the running one.
+if condor_q -nobatch 2>/dev/null | grep -q "condor/scan.dag"; then
+    echo "ERROR: a DAGMan for condor/scan.dag is already in the queue." >&2
+    echo "       condor_rm it (or let it finish) before resubmitting."   >&2
+    exit 1
+fi
+
+# Remove stale DAGMan bookkeeping from previous submissions.  In particular a
+# leftover scan.dag.nodes.log (worst case truncated mid-write by a full AFS
+# volume) blinds the new DAGMan to its own job events — it then waits forever
+# on jobs that already finished.  Rescue files are deliberately KEPT: they are
+# what lets a resubmission skip already-completed phases.
+rm -f condor/scan.dag.condor.sub condor/scan.dag.dagman.out condor/scan.dag.dagman.log \
+      condor/scan.dag.lib.out condor/scan.dag.lib.err condor/scan.dag.metrics \
+      condor/scan.dag.nodes.log condor/scan.dag.lock
+
 condor_submit_dag condor/scan.dag
