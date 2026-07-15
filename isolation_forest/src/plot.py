@@ -1149,7 +1149,13 @@ def plot_log(
         )
 
         n_runs = len(run_stats)
-        fig_w  = max(8, n_runs * 1.0)
+        # 1 in/run, capped at 80 in (as the per-file plot above): Agg rejects
+        # images over 65535 px per side, and the EXTENDED apply list (>1000
+        # runs) exceeded that.  Past the cap the per-bar labels and per-run
+        # ticks overlap into noise, so dense plots drop the annotations and
+        # fall back to sparse x ticks.
+        fig_w  = min(max(8, n_runs * 1.0), 80)
+        dense  = n_runs > 80
         fig, ax = plt.subplots(figsize=(fig_w, 4))
         # pend = anomalous but persistence unverifiable → treat like warn (darkorange)
         bar_colors = [
@@ -1162,23 +1168,32 @@ def plot_log(
                color=bar_colors, width=0.6, edgecolor="white", linewidth=0.5)
 
         # Annotate each bar with "ok/total (+pend PEND)"
-        for i, row in enumerate(run_stats.itertuples()):
-            label = (f"{int(row.n_good)}/{int(row.n_subruns)}"
-                     if row.n_pend == 0 else
-                     f"{int(row.n_good)}/{int(row.n_subruns)} (+{int(row.n_pend)}p)")
-            ax.text(i, min(row.pct_good + 2, 103), label,
-                    ha="center", va="bottom", fontsize=7)
+        if not dense:
+            for i, row in enumerate(run_stats.itertuples()):
+                label = (f"{int(row.n_good)}/{int(row.n_subruns)}"
+                         if row.n_pend == 0 else
+                         f"{int(row.n_good)}/{int(row.n_subruns)} (+{int(row.n_pend)}p)")
+                ax.text(i, min(row.pct_good + 2, 103), label,
+                        ha="center", va="bottom", fontsize=7)
 
         ax.set_xlim(-0.5, n_runs - 0.5)
         ax.set_ylim(0, 115)
         ax.set_ylabel("OK subruns (%)")
-        ax.set_xticks(range(n_runs))
-        ax.set_xticklabels(
-            ["● " + f"run{int(r)}" for r in run_stats["_run"]],
-            rotation=45, ha="right", fontsize=8,
-        )
-        for tick, c in zip(ax.get_xticklabels(), bar_colors):
-            tick.set_color(c)
+        if dense:
+            step = max(1, n_runs // 40)
+            ax.set_xticks(range(0, n_runs, step))
+            ax.set_xticklabels(
+                [f"run{int(r)}" for r in run_stats["_run"].iloc[::step]],
+                rotation=45, ha="right", fontsize=8,
+            )
+        else:
+            ax.set_xticks(range(n_runs))
+            ax.set_xticklabels(
+                ["● " + f"run{int(r)}" for r in run_stats["_run"]],
+                rotation=45, ha="right", fontsize=8,
+            )
+            for tick, c in zip(ax.get_xticklabels(), bar_colors):
+                tick.set_color(c)
         ax.axhline(100, color="steelblue", linestyle=":", linewidth=0.8, alpha=0.5)
         ax.set_title(
             f"Subrun quality per run  (alert threshold: {file_alert_n_channels} anomalous ch,"
@@ -1350,7 +1365,10 @@ def _plot_persistence_run_summary(
     )
 
     n_runs = len(run_stats)
-    fig_w  = max(8, n_runs * 1.0)
+    # Same width cap + dense fallback as the run summary in plot_log (3d):
+    # uncapped 1 in/run breaks Agg's 65535 px limit on long apply lists.
+    fig_w  = min(max(8, n_runs * 1.0), 80)
+    dense  = n_runs > 80
     fig, ax = plt.subplots(figsize=(fig_w, 4))
 
     def _bar_color(row):
@@ -1367,23 +1385,32 @@ def _plot_persistence_run_summary(
     ax.bar(range(n_runs), run_stats["pct_good"],
            color=bar_colors, width=0.6, edgecolor="white", linewidth=0.5)
 
-    for i, row in enumerate(run_stats.itertuples()):
-        label = f"{int(row.n_good)}/{int(row.n_subruns)}"
-        if row.n_pend:
-            label += f" +{int(row.n_pend)}p"
-        ax.text(i, min(row.pct_good + 2, 103), label,
-                ha="center", va="bottom", fontsize=7)
+    if not dense:
+        for i, row in enumerate(run_stats.itertuples()):
+            label = f"{int(row.n_good)}/{int(row.n_subruns)}"
+            if row.n_pend:
+                label += f" +{int(row.n_pend)}p"
+            ax.text(i, min(row.pct_good + 2, 103), label,
+                    ha="center", va="bottom", fontsize=7)
 
     ax.set_xlim(-0.5, n_runs - 0.5)
     ax.set_ylim(0, 115)
     ax.set_ylabel("Non-ALERT subruns (%)", fontsize=9)
-    ax.set_xticks(range(n_runs))
-    ax.set_xticklabels(
-        ["● " + f"run{int(r)}" for r in run_stats["run"]],
-        rotation=45, ha="right", fontsize=8,
-    )
-    for tick, c in zip(ax.get_xticklabels(), bar_colors):
-        tick.set_color(c)
+    if dense:
+        step = max(1, n_runs // 40)
+        ax.set_xticks(range(0, n_runs, step))
+        ax.set_xticklabels(
+            [f"run{int(r)}" for r in run_stats["run"].iloc[::step]],
+            rotation=45, ha="right", fontsize=8,
+        )
+    else:
+        ax.set_xticks(range(n_runs))
+        ax.set_xticklabels(
+            ["● " + f"run{int(r)}" for r in run_stats["run"]],
+            rotation=45, ha="right", fontsize=8,
+        )
+        for tick, c in zip(ax.get_xticklabels(), bar_colors):
+            tick.set_color(c)
     ax.axhline(100, color=_PERSIST_COLORS["ok"], linestyle=":", linewidth=0.8, alpha=0.5)
     alert_conditions = f"{file_alert_n_channels} persistent ch"
     if single_file_alert_n_channels:
