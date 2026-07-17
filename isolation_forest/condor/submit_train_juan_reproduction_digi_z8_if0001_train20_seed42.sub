@@ -1,0 +1,30 @@
+# HTCondor submission file — autoDQM Juan reproduction — training
+#
+# One global Digitizer-only training job using 20% of
+# good_run_list_TRAINING.txt with test_seed 42.
+#
+# Submit from the isolation_forest/ directory:
+#   condor_submit condor/submit_train_juan_reproduction_digi_z8_if0001_train20_seed42.sub
+
+universe   = vanilla
+executable = condor/run_train_juan_reproduction_digi_z8_if0001_train20_seed42.sh
+arguments  = configs/juan_reproduction_digi_z8_if0001_train20_seed42.yaml notrigger_nolvds ignoreConfig
+
+initialdir = /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest
+
+output = logs/$(ClusterId).$(ProcId).juan_reproduction_digi_z8_if0001_train20_seed42.out
+error  = logs/$(ClusterId).$(ProcId).juan_reproduction_digi_z8_if0001_train20_seed42.err
+log    = logs/$(ClusterId).juan_reproduction_digi_z8_if0001_train20_seed42.log
+
+request_cpus   = 4
+request_memory = 4096
+
++JobFlavour = "workday"
+max_retries = 10
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notification = Never
+
+queue 1

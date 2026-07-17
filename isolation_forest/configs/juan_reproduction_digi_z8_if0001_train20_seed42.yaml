@@ -1,0 +1,21 @@
+base: config.yaml
+model_tag: juan_reproduction_digi_z8_if0001_train20_seed42
+
+good_list: /afs/cern.ch/user/p/pengy/autoDQM/data/good_run_list_TRAINING.txt
+
+models_dir:  /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/models
+logs_dir:    /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/logs
+reports_dir: /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/reports
+plots_dir:   /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/plots
+
+z_threshold:                  8.0
+if_contamination:             0.001
+if_n_estimators:              200
+if_max_samples:               auto
+if_max_features:              1.0
+file_alert_n_channels:        2
+alert_consecutive_n:          5
+single_file_alert_n_channels: 5
+single_file_alert_max_z:      15.0
+
+test_seed: 42
