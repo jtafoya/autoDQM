@@ -1273,11 +1273,21 @@ def _plot_persistence_subrun_grid(
     fig_h  = max(4, n_runs * cell_h + 2.5)
     fig_w  = max(6, n_subs * cell_w + 3.5)
 
-    _MAX_PX = 65535
-    if fig_w * 100 > _MAX_PX or fig_h * 100 > _MAX_PX:
-        print(f"  [SKIP] Persistence subrun grid — figure would be "
-              f"{fig_w*100:.0f}×{fig_h*100:.0f} px (exceeds matplotlib 65535 px limit).")
-        return
+    # Cap the canvas instead of skipping the plot.  imshow(aspect="auto") below
+    # stretches the full n_runs x n_subs matrix to fill the axes, so clamping the
+    # figure only shrinks each cell — every subrun is still drawn.
+    #
+    # 60 in at the 200 DPI rcParam is 12 000 px: comfortably under both the
+    # 65535 px Agg raster cap that used to force a skip here and the 20 000 px
+    # _AUTO_PDF_PX_THRESHOLD, so the grid stays a fast single-raster PNG.  Sizing
+    # per-cell (0.22 in) instead would demand ~190 in for a full-scan grid, which
+    # makes matplotlib rasterize a ~38 000 px canvas and take minutes to save.
+    _MAX_IN = 60.0
+    if fig_w > _MAX_IN or fig_h > _MAX_IN:
+        print(f"  Persistence subrun grid — {n_runs} run(s) x {n_subs} subrun(s): "
+              f"capping canvas at {_MAX_IN:.0f} in (cells shrink; no data dropped).")
+        fig_w = min(fig_w, _MAX_IN)
+        fig_h = min(fig_h, _MAX_IN)
 
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
 
@@ -1292,10 +1302,22 @@ def _plot_persistence_subrun_grid(
 
     ax.imshow(grid, aspect="auto", cmap=cmap, norm=norm, interpolation="nearest")
 
-    ax.set_yticks(range(n_runs))
-    ax.set_yticklabels([f"run{r}" for r in runs], fontsize=7)
-    ax.set_xticks(range(n_subs))
-    ax.set_xticklabels([f"sr{s}" for s in subruns], fontsize=7, rotation=45, ha="right")
+    # Label every cell only while they still fit: at fontsize 7 a tick needs
+    # ~0.25 in, so keep one label per 0.25 in of canvas and thin the rest.
+    # Without this a wide grid draws thousands of overlapping labels.
+    def _tick_step(n: int, span_in: float) -> int:
+        return max(1, int(np.ceil(n / max(1.0, span_in * 4.0))))
+
+    ystep = _tick_step(n_runs, fig_h)
+    xstep = _tick_step(n_subs, fig_w)
+
+    yticks = range(0, n_runs, ystep)
+    xticks = range(0, n_subs, xstep)
+    ax.set_yticks(list(yticks))
+    ax.set_yticklabels([f"run{runs[i]}" for i in yticks], fontsize=7)
+    ax.set_xticks(list(xticks))
+    ax.set_xticklabels([f"sr{subruns[i]}" for i in xticks],
+                       fontsize=7, rotation=45, ha="right")
     ax.set_xlabel("Subrun", fontsize=8)
     ax.set_ylabel("Run", fontsize=8)
     alert_conditions = f"{file_alert_n_channels} persistent ch"

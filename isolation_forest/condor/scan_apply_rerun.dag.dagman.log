@@ -1,0 +1,16 @@
+000 (9401729.000.000) 07/14 16:41:39 Job submitted from host: <137.138.44.55:9618?addrs=137.138.44.55-9618+[2001-1458-d00-1a--48]-9618&alias=bigbird17.cern.ch&noUDP&sock=schedd_5086_26c4>
+...
+001 (9401729.000.000) 07/14 16:41:43 Job executing on host: <137.138.44.55:9618?addrs=137.138.44.55-9618+[2001-1458-d00-1a--48]-9618&alias=bigbird17.cern.ch&noUDP&sock=schedd_5086_26c4>
+...
+001 (9401729.000.000) 07/15 10:30:39 Job executing on host: <137.138.44.55:9618?addrs=137.138.44.55-9618+[2001-1458-d00-1a--48]-9618&alias=bigbird17.cern.ch&noUDP&sock=schedd_5627_3b81>
+...
+004 (9401729.000.000) 07/15 10:35:25 Job was evicted.
+	(0) CPU times
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+...
+009 (9401729.000.000) 07/15 10:35:25 Job was aborted.
+	via condor_rm (by user lbailloe)
+...

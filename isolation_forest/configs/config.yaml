@@ -25,7 +25,7 @@ plots_dir:   /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest/plots
 # use_trigger includes TriggerBoard rate features; use_lvds includes LVDS pin-count features.
 # ignore_features: list of glob patterns for features to exclude entirely from training and
 # scoring (e.g. TDCRollovers_* drops TDCRollovers_mean/std/median).
-use_trigger: true
+use_trigger: false
 use_lvds:    true
 ignore_features:
   - "TDC*"
@@ -45,7 +45,7 @@ thresholds_json_path:  /eos/experiment/milliqan/run3/slab/configs/thresholds.jso
 # Supported variables: triggerBoard.trigger, triggerBoard.prescale,
 #   triggerBoard.trigger_mask, triggerBoard.dead_time, triggerBoard.coincidence_time,
 #   triggerBoard.nLayerThreshold, triggerBoard.nHitThreshold, triggerBoard.zero_bias
-includeConfigInfo_Trigger: true
+includeConfigInfo_Trigger: false
 includeConfigVariables_Trigger:
   - "triggerBoard.trigger"
   - "triggerBoard.prescale"
@@ -65,7 +65,11 @@ includeConfigVariables_DAQ:
 # if_n_estimators:  number of trees in the Isolation Forest ensemble.
 # if_max_samples:   samples drawn per tree (sklearn max_samples); higher = lower score variance.
 # if_max_features:  fraction of features considered per split (sklearn max_features); 1.0 = all.
+<<<<<<< HEAD
 z_threshold:      7.0
+=======
+z_threshold:      8.0
+>>>>>>> 0f0a576 (syncing lxplus codebase changes and local changes)
 if_contamination: 0.001
 if_n_estimators:  200
 if_max_samples:   auto
@@ -77,7 +81,7 @@ if_max_features:  1.0
 #   alert_consecutive_n — how many consecutive files a channel must be anomalous in to count
 #     as persistent (1 = disabled).
 file_alert_n_channels: 2
-alert_consecutive_n:   3
+alert_consecutive_n:   5
 
 # Single-file severity alerts (no persistence required, fire on one bad file):
 #   single_file_alert_n_channels — [ALERT] when this many channels are anomalous at once.

@@ -16,9 +16,17 @@ output = condor/logs/scan_combine_$(BASE_TAG).$(Cluster).out
 error  = condor/logs/scan_combine_$(BASE_TAG).$(Cluster).err
 log    = /dev/null
 
-# Combine + evaluate is single-threaded and light on memory.
+# Combine + evaluate is single-threaded, but Pass 1 (merging all per-run CSVs
+# into one log) plus Pass 2 (loads per-subrun data for up to max_subrun_plots
+# categories) are memory-heavy and grow with data volume. History:
+#   - 2026-07-18 (jobs 9413538.*): peaked ~7325 MB RSS; 3000 MB request was too
+#     low, 4/5 procs held on "cgroup memory limit". Bumped to 10000 MB.
+#   - 2026-07-20 (jobs 9416145.*): all 5 procs held, measured ~23950 MB — over
+#     3x the earlier peak (larger merged logs), blowing past the 12000 MB cgroup
+#     cap the 10000 MB request rounded up to. DAG aborted with no plots.
+# 32000 MB gives ~33% headroom over the observed 24 GB peak.
 request_cpus   = 1
-request_memory = 2048
+request_memory = 32000
 
 +JobFlavour = "workday"
 

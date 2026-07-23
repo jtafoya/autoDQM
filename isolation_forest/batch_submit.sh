@@ -1,9 +1,15 @@
 #!/bin/bash
 # batch_submit.sh — generate and submit the training-fraction scan as a Condor DAG.
 #
+<<<<<<< HEAD
 # Goal: for each training fraction, train ONE IsolationForest on the
 # good_run_list_TRAINING.txt text list (config good_list), then apply that
 # SAME model to every run in the apply list.
+=======
+# Goal: for each training fraction, train ONE IsolationForest on good_list
+# (config default: good_run_list_TRAINING.txt), then apply that SAME model to
+# every run in the apply list.
+>>>>>>> 0f0a576 (syncing lxplus codebase changes and local changes)
 # Training is done once per fraction (not once per batch), so batches share a
 # model.  The apply work is sharded per run (via --apply-specific-run) so it
 # runs in parallel and can be merged back into a single report per fraction with
@@ -36,7 +42,11 @@
 set -euo pipefail
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
+<<<<<<< HEAD
 FRACTIONS=(0.01 0.5 0.1 0.3 0.5)               # --train-goodRunList-fraction values
+=======
+FRACTIONS=(0.2)                                 # --train-goodRunList-fraction values
+>>>>>>> 0f0a576 (syncing lxplus codebase changes and local changes)
 RUNS_PER_JOB=5                                # runs per apply job (processed sequentially
                                               # within the job — each run is a separate
                                               # python process either way, so grouping

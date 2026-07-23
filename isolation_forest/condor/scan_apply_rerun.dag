@@ -1,0 +1,7 @@
+# autoDQM training-fraction scan — apply+combine rerun at z_threshold=7.0.
+# Models were already trained (and their saved detector.pkl z_threshold patched
+# in place) so this DAG skips the train node entirely and starts at apply.
+JOB   apply    condor/submit_scan_apply.sub
+JOB   combine  condor/submit_scan_combine.sub
+
+PARENT apply  CHILD combine
