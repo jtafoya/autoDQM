@@ -1,0 +1,36 @@
+# HTCondor submit file — reproduce pengy's 40% apply on a worker node.
+#
+# One job: run_repro_pengy.sh applies our model to pengy's frozen 40% manifest
+# (his exact subrun paths) and evaluates. Split off the login node because
+# ~13.4k subruns in one process exceeds the interactive CPU/time limit.
+#
+# Prereqs on lxplus (from isolation_forest/):
+#   git fetch origin
+#   git checkout origin/branch_peng -- condor/apply_good_training_sampled_paths_seed42_frac40.tsv
+#   chmod +x condor/run_repro_pengy.sh
+#   mkdir -p condor/logs
+#   condor_submit condor/submit_repro_pengy.sub
+
+universe   = vanilla
+executable = condor/run_repro_pengy.sh
+
+initialdir = /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest
+
+output = condor/logs/repro_pengy.$(Cluster).out
+error  = condor/logs/repro_pengy.$(Cluster).err
+log    = /dev/null
+
+# Apply streams subruns (low memory); evaluate loads the ~13.4k-subrun log
+# (~1-2 GB). 8 GB / 4 cores stays well clear of the bigmcore hostgroup.
+request_cpus   = 4
+request_memory = 8000
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notify_user  = lbailloe@cern.ch
+notification = Error
+
+queue
