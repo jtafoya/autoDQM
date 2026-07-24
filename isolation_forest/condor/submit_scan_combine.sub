@@ -24,13 +24,15 @@ log    = /dev/null
 #   - 2026-07-20 (jobs 9416145.*): all 5 procs held, measured ~23950 MB — over
 #     3x the earlier peak (larger merged logs), blowing past the 12000 MB cgroup
 #     cap the 10000 MB request rounded up to. DAG aborted with no plots.
-#   - 2026-07-23 (scan_train20_apply100): apply fraction raised 0.4 -> 1.0, so the
-#     merged log is ~2.5x the 40% run's volume; the ~24 GB peak (Pass 1, dominated
-#     by the in-memory merged log) projects to ~60 GB at 100% apply.
-# 80000 MB gives ~33% headroom over the projected ~60 GB peak. Watch the first
-# combine job's RSS and re-tune if needed.
+#   - 2026-07-23 (scan_train20_apply100): tried 80000 for the projected ~60 GB
+#     100%-apply log, but at CERN a large request auto-scales RequestCpus (1 -> 32
+#     at ~2.5 GB/core) and pins the job to the scarce "bigmcore" hostgroup (only
+#     ~10 slots pool-wide) -> stuck Idle for hours, never matched. Reverted to
+#     32000, which schedules on normal slots. If the 100% merged log OOMs at 32 GB,
+#     shrink the footprint (lower max_subrun_plots) or apply to the good-run list
+#     only (smaller log) — do NOT raise memory back into bigmcore territory.
 request_cpus   = 1
-request_memory = 80000
+request_memory = 32000
 
 +JobFlavour = "workday"
 

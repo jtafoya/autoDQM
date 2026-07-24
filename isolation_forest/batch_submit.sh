@@ -45,7 +45,10 @@ RUNS_PER_JOB=5                                # runs per apply job (processed se
                                               # of more Condor jobs; 1 = one job per run.
 EOS_PREFIX="/eos/experiment/milliqan/run3_MilliMon/slab/"
 MODEL_TAG_PREFIX="condor_scan"                # BASE_TAG = <prefix>_trainFrac<F>
-RUN_LIST_NAME="all_run_list_EXTENDED.txt"     # apply list (under data/) to draw run numbers from
+RUN_LIST_NAME="good_run_list_TRAINING.txt"    # apply list (under data/): good runs only → small merged
+                                              # log (combine fits normal slots, no bigmcore) and
+                                              # total≈known-good, reproducing pengy's FP setup. Swap
+                                              # back to all_run_list_EXTENDED.txt to also score unknowns.
 # ──────────────────────────────────────────────────────────────────────────────
 
 DRY_RUN=false

@@ -42,7 +42,7 @@ set -euo pipefail
 # ── Constants shared by all phases ────────────────────────────────────────────
 CONFIG="configs/config.yaml"
 QUALITY="Tight"                    # training/ground-truth quality level
-SCAN_SUBDIR="scan_train20_apply100" # reports/<SUBDIR>, plots/<SUBDIR> (small, stay on AFS)
+SCAN_SUBDIR="scan_train20_apply100_goodonly" # reports/<SUBDIR>, plots/<SUBDIR> (small, stay on AFS)
 APPLY_FRAC="1.0"                   # --apply-specific-run-fraction (1.0 = all subruns)
 
 # Feature variant.  "digi only" in the sweep-comparison scripts means BOTH trigger
@@ -140,13 +140,17 @@ case "$PHASE" in
         n_fail=0
         for RUN in "${RUNS[@]}"; do
             echo "--- Run $RUN ---"
-            # Without --train-goodRunList, --apply-specific-run resolves the
-            # run's files by filtering the config apply_list — the same list
-            # batch_submit.sh drew the run numbers from.
+            # --train-goodRunList makes --apply-specific-run resolve the run's
+            # subruns by scanning the EOS slab directory directly (every subrun on
+            # disk), and is REQUIRED: pipeline.py errors "--apply-specific-run
+            # requires --train-goodRunList" without it. It does NOT retrain
+            # (--skip-train stays) and does NOT set the ground truth — that is the
+            # combine phase's job, which deliberately omits the flag.
             if python3 -m src.pipeline \
                     --config "$CONFIG" \
                     --model-tag "$MODEL_TAG" \
                     --skip-train \
+                    --train-goodRunList --train-goodRunList-quality "$QUALITY" \
                     --apply-specific-run "$RUN" \
                     --apply-specific-run-fraction "$APPLY_FRAC" \
                     "${FEATURE_FLAGS[@]}" \
