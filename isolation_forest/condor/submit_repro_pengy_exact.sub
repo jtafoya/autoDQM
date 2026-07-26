@@ -1,0 +1,38 @@
+# HTCondor submit file — clean-room reproduction of pengy's 3.5% FP result.
+#
+# Two independent procs (see run_repro_pengy_exact.sh):
+#   pengy   — his trained model + his frozen manifest  → must give 473/13432 (3.5%)
+#   retrain — retrain by his method + same manifest    → tells whether training reproduces
+#
+# Prereqs on lxplus (from isolation_forest/):
+#   git checkout origin/branch_peng -- condor/apply_good_training_sampled_paths_seed42_frac40.tsv
+#   chmod +x condor/run_repro_pengy_exact.sh
+#   mkdir -p condor/logs
+#   condor_submit condor/submit_repro_pengy_exact.sub
+
+universe   = vanilla
+executable = condor/run_repro_pengy_exact.sh
+
+initialdir = /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest
+
+output = condor/logs/repro_pengy_exact_$(MODE).$(Cluster).out
+error  = condor/logs/repro_pengy_exact_$(MODE).$(Cluster).err
+log    = /dev/null
+
+arguments = $(MODE)
+
+# Apply streams subruns (low memory); evaluate loads the ~13.4k-subrun log.
+# The retrain proc additionally trains on ~20% of the good list, hence the
+# 1-day flavour instead of workday.
+request_cpus   = 4
+request_memory = 8000
+
++JobFlavour = "tomorrow"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notify_user  = lbailloe@cern.ch
+notification = Error
+
+queue MODE in (pengy retrain)

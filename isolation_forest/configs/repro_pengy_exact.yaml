@@ -1,0 +1,26 @@
+base: config.yaml
+model_tag: repro_pengy_exact   # overridden per mode by --model-tag in run_repro_pengy_exact.sh
+
+good_list: /afs/cern.ch/user/l/lbailloe/private/autoDQM/data/good_run_list_TRAINING.txt
+
+# Pinned copy of pengy's configs/juan_reproduction_digi_z8_if0001_train20_seed42.yaml
+# (branch_peng) so the reproduction is immune to any future drift of the base
+# config. Only the paths differ (lbailloe instead of pengy).
+z_threshold:                  8.0
+if_contamination:             0.001
+if_n_estimators:              200
+if_max_samples:               auto
+if_max_features:              1.0
+file_alert_n_channels:        2
+alert_consecutive_n:          5
+single_file_alert_n_channels: 5
+single_file_alert_max_z:      15.0
+
+# Feature composition of the "digi only, noTC" variant: trigger-config off,
+# DAQ-config on (both base configs agree on DAQ; pengy's runs forced trigger-config
+# off via --no-trigger-config). Pinned here so the resolved model tag and feature
+# set cannot silently change with the base config.
+includeConfigInfo_Trigger: false
+includeConfigInfo_DAQ:     true
+
+test_seed: 42

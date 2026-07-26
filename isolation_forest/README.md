@@ -1291,6 +1291,33 @@ python3 -m src.pipeline \
 
 ---
 
+## Clean-room reproduction of pengy's 3.5% FP result
+
+Pengy's reference number (473/13432 known-good subruns alerted = 3.5%) comes from:
+digi-only model (`--no-trigger --no-trigger-LVDS --no-trigger-config`), z=8σ,
+`if_contamination` 0.001, `alert_consecutive_n` 5, trained on 20% of
+`good_run_list_TRAINING.txt` (seed 42), applied to his frozen per-run 40% manifest
+(`condor/apply_good_training_sampled_paths_seed42_frac40.tsv`, from `branch_peng`),
+evaluated with **text-list ground truth** (`--good-list-path`, NOT the catalogue —
+catalogue-Tight yields `known_good = 0` on this range and no FP rate at all).
+
+`condor/run_repro_pengy_exact.sh` + `condor/submit_repro_pengy_exact.sub` run the
+reproduction as two independent condor procs against pinned parameters
+(`configs/repro_pengy_exact.yaml`):
+
+| Mode      | Model                                   | Expected outcome |
+|-----------|-----------------------------------------|------------------|
+| `pengy`   | his trained model, copied from his AFS  | exactly 473/13432 (3.5%); deviation ⇒ environment or files missing from EOS |
+| `retrain` | retrained by his method (20%, seed 42)  | matches `pengy` mode iff the printed model diff (seen_files + reference stats) is clean; a diff ⇒ the good-list globs resolve differently today than at his train time |
+
+Both modes wipe their model/log/report dirs first — `step_apply` appends to an
+existing log and `step_evaluate` auto-skips when `eval_summary.txt` exists, so
+stale outputs would otherwise corrupt or mask the result. The job prints the
+manifest-coverage count (unique subruns in the log vs manifest lines): the FP
+denominator is only comparable when they match.
+
+---
+
 ## Known limitations
 
 - **Single directory watch**: the monitor watches one directory. For multiple live paths,
