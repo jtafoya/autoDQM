@@ -1,18 +1,19 @@
 #!/bin/bash
-# batch_submit.sh — generate and submit the training-fraction scan as a Condor DAG.
+# batch_submit.sh — generate and submit the pengy-equivalent reproduction DAG.
 #
-# Goal: for each training fraction, train ONE IsolationForest on good_list
-# (config default: good_run_list_TRAINING.txt), then apply that SAME model to
-# every run in the apply list.
-# Training is done once per fraction (not once per batch), so batches share a
-# model.  The apply work is sharded per run (via --apply-specific-run) so it
-# runs in parallel and can be merged back into a single report per fraction with
-# the pipeline's built-in --combine-specific-run-outputs step.
+# Goal: reproduce pengy's 3.5% FP method exactly, parallelized like his setup:
+# train ONE IsolationForest on 20% of good_list (good_run_list_TRAINING.txt,
+# seed 42, pinned params in configs/repro_pengy_exact.yaml), then apply that
+# SAME model to his frozen seed42/frac40 manifest
+# (condor/apply_good_training_sampled_paths_seed42_frac40.tsv, from
+# branch_peng), sharded one Condor job per run.  The per-run outputs are merged
+# back into a single log with the pipeline's --combine-specific-run-outputs
+# step and evaluated against the training good list (text-list ground truth) —
+# the same accounting behind his 473/13432 = 3.5%.
 #
 # What this script does:
-#   1. Reads an apply run-list (default: data/all_run_list_EXTENDED.txt) and
-#      extracts the run numbers of every real EOS line (comments/blanks/
-#      commented-out runs are ignored).
+#   1. Reads the run numbers from column 1 of the frozen manifest (the
+#      authoritative source: exactly the runs pengy applied to).
 #   2. Groups those run numbers into chunks of $RUNS_PER_JOB (a '+'-joined list
 #      per chunk). Default is 1 — one Condor apply job per run, run in parallel,
 #      so the apply step finishes in ~one run's wall time instead of days.
@@ -21,8 +22,10 @@
 #        scan_apply_params.txt    BASE_TAG, RUN_GROUP          (fractions × groups)
 #        scan_combine_params.txt  BASE_TAG                     (1 line / fraction)
 #      with BASE_TAG = <prefix>_trainFrac<F>  (F's dot -> 'p').
-#   4. Writes condor/scan.dag chaining the three phases: train → apply → combine.
-#   5. condor_submit_dag condor/scan.dag.
+#   4. Writes condor/repro_pengy.dag chaining the three phases: train → apply → combine.
+#      (Own DAG filename: the old scan.dag rescue files must never make DAGMan
+#      skip nodes of this different experiment.)
+#   5. condor_submit_dag condor/repro_pengy.dag.
 #
 # The DAG guarantees every model is trained before any apply job runs, and every
 # apply job finishes before the combine/evaluate step for its fraction.
@@ -36,19 +39,18 @@
 set -euo pipefail
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
-FRACTIONS=(0.2)                                 # --train-goodRunList-fraction values
-RUNS_PER_JOB=5                                # runs per apply job (processed sequentially
+FRACTIONS=(0.2)                               # training fractions (pengy: 0.2, seed 42)
+RUNS_PER_JOB=1                                # runs per apply job (processed sequentially
                                               # within the job — each run is a separate
                                               # python process either way, so grouping
                                               # saves scheduler load, not compute).
-                                              # Lower it for more parallelism at the cost
-                                              # of more Condor jobs; 1 = one job per run.
-EOS_PREFIX="/eos/experiment/milliqan/run3_MilliMon/slab/"
-MODEL_TAG_PREFIX="condor_scan"                # BASE_TAG = <prefix>_trainFrac<F>
-RUN_LIST_NAME="good_run_list_TRAINING.txt"    # apply list (under data/): good runs only → small merged
-                                              # log (combine fits normal slots, no bigmcore) and
-                                              # total≈known-good, reproducing pengy's FP setup. Swap
-                                              # back to all_run_list_EXTENDED.txt to also score unknowns.
+                                              # 1 = one job per run, pengy's sharding.
+MODEL_TAG_PREFIX="repro_pengy"                # BASE_TAG = <prefix>_trainFrac<F>; deliberately
+                                              # distinct from condor_scan_* so the fresh
+                                              # retrain never wipes the earlier scan models.
+MANIFEST_NAME="apply_good_training_sampled_paths_seed42_frac40.tsv"  # pengy's frozen 40%
+                                              # per-run sample (under condor/, from branch_peng):
+                                              # column 1 = run number, column 2 = subrun path.
 # ──────────────────────────────────────────────────────────────────────────────
 
 DRY_RUN=false
@@ -61,41 +63,37 @@ fi
 
 # Resolve locations relative to this script so it works from any cwd.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # isolation_forest/
-REPO_ROOT="$(dirname "${SCRIPT_DIR}")"                       # autoDQM/
-RUN_LIST="${REPO_ROOT}/data/${RUN_LIST_NAME}"
 CONDOR_DIR="${SCRIPT_DIR}/condor"
+MANIFEST="${CONDOR_DIR}/${MANIFEST_NAME}"
 TRAIN_PARAMS="${CONDOR_DIR}/scan_train_params.txt"
 APPLY_PARAMS="${CONDOR_DIR}/scan_apply_params.txt"
 COMBINE_PARAMS="${CONDOR_DIR}/scan_combine_params.txt"
-DAG_FILE="${CONDOR_DIR}/scan.dag"
+DAG_FILE="${CONDOR_DIR}/repro_pengy.dag"
 
-if [ ! -f "${RUN_LIST}" ]; then
-    echo "ERROR: apply run-list not found: ${RUN_LIST}" >&2
+if [ ! -f "${MANIFEST}" ]; then
+    echo "ERROR: frozen manifest not found: ${MANIFEST}" >&2
+    echo "       git checkout origin/branch_peng -- condor/${MANIFEST_NAME}" >&2
     exit 1
 fi
 
 mkdir -p "${CONDOR_DIR}/logs"
 
-# ── Step 1: extract run numbers from the apply list ───────────────────────────
-# Each real line looks like  <prefix>/1600/Digitizer_run1601_subrun*.csv
-# — pull the integer after "Digitizer_run".
+# ── Step 1: extract run numbers from the frozen manifest ──────────────────────
+# Column 1 of the TSV is the run number; unique + sorted = the exact run set
+# pengy applied to.  run_scan.sh's apply phase re-reads the manifest to get
+# each run's frozen subrun paths, so this list and the applied paths can never
+# disagree.
 RUNS=()
-while IFS= read -r line || [ -n "$line" ]; do
-    case "$line" in
-        "${EOS_PREFIX}"*) ;;      # a real EOS glob line
-        *) continue ;;            # comment, blank, or commented-out run
-    esac
-    run="${line##*Digitizer_run}"   # -> "1601_subrun*.csv"
-    run="${run%%_*}"                # -> "1601"
+while IFS= read -r run; do
     case "$run" in
         ''|*[!0-9]*) continue ;;    # skip anything that is not a bare integer
     esac
     RUNS+=("$run")
-done < "${RUN_LIST}"
+done < <(cut -f1 "${MANIFEST}" | sort -un)
 
 num_runs=${#RUNS[@]}
 if [ "$num_runs" -eq 0 ]; then
-    echo "ERROR: no run numbers found in ${RUN_LIST} (prefix '${EOS_PREFIX}')" >&2
+    echo "ERROR: no run numbers found in manifest ${MANIFEST}" >&2
     exit 1
 fi
 
@@ -136,7 +134,7 @@ done
 
 # ── Step 4: write the DAG (train → apply → combine) ───────────────────────────
 cat > "${DAG_FILE}" <<'EOF'
-# autoDQM training-fraction scan — generated by batch_submit.sh.
+# autoDQM pengy-equivalent reproduction — generated by batch_submit.sh.
 # Three phases run strictly in order; every job of a node completes before the
 # next node starts.
 JOB   train    condor/submit_scan_train.sub
@@ -152,8 +150,8 @@ n_apply=$(( num_groups * ${#FRACTIONS[@]} ))
 n_combine=${#FRACTIONS[@]}
 
 echo "============================================================"
-echo "  autoDQM training-fraction scan"
-echo "  Apply run-list : ${RUN_LIST}"
+echo "  autoDQM pengy-equivalent reproduction (frozen manifest)"
+echo "  Apply manifest : ${MANIFEST}  ($(wc -l < "${MANIFEST}") frozen paths)"
 echo "  Run numbers    : ${num_runs}"
 echo "  Runs per job   : ${RUNS_PER_JOB}  ->  ${num_groups} apply groups"
 echo "  Fractions      : ${FRACTIONS[*]}"
@@ -167,7 +165,7 @@ echo "============================================================"
 
 if [ "$DRY_RUN" = true ]; then
     echo "[--dry-run] Files generated. Not submitting."
-    echo "[--dry-run] To submit: cd '${SCRIPT_DIR}' && condor_submit_dag condor/scan.dag"
+    echo "[--dry-run] To submit: cd '${SCRIPT_DIR}' && condor_submit_dag condor/repro_pengy.dag"
     exit 0
 fi
 
@@ -177,8 +175,8 @@ cd "${SCRIPT_DIR}"
 # Refuse to submit while a DAGMan for this DAG is still in the queue: a second
 # instance would die on the lock file, and cleaning the bookkeeping below would
 # blind the running one.
-if condor_q -nobatch 2>/dev/null | grep -q "condor/scan.dag"; then
-    echo "ERROR: a DAGMan for condor/scan.dag is already in the queue." >&2
+if condor_q -nobatch 2>/dev/null | grep -q "condor/repro_pengy.dag"; then
+    echo "ERROR: a DAGMan for condor/repro_pengy.dag is already in the queue." >&2
     echo "       condor_rm it (or let it finish) before resubmitting."   >&2
     exit 1
 fi
@@ -188,8 +186,8 @@ fi
 # volume) blinds the new DAGMan to its own job events — it then waits forever
 # on jobs that already finished.  Rescue files are deliberately KEPT: they are
 # what lets a resubmission skip already-completed phases.
-rm -f condor/scan.dag.condor.sub condor/scan.dag.dagman.out condor/scan.dag.dagman.log \
-      condor/scan.dag.lib.out condor/scan.dag.lib.err condor/scan.dag.metrics \
-      condor/scan.dag.nodes.log condor/scan.dag.lock
+rm -f condor/repro_pengy.dag.condor.sub condor/repro_pengy.dag.dagman.out condor/repro_pengy.dag.dagman.log \
+      condor/repro_pengy.dag.lib.out condor/repro_pengy.dag.lib.err condor/repro_pengy.dag.metrics \
+      condor/repro_pengy.dag.nodes.log condor/repro_pengy.dag.lock
 
-condor_submit_dag condor/scan.dag
+condor_submit_dag condor/repro_pengy.dag

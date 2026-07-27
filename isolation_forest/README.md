@@ -1316,6 +1316,27 @@ stale outputs would otherwise corrupt or mask the result. The job prints the
 manifest-coverage count (unique subruns in the log vs manifest lines): the FP
 denominator is only comparable when they match.
 
+### Parallelized variant (batch_submit.sh DAG)
+
+`batch_submit.sh` generates and submits the same reproduction sharded like
+pengy's setup — one condor apply job per manifest run — as a three-node DAG
+(`condor/repro_pengy.dag`: train → apply → combine):
+
+- **train** — one model on 20% of the good list (seed 42, pinned config);
+  wipes any stale model dir first so a fresh submission always retrains.
+- **apply** — one job per run; each extracts its run's rows from the frozen
+  TSV, applies in a node-local scratch dir, checks coverage (unique subruns ==
+  manifest rows for that run), and atomically publishes
+  `<tag>_run<N>.csv` to EOS. No re-sampling, no in-place EOS appends — a
+  retried job re-publishes atomically instead of corrupting a partial file.
+- **combine** — merges per-run CSVs, prints coverage (CSVs present vs manifest
+  runs), wipes stale eval outputs, then evaluates with text-list ground truth.
+
+The DAG has its own filename (not `scan.dag`) so rescue files from the earlier
+training-fraction scan can never make DAGMan skip nodes of this experiment.
+Model tags are `repro_pengy_trainFrac*` — distinct from `condor_scan_*` so the
+fresh retrain never touches the earlier scan models.
+
 ---
 
 ## Known limitations
