@@ -1,0 +1,22 @@
+# juan_repro.dag — chain pengy's juan_reproduction end to end, unattended:
+#   train (1 job) → apply (97-job array, one per run) → combine + evaluate.
+#
+# Submit from isolation_forest/:
+#   mkdir -p logs condor/logs
+#   condor_submit_dag condor/juan_repro.dag
+#
+# Node semantics: the apply node fails if ANY of its 97 procs exits non-zero
+# (pengy's per-run script hard-fails on validation errors, e.g. a manifest
+# path missing from EOS). RETRY re-runs the node — safe, since per-run
+# publishes are atomic and idempotent. If a run fails persistently, DAGMan
+# writes a rescue file; inspect the failing proc's .err under condor/logs/,
+# then resubmit this DAG to resume from the rescue point.
+JOB   train    condor/submit_train_juan_reproduction_digi_z8_if0001_train20_seed42.sub
+JOB   apply    condor/submit_apply_juan_reproduction_digi_z8_if0001_train20_seed42_one_run.sub
+JOB   combine  condor/submit_combineEval_juan_reproduction.sub
+
+PARENT train  CHILD apply
+PARENT apply  CHILD combine
+
+RETRY train   1
+RETRY apply   2

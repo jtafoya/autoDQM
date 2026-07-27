@@ -1,0 +1,26 @@
+# HTCondor submit file — combine + evaluate node of juan_repro.dag.
+# One job: merge the 97 per-run CSVs and evaluate against the training good
+# list. Ordered after the apply array by condor/juan_repro.dag.
+
+universe   = vanilla
+executable = condor/run_combineEval_juan_reproduction.sh
+
+initialdir = /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest
+
+output = condor/logs/combineEval_juan_reproduction.$(Cluster).out
+error  = condor/logs/combineEval_juan_reproduction.$(Cluster).err
+log    = /dev/null
+
+# pandas concat of ~1M log rows peaks well under 8 GB.
+request_cpus   = 4
+request_memory = 8000
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notify_user  = lbailloe@cern.ch
+notification = Error
+
+queue

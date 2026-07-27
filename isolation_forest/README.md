@@ -1352,10 +1352,14 @@ checked out from `branch_peng` with **only the AFS path constants ported**
 - `configs/juan_reproduction_digi_z8_if0001_train20_seed42.yaml` — his exact
   parameters, paths ported.
 
-No DAG: submit train, wait for it to finish, submit the apply array, then
-combine + evaluate manually (see workflow below). Note his TSV has 13,620 rows
-but his published evaluation counted 13,432 subruns — 188 paths did not reach
-his final log, so a fully-successful rerun today yields a slightly larger
+To run the three stages unattended (train → apply array → combine+evaluate),
+`condor/juan_repro.dag` chains them with DAGMan —
+`condor_submit_dag condor/juan_repro.dag` and walk away; the combine/evaluate
+stage runs as its own condor job
+(`condor/run_combineEval_juan_reproduction.sh`) and prints the FP line next to
+pengy's reference numbers in its `.out`. Note his TSV has 13,620 rows but his
+published evaluation counted 13,432 subruns — 188 paths did not reach his
+final log, so a fully-successful rerun today yields a slightly larger
 denominator than his by construction.
 
 ---
