@@ -1,0 +1,23 @@
+# HTCondor submission file — apply frozen good-training samples, one run per job
+
+universe   = vanilla
+executable = condor/run_apply_juan_reproduction_digi_z8_if0001_train20_seed42_one_run.sh
+arguments  = configs/juan_reproduction_digi_z8_if0001_train20_seed42.yaml $(RUN)
+
+initialdir = /afs/cern.ch/user/l/lbailloe/private/autoDQM/isolation_forest
+
+output = condor/logs/$(ClusterId).$(ProcId).run$(RUN).apply_good_training.out
+error  = condor/logs/$(ClusterId).$(ProcId).run$(RUN).apply_good_training.err
+log    = condor/logs/$(ClusterId).apply_good_training.log
+
+request_cpus   = 1
+request_memory = 2048
+
++JobFlavour = "workday"
+
+should_transfer_files = NO
++ProjectName = "local"
+
+notification = Never
+
+queue RUN from condor/apply_good_training_runs.txt

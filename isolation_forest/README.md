@@ -1337,6 +1337,27 @@ training-fraction scan can never make DAGMan skip nodes of this experiment.
 Model tags are `repro_pengy_trainFrac*` — distinct from `condor_scan_*` so the
 fresh retrain never touches the earlier scan models.
 
+### Pengy's original scripts, ported verbatim
+
+For the most faithful rerun, pengy's own `juan_reproduction` machinery is
+checked out from `branch_peng` with **only the AFS path constants ported**
+(pengy → lbailloe; diff is 11 path lines, nothing else):
+
+- `condor/run_train_juan_reproduction_digi_z8_if0001_train20_seed42.sh` + `.sub`
+  — one training job (20% of the good list, seed 42).
+- `condor/run_apply_juan_reproduction_digi_z8_if0001_train20_seed42_one_run.sh`
+  + `.sub` — 97-job apply array (`queue RUN from condor/apply_good_training_runs.txt`),
+  each run strictly validated against the frozen TSV and atomically published
+  to `logs/<tag>/` on AFS.
+- `configs/juan_reproduction_digi_z8_if0001_train20_seed42.yaml` — his exact
+  parameters, paths ported.
+
+No DAG: submit train, wait for it to finish, submit the apply array, then
+combine + evaluate manually (see workflow below). Note his TSV has 13,620 rows
+but his published evaluation counted 13,432 subruns — 188 paths did not reach
+his final log, so a fully-successful rerun today yields a slightly larger
+denominator than his by construction.
+
 ---
 
 ## Known limitations
