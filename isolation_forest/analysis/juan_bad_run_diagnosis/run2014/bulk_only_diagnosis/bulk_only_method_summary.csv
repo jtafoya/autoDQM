@@ -1,0 +1,7 @@
+method,row_count,row_fraction,file_count_with_at_least_one,file_fraction_of_18
+statistical,40,0.43010752688172044,18,1.0
+isolation_forest,43,0.46236559139784944,17,0.9444444444444444
+statistical+IF,10,0.10752688172043011,9,0.5
+missing_channel,0,0.0,0,0.0
+new_channel,0,0.0,0,0.0
+other,0,0.0,0,0.0

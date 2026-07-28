@@ -1,0 +1,6 @@
+filename,subrun,status,selection_reason,n_anomalous_channels,n_persistent_channels,max_z_over_file,persistent_alert,bulk_alert,extreme_alert
+Digitizer_run2014_subrun94.csv,94,OK,"representative OK (modal anomaly count, near median severity/sequence)",0,0,0.0,False,False,False
+Digitizer_run2014_subrun605.csv,605,WARN,"representative WARN (modal anomaly count, near median severity/sequence)",2,1,8.06,False,False,False
+Digitizer_run2014_subrun3.csv,3,ALERT,first strict ALERT in processed-file order,1,0,21.11,False,False,True
+Digitizer_run2014_subrun902.csv,902,ALERT,largest n_anomalous_channels among remaining ALERTs,10,0,67.36,False,True,True
+Digitizer_run2014_subrun168.csv,168,ALERT,largest max_z_over_file among remaining ALERTs,4,0,1000000.0,False,False,True

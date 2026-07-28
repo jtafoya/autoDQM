@@ -1,0 +1,21 @@
+run,subrun,filename,strict_status,persistent_alert,bulk_alert,extreme_alert,n_anomalous_channels,channel,method,triggered_features,max_z,if_score,file_pattern_classification,raw_csv_opened_for_bulk_context
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,3,isolation_forest,,4.36,-0.6429,mixed IF + statistical anomalies,False
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,7,statistical,nPulses_median,45.76,-0.6166,mixed IF + statistical anomalies,False
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,17,statistical,pulseHeight_min_median;pulseArea_min_median,12.62,-0.5874,mixed IF + statistical anomalies,False
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,36,statistical,nPulses_median,14.38,-0.5518,mixed IF + statistical anomalies,False
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,43,statistical,nPulses_median,22.86,-0.6056,mixed IF + statistical anomalies,False
+2088,508,Digitizer_run2088_subrun508.csv,ALERT,False,True,True,6,70,statistical,nPulses_median,11.84,-0.6097,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,0,statistical,nPulses_median,22.86,-0.5433,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,5,statistical,nPulses_median,14.56,-0.5674,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,6,statistical,pulseHeight_min_median,8.31,-0.5502,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,15,statistical,nPulses_median,19.7,-0.6208,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,27,isolation_forest,,4.19,-0.6472,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,38,statistical,sideband_rms_mean,10.32,-0.599,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,39,statistical,sideband_rms_mean,8.68,-0.5724,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,40,statistical,nPulses_median,13.62,-0.5926,mixed IF + statistical anomalies,False
+2089,922,Digitizer_run2089_subrun922.csv,ALERT,False,True,True,9,45,statistical,nPulses_median,13.96,-0.5476,mixed IF + statistical anomalies,False
+2089,659,Digitizer_run2089_subrun659.csv,ALERT,False,True,False,5,4,isolation_forest,,6.43,-0.652,mixed IF + statistical anomalies,False
+2089,659,Digitizer_run2089_subrun659.csv,ALERT,False,True,False,5,18,statistical,pulseArea_max_median,8.07,-0.5329,mixed IF + statistical anomalies,False
+2089,659,Digitizer_run2089_subrun659.csv,ALERT,False,True,False,5,19,statistical,pulseArea_max_median,8.58,-0.5572,mixed IF + statistical anomalies,False
+2089,659,Digitizer_run2089_subrun659.csv,ALERT,False,True,False,5,32,statistical,nPulses_median,13.17,-0.5128,mixed IF + statistical anomalies,False
+2089,659,Digitizer_run2089_subrun659.csv,ALERT,False,True,False,5,82,isolation_forest,,4.09,-0.6509,mixed IF + statistical anomalies,False

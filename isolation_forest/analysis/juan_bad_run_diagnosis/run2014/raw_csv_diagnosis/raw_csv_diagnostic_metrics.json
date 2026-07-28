@@ -1,0 +1,501 @@
+{
+  "active_feature_count": 29,
+  "active_features": [
+    "sideband_mean_mean",
+    "sideband_mean_std",
+    "sideband_mean_median",
+    "sideband_rms_mean",
+    "sideband_rms_std",
+    "sideband_rms_median",
+    "nPulses_mean",
+    "nPulses_std",
+    "nPulses_median",
+    "pulseHeight_max_mean",
+    "pulseHeight_max_std",
+    "pulseHeight_max_median",
+    "pulseHeight_min_mean",
+    "pulseHeight_min_std",
+    "pulseHeight_min_median",
+    "pulseArea_max_mean",
+    "pulseArea_max_std",
+    "pulseArea_max_median",
+    "pulseArea_min_mean",
+    "pulseArea_min_std",
+    "pulseArea_min_median",
+    "pulseDuriation_max_mean",
+    "pulseDuriation_max_std",
+    "pulseDuriation_max_median",
+    "pulseDuriation_min_mean",
+    "pulseDuriation_min_std",
+    "pulseDuriation_min_median",
+    "occupancy",
+    "frac_dead"
+  ],
+  "million_z_floor_details": {
+    "feature": "nPulses_median",
+    "observed_value": 2.0,
+    "reference_mean": 1.0,
+    "reference_std_pre_floor": 0.0,
+    "reference_std_used": 1e-06,
+    "std_floor_applied": true,
+    "z_score": 1000000.0,
+    "abs_z": 1000000.0
+  },
+  "target_npulses_summaries": [
+    {
+      "case": "A",
+      "target_subrun": 168,
+      "target_channel": 4,
+      "comparison_filename": "Digitizer_run2014_subrun168.csv",
+      "comparison_subrun": 168,
+      "comparison_sequence_index": 73,
+      "comparison_status": "ALERT",
+      "comparison_role": "target",
+      "processed_sequence_offset": 0,
+      "file_unique_events": 998,
+      "target_channel_rows": 24,
+      "target_channel_unique_events": 24,
+      "occupancy": 0.02404809619238477,
+      "n_values": 24,
+      "n_nan": 0,
+      "n_inf": 0,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.6666666666666667,
+      "std": 0.6370220572706061,
+      "median": 2.0,
+      "q25": 1.0,
+      "q75": 2.0,
+      "n_equal_zero": 0,
+      "fraction_equal_zero": 0.0,
+      "value_counts_json": "{\"1\": 10, \"2\": 12, \"3\": 2}"
+    },
+    {
+      "case": "B",
+      "target_subrun": 902,
+      "target_channel": 38,
+      "comparison_filename": "Digitizer_run2014_subrun902.csv",
+      "comparison_subrun": 902,
+      "comparison_sequence_index": 360,
+      "comparison_status": "ALERT",
+      "comparison_role": "target",
+      "processed_sequence_offset": 0,
+      "file_unique_events": 608,
+      "target_channel_rows": 48,
+      "target_channel_unique_events": 48,
+      "occupancy": 0.07894736842105263,
+      "n_values": 48,
+      "n_nan": 0,
+      "n_inf": 0,
+      "min": 1.0,
+      "max": 5.0,
+      "mean": 1.7916666666666667,
+      "std": 0.9884079899565407,
+      "median": 2.0,
+      "q25": 1.0,
+      "q75": 2.0,
+      "n_equal_zero": 0,
+      "fraction_equal_zero": 0.0,
+      "value_counts_json": "{\"1\": 22, \"2\": 19, \"3\": 4, \"4\": 1, \"5\": 2}"
+    },
+    {
+      "case": "C",
+      "target_subrun": 3,
+      "target_channel": 66,
+      "comparison_filename": "Digitizer_run2014_subrun3.csv",
+      "comparison_subrun": 3,
+      "comparison_sequence_index": 1,
+      "comparison_status": "ALERT",
+      "comparison_role": "target",
+      "processed_sequence_offset": 0,
+      "file_unique_events": 988,
+      "target_channel_rows": 78,
+      "target_channel_unique_events": 78,
+      "occupancy": 0.07894736842105263,
+      "n_values": 78,
+      "n_nan": 0,
+      "n_inf": 0,
+      "min": 1.0,
+      "max": 4.0,
+      "mean": 1.6923076923076923,
+      "std": 0.7945870823066727,
+      "median": 2.0,
+      "q25": 1.0,
+      "q75": 2.0,
+      "n_equal_zero": 0,
+      "fraction_equal_zero": 0.0,
+      "value_counts_json": "{\"1\": 38, \"2\": 28, \"3\": 10, \"4\": 2}"
+    }
+  ],
+  "extreme_broadness": {
+    "A": {
+      "subrun": 168,
+      "target_channel": 4,
+      "n_channels_over_z8": 1,
+      "n_channels_over_z15": 1,
+      "channels_over_z8": [
+        4
+      ],
+      "channels_over_z15": [
+        4
+      ]
+    },
+    "B": {
+      "subrun": 902,
+      "target_channel": 38,
+      "n_channels_over_z8": 2,
+      "n_channels_over_z15": 2,
+      "channels_over_z8": [
+        38,
+        43
+      ],
+      "channels_over_z15": [
+        38,
+        43
+      ]
+    },
+    "C": {
+      "subrun": 3,
+      "target_channel": 66,
+      "n_channels_over_z8": 1,
+      "n_channels_over_z15": 1,
+      "channels_over_z8": [
+        66
+      ],
+      "channels_over_z15": [
+        66
+      ]
+    }
+  },
+  "if_only": {
+    "verified_case_note": "subrun605 ch82 is IF-only anomalous; ch3 is nominal in subrun605, contrary to the initial prompt premise",
+    "ch3_subrun605_method": "",
+    "ch3_subrun94_method": "",
+    "ch82_subrun605_method": "isolation_forest",
+    "ch82_subrun94_method": "",
+    "ch3_subrun605_if_score": -0.6071,
+    "ch3_subrun94_if_score": -0.4315,
+    "ch82_subrun605_if_score": -0.6469,
+    "ch82_subrun94_if_score": -0.4025,
+    "selected_source_metrics": {
+      "3": [
+        "pulseDuriation_min",
+        "pulseDuriation_max",
+        "sideband_rms",
+        "pulseHeight_max",
+        "sideband_mean"
+      ],
+      "82": [
+        "pulseDuriation_max",
+        "pulseDuriation_min",
+        "sideband_rms",
+        "pulseHeight_max",
+        "sideband_mean"
+      ]
+    },
+    "top_feature_differences": {
+      "3": [
+        {
+          "feature": "pulseDuriation_min_mean",
+          "subrun605_value": 707.6636111111111,
+          "subrun94_value": 254.19289855072466,
+          "subrun605_z": 6.603570821424125,
+          "subrun94_z": -0.34753121849265156,
+          "z_movement_605_minus_94": 6.951102039916776
+        },
+        {
+          "feature": "pulseDuriation_max_mean",
+          "subrun605_value": 865.0247222222222,
+          "subrun94_value": 347.41753623188407,
+          "subrun605_z": 5.085654061298178,
+          "subrun94_z": -0.7962644939599725,
+          "z_movement_605_minus_94": 5.88191855525815
+        },
+        {
+          "feature": "sideband_rms_median",
+          "subrun605_value": 5.04982,
+          "subrun94_value": 0.883617,
+          "subrun605_z": 4.596166352267247,
+          "subrun94_z": -0.4539796946638513,
+          "z_movement_605_minus_94": 5.050146046931098
+        },
+        {
+          "feature": "pulseDuriation_max_std",
+          "subrun605_value": 913.626161436883,
+          "subrun94_value": 338.12006520659367,
+          "subrun605_z": 4.519577783298814,
+          "subrun94_z": 0.07336314468714791,
+          "z_movement_605_minus_94": 4.446214638611666
+        },
+        {
+          "feature": "pulseDuriation_min_std",
+          "subrun605_value": 936.2278529685494,
+          "subrun94_value": 336.5054771737682,
+          "subrun605_z": 4.652598345517065,
+          "subrun94_z": 0.29769449046733554,
+          "z_movement_605_minus_94": 4.354903855049729
+        },
+        {
+          "feature": "pulseHeight_max_std",
+          "subrun605_value": 240.2639838301756,
+          "subrun94_value": 338.7350717494761,
+          "subrun605_z": -2.826513667667662,
+          "subrun94_z": 0.9741164236741271,
+          "z_movement_605_minus_94": -3.800630091341789
+        },
+        {
+          "feature": "sideband_mean_median",
+          "subrun605_value": -5.53512,
+          "subrun94_value": -0.22895,
+          "subrun605_z": -3.332743184291486,
+          "subrun94_z": 0.29485817493268385,
+          "z_movement_605_minus_94": -3.62760135922417
+        },
+        {
+          "feature": "pulseDuriation_max_median",
+          "subrun605_value": 414.99,
+          "subrun94_value": 274.99,
+          "subrun605_z": 1.6460234159157905,
+          "subrun94_z": -1.6710249818452052,
+          "z_movement_605_minus_94": 3.3170483977609955
+        },
+        {
+          "feature": "pulseHeight_max_mean",
+          "subrun605_value": -160.19950416666669,
+          "subrun94_value": -313.92877536231885,
+          "subrun605_z": 2.909135209948571,
+          "subrun94_z": -0.14180399390940726,
+          "z_movement_605_minus_94": 3.050939203857978
+        },
+        {
+          "feature": "sideband_rms_std",
+          "subrun605_value": 0.9694801081019258,
+          "subrun94_value": 24.986403610405567,
+          "subrun605_z": -1.0161095242281402,
+          "subrun94_z": 1.8579796331134184,
+          "z_movement_605_minus_94": -2.8740891573415586
+        }
+      ],
+      "82": [
+        {
+          "feature": "pulseDuriation_max_median",
+          "subrun605_value": 694.99,
+          "subrun94_value": 302.49,
+          "subrun605_z": 5.592226696782298,
+          "subrun94_z": -0.801592107684612,
+          "z_movement_605_minus_94": 6.3938188044669095
+        },
+        {
+          "feature": "pulseDuriation_min_mean",
+          "subrun605_value": 712.3793805309734,
+          "subrun94_value": 286.59583941605837,
+          "subrun605_z": 4.943913754719495,
+          "subrun94_z": -0.59573882096597,
+          "z_movement_605_minus_94": 5.539652575685465
+        },
+        {
+          "feature": "pulseDuriation_max_mean",
+          "subrun605_value": 1083.0541592920354,
+          "subrun94_value": 528.055693430657,
+          "subrun605_z": 4.604760991264759,
+          "subrun94_z": -0.8043024129780559,
+          "z_movement_605_minus_94": 5.409063404242815
+        },
+        {
+          "feature": "sideband_rms_median",
+          "subrun605_value": 5.929245,
+          "subrun94_value": 1.77368,
+          "subrun605_z": 4.451247365364813,
+          "subrun94_z": -0.2855033804342112,
+          "z_movement_605_minus_94": 4.736750745799024
+        },
+        {
+          "feature": "occupancy",
+          "subrun605_value": 0.22736418511066397,
+          "subrun94_value": 0.1379657603222558,
+          "subrun605_z": 4.525395627530617,
+          "subrun94_z": 0.1524675823726873,
+          "z_movement_605_minus_94": 4.37292804515793
+        },
+        {
+          "feature": "pulseDuriation_min_std",
+          "subrun605_value": 969.0066155823091,
+          "subrun94_value": 501.1089482875812,
+          "subrun605_z": 3.59814254141489,
+          "subrun94_z": -0.43341922113383397,
+          "z_movement_605_minus_94": 4.031561762548724
+        },
+        {
+          "feature": "pulseDuriation_max_std",
+          "subrun605_value": 914.203470713872,
+          "subrun94_value": 638.5626230792225,
+          "subrun605_z": 3.3087657805691966,
+          "subrun94_z": -0.19174057870414943,
+          "z_movement_605_minus_94": 3.500506359273346
+        },
+        {
+          "feature": "pulseHeight_max_std",
+          "subrun605_value": 305.8611352937556,
+          "subrun94_value": 445.38963025772784,
+          "subrun605_z": -2.9771011734242285,
+          "subrun94_z": 0.3887697679204155,
+          "z_movement_605_minus_94": -3.365870941344644
+        },
+        {
+          "feature": "sideband_rms_mean",
+          "subrun605_value": 6.75979668141593,
+          "subrun94_value": 2.188260875912409,
+          "subrun605_z": 2.3281834369685805,
+          "subrun94_z": -0.740377247954617,
+          "z_movement_605_minus_94": 3.0685606849231974
+        },
+        {
+          "feature": "pulseHeight_max_mean",
+          "subrun605_value": -134.95636194690266,
+          "subrun94_value": -302.04085401459855,
+          "subrun605_z": 3.060293271913133,
+          "subrun94_z": -0.004595036759122309,
+          "z_movement_605_minus_94": 3.064888308672255
+        }
+      ]
+    }
+  },
+  "integrity": [
+    {
+      "filename": "Digitizer_run2014_subrun168.csv",
+      "filepath": "/eos/experiment/milliqan/run3_MilliMon/slab/2000/Digitizer_run2014_subrun168.csv",
+      "subrun": 168,
+      "status": "ALERT",
+      "file_exists": true,
+      "file_readable": true,
+      "file_size_bytes": 802967,
+      "row_count": 8563,
+      "unique_event_count": 998,
+      "unique_channel_count": 96,
+      "channel_ids_present": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31;32;33;34;35;36;37;38;39;40;41;42;43;44;45;46;47;48;49;50;51;52;53;54;55;56;57;58;59;60;61;62;63;64;65;66;67;68;69;70;71;72;73;74;75;76;77;78;79;80;81;82;83;84;85;86;87;88;89;90;91;92;93;94;95",
+      "target_channels": "4",
+      "missing_target_channels": "",
+      "duplicate_event_channel_rows": 0,
+      "nan_count_relevant_raw_columns": 0,
+      "inf_count_relevant_raw_columns": 0,
+      "mean_channels_per_event": 8.580160320641282,
+      "min_channels_per_event": 1,
+      "max_channels_per_event": 95,
+      "empty_or_truncated": false,
+      "row_count_ratio_to_representative_median": 1.0,
+      "event_count_ratio_to_representative_median": 1.0050352467270895,
+      "strongly_low_coverage": false,
+      "integrity_issue": false
+    },
+    {
+      "filename": "Digitizer_run2014_subrun902.csv",
+      "filepath": "/eos/experiment/milliqan/run3_MilliMon/slab/2000/Digitizer_run2014_subrun902.csv",
+      "subrun": 902,
+      "status": "ALERT",
+      "file_exists": true,
+      "file_readable": true,
+      "file_size_bytes": 470614,
+      "row_count": 5025,
+      "unique_event_count": 608,
+      "unique_channel_count": 96,
+      "channel_ids_present": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31;32;33;34;35;36;37;38;39;40;41;42;43;44;45;46;47;48;49;50;51;52;53;54;55;56;57;58;59;60;61;62;63;64;65;66;67;68;69;70;71;72;73;74;75;76;77;78;79;80;81;82;83;84;85;86;87;88;89;90;91;92;93;94;95",
+      "target_channels": "38",
+      "missing_target_channels": "",
+      "duplicate_event_channel_rows": 0,
+      "nan_count_relevant_raw_columns": 0,
+      "inf_count_relevant_raw_columns": 0,
+      "mean_channels_per_event": 8.264802631578947,
+      "min_channels_per_event": 1,
+      "max_channels_per_event": 18,
+      "empty_or_truncated": false,
+      "row_count_ratio_to_representative_median": 0.5868270465958192,
+      "event_count_ratio_to_representative_median": 0.6122860020140987,
+      "strongly_low_coverage": false,
+      "integrity_issue": false
+    },
+    {
+      "filename": "Digitizer_run2014_subrun3.csv",
+      "filepath": "/eos/experiment/milliqan/run3_MilliMon/slab/2000/Digitizer_run2014_subrun3.csv",
+      "subrun": 3,
+      "status": "ALERT",
+      "file_exists": true,
+      "file_readable": true,
+      "file_size_bytes": 948780,
+      "row_count": 10061,
+      "unique_event_count": 988,
+      "unique_channel_count": 96,
+      "channel_ids_present": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31;32;33;34;35;36;37;38;39;40;41;42;43;44;45;46;47;48;49;50;51;52;53;54;55;56;57;58;59;60;61;62;63;64;65;66;67;68;69;70;71;72;73;74;75;76;77;78;79;80;81;82;83;84;85;86;87;88;89;90;91;92;93;94;95",
+      "target_channels": "66",
+      "missing_target_channels": "",
+      "duplicate_event_channel_rows": 0,
+      "nan_count_relevant_raw_columns": 0,
+      "inf_count_relevant_raw_columns": 0,
+      "mean_channels_per_event": 10.183198380566802,
+      "min_channels_per_event": 1,
+      "max_channels_per_event": 93,
+      "empty_or_truncated": false,
+      "row_count_ratio_to_representative_median": 1.1749386897115497,
+      "event_count_ratio_to_representative_median": 0.9949647532729103,
+      "strongly_low_coverage": false,
+      "integrity_issue": false
+    },
+    {
+      "filename": "Digitizer_run2014_subrun605.csv",
+      "filepath": "/eos/experiment/milliqan/run3_MilliMon/slab/2000/Digitizer_run2014_subrun605.csv",
+      "subrun": 605,
+      "status": "WARN",
+      "file_exists": true,
+      "file_readable": true,
+      "file_size_bytes": 791668,
+      "row_count": 8439,
+      "unique_event_count": 994,
+      "unique_channel_count": 96,
+      "channel_ids_present": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31;32;33;34;35;36;37;38;39;40;41;42;43;44;45;46;47;48;49;50;51;52;53;54;55;56;57;58;59;60;61;62;63;64;65;66;67;68;69;70;71;72;73;74;75;76;77;78;79;80;81;82;83;84;85;86;87;88;89;90;91;92;93;94;95",
+      "target_channels": "3;82",
+      "missing_target_channels": "",
+      "duplicate_event_channel_rows": 0,
+      "nan_count_relevant_raw_columns": 0,
+      "inf_count_relevant_raw_columns": 0,
+      "mean_channels_per_event": 8.489939637826962,
+      "min_channels_per_event": 1,
+      "max_channels_per_event": 63,
+      "empty_or_truncated": false,
+      "row_count_ratio_to_representative_median": 0.9855190937755459,
+      "event_count_ratio_to_representative_median": 1.001007049345418,
+      "strongly_low_coverage": false,
+      "integrity_issue": false
+    },
+    {
+      "filename": "Digitizer_run2014_subrun94.csv",
+      "filepath": "/eos/experiment/milliqan/run3_MilliMon/slab/2000/Digitizer_run2014_subrun94.csv",
+      "subrun": 94,
+      "status": "OK",
+      "file_exists": true,
+      "file_readable": true,
+      "file_size_bytes": 948247,
+      "row_count": 10056,
+      "unique_event_count": 993,
+      "unique_channel_count": 96,
+      "channel_ids_present": "0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31;32;33;34;35;36;37;38;39;40;41;42;43;44;45;46;47;48;49;50;51;52;53;54;55;56;57;58;59;60;61;62;63;64;65;66;67;68;69;70;71;72;73;74;75;76;77;78;79;80;81;82;83;84;85;86;87;88;89;90;91;92;93;94;95",
+      "target_channels": "3;82",
+      "missing_target_channels": "",
+      "duplicate_event_channel_rows": 0,
+      "nan_count_relevant_raw_columns": 0,
+      "inf_count_relevant_raw_columns": 0,
+      "mean_channels_per_event": 10.126888217522659,
+      "min_channels_per_event": 1,
+      "max_channels_per_event": 90,
+      "empty_or_truncated": false,
+      "row_count_ratio_to_representative_median": 1.1743547822024991,
+      "event_count_ratio_to_representative_median": 1.0,
+      "strongly_low_coverage": false,
+      "integrity_issue": false
+    }
+  ],
+  "provenance": {
+    "model": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/models/juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig",
+    "log": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/logs/juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig.csv",
+    "processed_path_cache": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/logs/juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig_paths.txt",
+    "timeline": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/analysis/juan_bad_run_diagnosis/run2014/run2014_subrun_timeline.csv"
+  }
+}

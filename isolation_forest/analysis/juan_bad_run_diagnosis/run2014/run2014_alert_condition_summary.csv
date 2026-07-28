@@ -1,0 +1,11 @@
+summary_type,condition,count,fraction_of_71_alerts
+exclusive_combination,persistent only,5,0.07042253521126761
+exclusive_combination,bulk only,18,0.2535211267605634
+exclusive_combination,extreme only,40,0.5633802816901409
+exclusive_combination,persistent + bulk,0,0.0
+exclusive_combination,persistent + extreme,1,0.014084507042253521
+exclusive_combination,bulk + extreme,7,0.09859154929577464
+exclusive_combination,persistent + bulk + extreme,0,0.0
+simple_total,involving persistence,6,0.08450704225352113
+simple_total,involving bulk,25,0.352112676056338
+simple_total,involving extreme,48,0.676056338028169

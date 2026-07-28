@@ -1,0 +1,157 @@
+{
+  "n_bulk_only_files": 18,
+  "n_anomalous_rows": 93,
+  "n_anomalous_channels_distribution": {
+    "5": 16,
+    "6": 1,
+    "7": 1
+  },
+  "channels_at_least_50_percent": [
+    82,
+    3
+  ],
+  "channels_at_least_25_percent": [
+    82,
+    3,
+    9
+  ],
+  "ch3_file_count": 14,
+  "ch82_file_count": 17,
+  "nPulses_median": {
+    "file_count": 11,
+    "anomalous_row_count": 13,
+    "statistical_triggered_row_denominator": 50,
+    "fraction_of_statistical_triggered_rows": 0.26
+  },
+  "methods": [
+    {
+      "method": "statistical",
+      "row_count": 40,
+      "row_fraction": 0.43010752688172044,
+      "file_count_with_at_least_one": 18,
+      "file_fraction_of_18": 1.0
+    },
+    {
+      "method": "isolation_forest",
+      "row_count": 43,
+      "row_fraction": 0.46236559139784944,
+      "file_count_with_at_least_one": 17,
+      "file_fraction_of_18": 0.9444444444444444
+    },
+    {
+      "method": "statistical+IF",
+      "row_count": 10,
+      "row_fraction": 0.10752688172043011,
+      "file_count_with_at_least_one": 9,
+      "file_fraction_of_18": 0.5
+    },
+    {
+      "method": "missing_channel",
+      "row_count": 0,
+      "row_fraction": 0.0,
+      "file_count_with_at_least_one": 0,
+      "file_fraction_of_18": 0.0
+    },
+    {
+      "method": "new_channel",
+      "row_count": 0,
+      "row_fraction": 0.0,
+      "file_count_with_at_least_one": 0,
+      "file_fraction_of_18": 0.0
+    },
+    {
+      "method": "other",
+      "row_count": 0,
+      "row_fraction": 0.0,
+      "file_count_with_at_least_one": 0,
+      "file_fraction_of_18": 0.0
+    }
+  ],
+  "similarity": {
+    "mean_pairwise_jaccard": 0.22605254222901286,
+    "median_pairwise_jaccard": 0.25,
+    "zero_similarity_pair_count": 3,
+    "pair_count": 153,
+    "maximum_pairwise_jaccard": 0.6666666666666666
+  },
+  "temporal": [
+    {
+      "segment": "0-90",
+      "sequence_index_start": 0,
+      "sequence_index_end": 90,
+      "n_processed_files": 91,
+      "n_bulk_only_files": 0,
+      "bulk_only_fraction_within_segment": 0.0,
+      "bulk_only_subruns": "",
+      "first_bulk_sequence_index": null,
+      "last_bulk_sequence_index": null,
+      "n_adjacent_to_WARN": 0,
+      "n_adjacent_to_other_ALERT": 0,
+      "n_adjacent_to_extreme_ALERT": 0
+    },
+    {
+      "segment": "91-180",
+      "sequence_index_start": 91,
+      "sequence_index_end": 180,
+      "n_processed_files": 90,
+      "n_bulk_only_files": 5,
+      "bulk_only_fraction_within_segment": 0.05555555555555555,
+      "bulk_only_subruns": "223;253;271;286;390",
+      "first_bulk_sequence_index": 92.0,
+      "last_bulk_sequence_index": 154.0,
+      "n_adjacent_to_WARN": 1,
+      "n_adjacent_to_other_ALERT": 2,
+      "n_adjacent_to_extreme_ALERT": 2
+    },
+    {
+      "segment": "181-270",
+      "sequence_index_start": 181,
+      "sequence_index_end": 270,
+      "n_processed_files": 90,
+      "n_bulk_only_files": 5,
+      "bulk_only_fraction_within_segment": 0.05555555555555555,
+      "bulk_only_subruns": "487;520;547;682;683",
+      "first_bulk_sequence_index": 184.0,
+      "last_bulk_sequence_index": 267.0,
+      "n_adjacent_to_WARN": 0,
+      "n_adjacent_to_other_ALERT": 4,
+      "n_adjacent_to_extreme_ALERT": 3
+    },
+    {
+      "segment": "271-360",
+      "sequence_index_start": 271,
+      "sequence_index_end": 360,
+      "n_processed_files": 90,
+      "n_bulk_only_files": 8,
+      "bulk_only_fraction_within_segment": 0.08888888888888889,
+      "bulk_only_subruns": "697;699;735;790;793;802;863;871",
+      "first_bulk_sequence_index": 272.0,
+      "last_bulk_sequence_index": 342.0,
+      "n_adjacent_to_WARN": 4,
+      "n_adjacent_to_other_ALERT": 3,
+      "n_adjacent_to_extreme_ALERT": 3
+    }
+  ],
+  "representatives": [
+    {
+      "filename": "Digitizer_run2014_subrun271.csv",
+      "subrun": 271,
+      "selection_role": "largest_n_anomalous_channels",
+      "mean_channel_jaccard": 0.1677361853832442
+    },
+    {
+      "filename": "Digitizer_run2014_subrun863.csv",
+      "subrun": 863,
+      "selection_role": "most_typical_by_mean_channel_Jaccard",
+      "mean_channel_jaccard": 0.2804388422035481
+    },
+    {
+      "filename": "Digitizer_run2014_subrun802.csv",
+      "subrun": 802,
+      "selection_role": "most_distinct_by_mean_channel_Jaccard",
+      "mean_channel_jaccard": 0.09084967320261438
+    }
+  ],
+  "active_feature_count": 29,
+  "production_inputs_unchanged": true
+}

@@ -1,0 +1,5 @@
+triggered_feature,n_extreme_channel_rows,n_unique_extreme_ALERT_subruns,n_unique_channels,channels,methods
+nPulses_median,49,44,19,0;4;5;7;10;12;13;14;15;22;26;27;29;34;38;43;46;48;66,statistical;statistical+IF
+sideband_mean_median,3,3,3,0;16;19,statistical
+nPulses_mean,1,1,1,7,statistical+IF
+sideband_rms_mean,1,1,1,23,statistical+IF

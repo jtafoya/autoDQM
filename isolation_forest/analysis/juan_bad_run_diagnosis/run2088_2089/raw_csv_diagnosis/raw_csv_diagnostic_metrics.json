@@ -1,0 +1,141 @@
+{
+  "active_feature_count": 29,
+  "fixed_case_correction": "Run2089 subrun324 ch19 is not an nPulses_median trigger; it triggers pulseHeight_min_median and pulseArea_min_median. ch26 is the nPulses_median extreme in that file.",
+  "extreme_file_locality": {
+    "Digitizer_run2088_subrun396.csv": {
+      "n_channels_npulses_median_abs_z_over8": 1,
+      "channels_npulses_median_abs_z_over8": [
+        69
+      ],
+      "n_channels_npulses_median_abs_z_over15": 1,
+      "channels_npulses_median_abs_z_over15": [
+        69
+      ],
+      "npulses_locality_classification": "single-channel"
+    },
+    "Digitizer_run2089_subrun270.csv": {
+      "n_channels_npulses_median_abs_z_over8": 1,
+      "channels_npulses_median_abs_z_over8": [
+        23
+      ],
+      "n_channels_npulses_median_abs_z_over15": 1,
+      "channels_npulses_median_abs_z_over15": [
+        23
+      ],
+      "npulses_locality_classification": "single-channel"
+    },
+    "Digitizer_run2088_subrun321.csv": {
+      "n_channels_npulses_median_abs_z_over8": 1,
+      "channels_npulses_median_abs_z_over8": [
+        43
+      ],
+      "n_channels_npulses_median_abs_z_over15": 1,
+      "channels_npulses_median_abs_z_over15": [
+        43
+      ],
+      "npulses_locality_classification": "single-channel"
+    },
+    "Digitizer_run2089_subrun324.csv": {
+      "n_channels_npulses_median_abs_z_over8": 1,
+      "channels_npulses_median_abs_z_over8": [
+        26
+      ],
+      "n_channels_npulses_median_abs_z_over15": 1,
+      "channels_npulses_median_abs_z_over15": [
+        26
+      ],
+      "npulses_locality_classification": "single-channel"
+    }
+  },
+  "sideband_selected_targets": [
+    {
+      "selection_role": "run2089_typical",
+      "run": 2089,
+      "subrun": 251,
+      "filename": "Digitizer_run2089_subrun251.csv",
+      "channel": 36,
+      "sequence_index_within_run": 109,
+      "strict_status": "ALERT",
+      "logged_method": "statistical",
+      "logged_triggered_features": "sideband_rms_mean",
+      "logged_max_z": 9.02,
+      "logged_if_score": -0.6095
+    },
+    {
+      "selection_role": "run2089_large_z",
+      "run": 2089,
+      "subrun": 852,
+      "filename": "Digitizer_run2089_subrun852.csv",
+      "channel": 0,
+      "sequence_index_within_run": 337,
+      "strict_status": "OK",
+      "logged_method": "statistical",
+      "logged_triggered_features": "sideband_mean_mean;sideband_rms_mean",
+      "logged_max_z": 14.86,
+      "logged_if_score": -0.6353
+    },
+    {
+      "selection_role": "run2088_comparable",
+      "run": 2088,
+      "subrun": 333,
+      "filename": "Digitizer_run2088_subrun333.csv",
+      "channel": 33,
+      "sequence_index_within_run": 134,
+      "strict_status": "ALERT",
+      "logged_method": "statistical",
+      "logged_triggered_features": "sideband_rms_mean",
+      "logged_max_z": 9.05,
+      "logged_if_score": -0.5542
+    }
+  ],
+  "sideband_file_locality": {
+    "Digitizer_run2089_subrun251.csv": {
+      "n_channels_sideband_rms_mean_abs_z_over8": 1,
+      "channels_sideband_rms_mean_abs_z_over8": [
+        36
+      ],
+      "maximum_abs_sideband_rms_mean_z": 9.019562623273721
+    },
+    "Digitizer_run2089_subrun852.csv": {
+      "n_channels_sideband_rms_mean_abs_z_over8": 2,
+      "channels_sideband_rms_mean_abs_z_over8": [
+        0,
+        1
+      ],
+      "maximum_abs_sideband_rms_mean_z": 14.862539215546088
+    },
+    "Digitizer_run2088_subrun333.csv": {
+      "n_channels_sideband_rms_mean_abs_z_over8": 2,
+      "channels_sideband_rms_mean_abs_z_over8": [
+        32,
+        33
+      ],
+      "maximum_abs_sideband_rms_mean_z": 9.053062478798976
+    }
+  },
+  "raw_files_opened": [
+    "Digitizer_run2088_subrun317.csv",
+    "Digitizer_run2088_subrun321.csv",
+    "Digitizer_run2088_subrun322.csv",
+    "Digitizer_run2088_subrun332.csv",
+    "Digitizer_run2088_subrun333.csv",
+    "Digitizer_run2088_subrun339.csv",
+    "Digitizer_run2088_subrun396.csv",
+    "Digitizer_run2089_subrun246.csv",
+    "Digitizer_run2089_subrun251.csv",
+    "Digitizer_run2089_subrun253.csv",
+    "Digitizer_run2089_subrun270.csv",
+    "Digitizer_run2089_subrun323.csv",
+    "Digitizer_run2089_subrun324.csv",
+    "Digitizer_run2089_subrun332.csv",
+    "Digitizer_run2089_subrun850.csv",
+    "Digitizer_run2089_subrun852.csv",
+    "Digitizer_run2089_subrun855.csv"
+  ],
+  "n_raw_files_opened": 17,
+  "n_integrity_issues": 0,
+  "bulk_context_raw_files_opened": 0,
+  "root_files_read": 0,
+  "detector_rerun": false,
+  "production_inputs_unchanged": true
+}

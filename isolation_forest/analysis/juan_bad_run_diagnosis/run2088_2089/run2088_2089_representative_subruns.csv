@@ -1,0 +1,9 @@
+run,sequence_index_within_run,subrun,filename,selection_reason,strict_status,n_anomalous_channels,n_persistent_channels,max_z,persistent_alert,bulk_alert,extreme_alert,alert_mechanism,dominant_anomalous_channels,dominant_triggered_features
+2088,126,321,Digitizer_run2088_subrun321.csv,typical extreme-only ALERT (modal anomaly count; near median severity/sequence),ALERT,1,0,22.86,False,False,True,extreme only,43,nPulses_median:1
+2088,202,508,Digitizer_run2088_subrun508.csv,largest n_anomalous_channels,ALERT,6,0,45.76,False,True,True,bulk + extreme,3;7;17;36;43;70,nPulses_median:4;<none; IF-only>:1;pulseHeight_min_median:1;pulseArea_min_median:1
+2088,159,396,Digitizer_run2088_subrun396.csv,largest max_z among remaining ALERTs,ALERT,1,0,1000000.0,False,False,True,extreme only,69,nPulses_median:1
+2088,121,307,Digitizer_run2088_subrun307.csv,additional representative of dominant extreme-only mechanism (secondary mechanism already selected or absent),ALERT,1,0,29.16,False,False,True,extreme only,34,nPulses_median:1
+2089,135,324,Digitizer_run2089_subrun324.csv,typical extreme-only ALERT (modal anomaly count; near median severity/sequence),ALERT,2,0,16.07,False,False,True,extreme only,19;26,pulseHeight_min_median:1;pulseArea_min_median:1;nPulses_median:1
+2089,368,922,Digitizer_run2089_subrun922.csv,largest n_anomalous_channels,ALERT,9,0,22.86,False,True,True,bulk + extreme,0;5;6;15;27;38;39;40;45,nPulses_median:5;sideband_rms_mean:2;pulseHeight_min_median:1;<none; IF-only>:1
+2089,116,270,Digitizer_run2089_subrun270.csv,largest max_z among remaining ALERTs,ALERT,1,0,1000000.0,False,False,True,extreme only,23,nPulses_median:1
+2089,252,659,Digitizer_run2089_subrun659.csv,representative secondary bulk-involving mechanism,ALERT,5,0,13.17,False,True,False,bulk only,4;18;19;32;82,<none; IF-only>:2;pulseArea_max_median:2;nPulses_median:1

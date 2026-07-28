@@ -1,0 +1,5 @@
+segment,sequence_index_start,sequence_index_end,n_processed_files,n_bulk_only_files,bulk_only_fraction_within_segment,bulk_only_subruns,first_bulk_sequence_index,last_bulk_sequence_index,n_adjacent_to_WARN,n_adjacent_to_other_ALERT,n_adjacent_to_extreme_ALERT
+0-90,0,90,91,0,0.0,,,,0,0,0
+91-180,91,180,90,5,0.05555555555555555,223;253;271;286;390,92.0,154.0,1,2,2
+181-270,181,270,90,5,0.05555555555555555,487;520;547;682;683,184.0,267.0,0,4,3
+271-360,271,360,90,8,0.08888888888888889,697;699;735;790;793;802;863;871,272.0,342.0,4,3,3

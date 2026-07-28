@@ -1,0 +1,21 @@
+run,summary_type,condition,count,rate_per_sampled_subrun,fraction_of_run_ALERTs
+2088,exclusive_combination,persistent only,0,0.0,0.0
+2088,exclusive_combination,bulk only,0,0.0,0.0
+2088,exclusive_combination,extreme only,22,0.10837438423645321,0.9565217391304348
+2088,exclusive_combination,persistent + bulk,0,0.0,0.0
+2088,exclusive_combination,persistent + extreme,0,0.0,0.0
+2088,exclusive_combination,bulk + extreme,1,0.0049261083743842365,0.043478260869565216
+2088,exclusive_combination,persistent + bulk + extreme,0,0.0,0.0
+2088,simple_total,involving persistence,0,0.0,0.0
+2088,simple_total,involving bulk,1,0.0049261083743842365,0.043478260869565216
+2088,simple_total,involving extreme,23,0.11330049261083744,1.0
+2089,exclusive_combination,persistent only,0,0.0,0.0
+2089,exclusive_combination,bulk only,2,0.005420054200542005,0.0392156862745098
+2089,exclusive_combination,extreme only,48,0.13008130081300814,0.9411764705882353
+2089,exclusive_combination,persistent + bulk,0,0.0,0.0
+2089,exclusive_combination,persistent + extreme,0,0.0,0.0
+2089,exclusive_combination,bulk + extreme,1,0.0027100271002710027,0.0196078431372549
+2089,exclusive_combination,persistent + bulk + extreme,0,0.0,0.0
+2089,simple_total,involving persistence,0,0.0,0.0
+2089,simple_total,involving bulk,3,0.008130081300813009,0.058823529411764705
+2089,simple_total,involving extreme,49,0.13279132791327913,0.9607843137254902

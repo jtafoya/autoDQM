@@ -1,0 +1,24 @@
+filename,sequence_index_within_run,subrun,<none; IF-only>,nPulses_median,nPulses_std,pulseArea_max_median,pulseArea_min_mean,pulseArea_min_median,pulseDuriation_max_mean,pulseDuriation_max_std,pulseDuriation_min_mean,pulseDuriation_min_std,pulseHeight_max_median,pulseHeight_max_std,pulseHeight_min_median,sideband_mean_mean,sideband_mean_median,sideband_rms_mean
+Digitizer_run2088_subrun36.csv,16,36,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun57.csv,26,57,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun92.csv,40,92,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun126.csv,53,126,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun192.csv,78,192,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun206.csv,85,206,0,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0
+Digitizer_run2088_subrun277.csv,108,277,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun286.csv,112,286,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun296.csv,115,296,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun307.csv,121,307,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun321.csv,126,321,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun333.csv,134,333,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2
+Digitizer_run2088_subrun336.csv,135,336,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun344.csv,137,344,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun361.csv,146,361,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun368.csv,149,368,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun374.csv,151,374,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun396.csv,159,396,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun465.csv,182,465,0,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0
+Digitizer_run2088_subrun467.csv,183,467,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun482.csv,189,482,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun499.csv,197,499,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2088_subrun508.csv,202,508,1,4,0,0,0,1,0,0,0,0,0,0,1,0,0,0

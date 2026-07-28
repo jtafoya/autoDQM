@@ -1,0 +1,19 @@
+filename,sequence_index,subrun,<none; IF-only>,nPulses_median,sideband_rms_mean,nPulses_std,sideband_mean_mean,sideband_mean_median,pulseArea_min_median,pulseHeight_max_std,pulseHeight_min_median,pulseArea_min_mean,pulseDuriation_max_median,pulseDuriation_max_std,pulseDuriation_min_mean,pulseDuriation_min_std,sideband_rms_median
+Digitizer_run2014_subrun223.csv,92,223,3,1,0,1,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun253.csv,110,253,2,2,0,0,0,0,0,1,0,0,0,0,0,0,0
+Digitizer_run2014_subrun271.csv,117,271,4,1,0,0,0,0,0,0,0,2,0,1,0,1,0
+Digitizer_run2014_subrun286.csv,124,286,2,1,0,2,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun390.csv,154,390,3,0,0,0,0,2,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun487.csv,184,487,3,1,0,2,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun520.csv,196,520,1,0,1,1,0,1,0,0,0,0,1,0,0,0,0
+Digitizer_run2014_subrun547.csv,206,547,3,0,1,0,0,0,1,0,1,0,0,0,0,0,1
+Digitizer_run2014_subrun682.csv,266,682,2,0,3,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun683.csv,267,683,3,1,0,1,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun697.csv,272,697,2,0,2,0,1,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun699.csv,273,699,3,0,0,0,1,1,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun735.csv,289,735,3,1,0,0,0,0,0,1,0,0,0,0,0,0,0
+Digitizer_run2014_subrun790.csv,314,790,1,0,3,0,1,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun793.csv,316,793,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun802.csv,319,802,0,2,1,0,0,0,1,0,1,0,0,0,1,0,0
+Digitizer_run2014_subrun863.csv,339,863,2,1,0,0,2,0,0,0,0,0,0,0,0,0,0
+Digitizer_run2014_subrun871.csv,342,871,2,1,0,1,1,0,0,0,0,0,0,0,0,0,0
