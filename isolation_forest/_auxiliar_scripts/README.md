@@ -102,3 +102,33 @@ Produces one PDF in `plots/`:
 
 Also prints a per-fraction table of raw counts. Run after the scan's combine phase has
 finished for every fraction (partially-finished fractions are skipped with a warning).
+
+---
+
+## False-positive mechanism analysis (pengy repro, 2026-07-27 baseline)
+
+### `sigma_census.py`
+Maps every low-variance (channel, feature) cell in a trained `reference.npz` —
+the "Mechanism A" landmines behind sigma-explosion extreme alerts (the std floor
+in `src/reference.py` is a 1e-6 division guard, not a statistical floor, so a
+feature constant in training gives z ~ 1e6 on any deviation).
+Reports cells that are constant (sigma < 1e-6), extreme landmines
+(sigma <= 1/z_extreme: a unit jump fires the extreme alert), and flag landmines
+(sigma <= 1/z_threshold). `--out-csv` writes the full cell table.
+On the repro_pengy reference: 335/2784 cells are extreme landmines
+(frac_dead 96/96 channels, occupancy 95, sideband_rms_median 83,
+nPulses_median 50, nPulses_mean 11).
+
+### `fp_mechanism_scan.py`
+Decomposes a known-good apply log's alerts by mechanism and rescans the
+decision-layer parameters OFFLINE — no re-apply, because the log stores
+per-channel `max_z` + `if_score` and subrun status is replayed from them
+(imports `src.plot._compute_persistence_status`; no duplicated logic).
+Sections: (1) baseline + exclusive persistent/bulk/extreme decomposition and
+worst runs; (2) landmine variants — V1 defuses the extreme rule on landmine-only
+rows, V2 additionally unflags z-only landmine rows (approximates a
+variance-floor retrain); (3) grids over the single-file and persistence
+parameters; (4) optional `--z-rescan` raising z_threshold offline (lowering it
+needs a re-apply — sub-threshold z values are not logged).
+Run from `isolation_forest/` against the combined log and the model's
+`reference.npz`.
