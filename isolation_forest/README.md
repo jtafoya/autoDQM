@@ -111,17 +111,17 @@ or any working directory. CLI arguments always override config.yaml values.
 bash setup.sh
 ```
 
-This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, `watchdog`, `pyyaml`, and `anthropic`
+This installs `pandas`, `scikit-learn`, `numpy`, `scipy`, `watchdog`, `pyyaml`, `anthropic`, and `openai`
 into your user site-packages (`--user`, no root needed). Works on lxplus/AFS.
 
 Verify:
 ```bash
-python3 -c "import pandas, sklearn, numpy, scipy, watchdog, yaml, anthropic; print('OK')"
+python3 -c "import pandas, sklearn, numpy, scipy, watchdog, yaml, anthropic, openai; print('OK')"
 ```
 
-> **LLM categorization** requires `ANTHROPIC_API_KEY` to be set in the environment.
-> The `anthropic` package is installed by `setup.sh` but the feature is disabled by default
-> (`llm_enabled: false` in `config.yaml`) — the package is never called unless you opt in.
+> **LLM categorization** requires the selected provider's API key
+> (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) in the environment. The feature is disabled by
+> default (`llm_enabled: false` in `config.yaml`) and neither provider is called unless you opt in.
 
 ---
 
@@ -365,9 +365,9 @@ no overhead, no import, no change to any existing output.
    You never write feature values into the knowledge base manually.
 4. A prompt is assembled with three sections: current alert, historical cases with
    auto-injected snapshots + human annotations, task instruction.
-5. The LLM returns structured JSON with a ranked `candidates` list — one entry per
-   plausible failure mode, ordered best-match first, each with its own `confidence`.
-   A top-level `reasoning` field explains the match and any ambiguity.
+5. The LLM returns structured JSON that records the historical-match relationship,
+   observed evidence, ranked hypotheses, missing information, diagnostic checks, and
+   conditional fixes. A top-level `reasoning` field explains the diagnosis and ambiguity.
 6. The result is appended to `logs/<tag>_llm_suggestions.json` (one entry per alert).
    One `[LLM]` line per candidate is printed to stdout alongside the `[ALERT]` line.
 
@@ -400,15 +400,16 @@ Add to `config.yaml`:
 
 ```yaml
 llm_enabled:        true
-llm_provider:       anthropic          # only supported provider currently
-llm_model:          claude-haiku-4-5-20251001   # or claude-sonnet-4-6 for better reasoning
+llm_provider:       anthropic          # supported: anthropic, openai
+llm_model:          claude-haiku-4-5-20251001
 llm_knowledge_base: ../data/llm_knowledge_base.yaml
 llm_historical_log: ""                 # path to a pre-existing batch apply log for historical
                                        # snapshots; if empty, defaults automatically to the
                                        # log produced by the current apply/monitor run
 ```
 
-Set `ANTHROPIC_API_KEY` in your environment before running `monitor.py` or `pipeline.py`.
+Set the selected provider's API key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) in your
+environment before running `monitor.py` or `pipeline.py`.
 
 #### Adding a new LLM provider
 
@@ -427,42 +428,41 @@ A JSON list, one entry per `[ALERT]`, co-located with the anomaly log:
 ```json
 [
   {
-    "run": 1648,
-    "subrun": 1,
+    "target_id": "run_1648_subrun_1",
+    "known_case_match": "partial",
+    "observed_evidence": ["Two channels are persistently anomalous"],
     "candidates": [
       {
         "rank": 1,
         "category": "hv_instability",
-        "likely_cause": "HV trip at run start, correlated drop across all channels",
-        "suggested_action": "Check HV log for a trip near the run timestamp; inspect cfg_daq_threshold",
-        "matched_runs": [1648],
-        "confidence": "high"
-      },
-      {
-        "rank": 2,
-        "category": "noise_burst",
-        "likely_cause": "External EM pickup on bar layer",
-        "suggested_action": "Check shielding and grounding log",
-        "matched_runs": [1712],
-        "confidence": "low"
+        "likely_cause": "Possible HV-path instability",
+        "hypothesis_basis": "analogy",
+        "confidence": "medium",
+        "matched_cases": ["case_run_1640"],
+        "supporting_similarities": ["The affected channels share a hardware path"],
+        "contradicting_evidence": ["No HV-current evidence was supplied"],
+        "recommended_diagnostic_checks": ["Inspect the HV-current log"],
+        "possible_fix": "Reseat or replace the affected component if the HV check confirms the diagnosis"
       }
     ],
-    "reasoning": "Bulk mean_charge drop strongly matches run 1648; occupancy spike partially overlaps noise_burst pattern"
+    "missing_information": ["HV-current history"],
+    "reasoning": "The alert is similar to a known case, but the evidence is incomplete.",
+    "run": 1648,
+    "subrun": 1
   }
 ]
 ```
 
-The number of candidates is variable — one if the cause is clear, several if ambiguous.
-When all candidates have `confidence: low` and `matched_runs` is empty, the alert is a
-pattern not yet in the knowledge base — add an entry once the cause is understood.
+The number of candidates is variable, up to three. `known_case_match: unseen` and empty
+`matched_cases` indicate that the historical knowledge does not closely explain the alert.
 
 #### Degradation behaviour
 
 | Situation | Behaviour |
 |---|---|
-| `llm_enabled: false` | Feature completely disabled; `anthropic` package never imported |
+| `llm_enabled: false` | Feature completely disabled; neither provider package is imported |
 | Knowledge base run not in log | Snapshot "not found"; LLM uses human annotation only; `confidence: low` |
-| No historical case matches | Single candidate with `matched_runs: []`, `confidence: low` — signals a new failure mode |
+| No historical case matches | `known_case_match: unseen`; hypotheses may use empty `matched_cases` and cautious confidence |
 | API unreachable / error | Error written to sidecar and stderr; pipeline continues unaffected |
 | Knowledge base file missing | LLM call skipped with a warning; pipeline continues unaffected |
 

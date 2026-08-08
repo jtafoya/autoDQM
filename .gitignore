@@ -4,3 +4,5 @@ isolation_forest/models
 isolation_forest/reports
 isolation_forest/plots
 isolation_forest/condor/logs
+__pycache__/
+*.py[cod]
