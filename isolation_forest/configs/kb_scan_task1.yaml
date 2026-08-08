@@ -1,0 +1,57 @@
+# TASK 1: apply the already-trained Isolation Forest to runs 1500-3000.
+# This file is intentionally explicit: changing a model, threshold, weight, or
+# campaign tag creates a scientifically distinct campaign.
+
+campaign:
+  tag: kb_task1_runs1500_3000_juan_v1
+  project_dir: /afs/cern.ch/user/p/pengy/autoDQM
+  root_dir: /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns
+  slab_dir: /eos/experiment/milliqan/run3_MilliMon/slab
+
+model:
+  base_tag: juan_reproduction_digi_z8_if0001_train20_seed42
+  resolved_tag: juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig
+  directory: /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/models/juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig
+  config_snapshot: /afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/models/juan_reproduction_digi_z8_if0001_train20_seed42_noTrigger_noLVDS_ignoreTriggerConfig/config.yaml
+  feature_flags:
+    use_trigger: false
+    use_lvds: false
+    include_trigger_config: false
+    include_daq_config: true
+  pipeline_flags:
+    - --no-trigger
+    - --no-trigger-LVDS
+    - --no-trigger-config
+
+scan:
+  min_run: 1500
+  max_run: 3000
+  min_subruns_for_primary_bad: 10
+  min_consecutive_alert_subruns: 3
+  minimum_range_length_for_short_bridge: 3
+
+# These are the monitor settings recorded in the selected model's
+# training_metadata.json. Post-processing calls plot._compute_persistence_status,
+# the same canonical replay helper used by evaluate.py and plot.py.
+alert_replay:
+  file_alert_n_channels: 2
+  alert_consecutive_n: 5
+  single_file_alert_n_channels: 5
+  single_file_alert_max_z: 15.0
+
+similarity:
+  threshold: 0.70
+  weights:
+    channels: 0.35
+    features: 0.25
+    methods: 0.15
+    scores: 0.15
+    alert_behavior: 0.10
+  score_scales:
+    max_z: 10.0
+    if_score: 0.10
+    alert_streak: 5.0
+
+knowledge_base:
+  input_path: /afs/cern.ch/user/p/pengy/autoDQM/data/llm_knowledge_base.yaml
+  output_filename: llm_knowledge_base_expanded.yaml

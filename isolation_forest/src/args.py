@@ -310,9 +310,9 @@ def add_specific_run_args(parser: argparse.ArgumentParser) -> None:
     Add arguments for per-run apply mode and the combine step.
 
     --apply-specific-run RUN
-        Requires --train-goodRunList.  Scans the slab directory on disk for
-        every subrun of run RUN (catalogue-independent — any run can be
-        targeted regardless of quality).  The fraction of files to score is
+        Scans the slab directory on disk for every subrun of run RUN
+        (catalogue-independent — any run can be targeted regardless of
+        quality).  The fraction of files to score is
         controlled by --apply-specific-run-fraction (default 1.0), which is
         fully decoupled from --train-goodRunList-fraction.  Output is written
         to logs/<tag>_run<RUN>.csv; no report or plots are produced.  The
@@ -340,7 +340,7 @@ def add_specific_run_args(parser: argparse.ArgumentParser) -> None:
         metavar="RUN",
         default=None,
         help="Apply model to all subruns of RUN found on disk in the slab directory "
-             "(catalogue-independent; any run can be targeted; requires --train-goodRunList). "
+             "(catalogue-independent; any run can be targeted). "
              "Output saved to logs/<tag>_run<RUN>.csv; no report or plots produced.",
     )
     grp.add_argument(

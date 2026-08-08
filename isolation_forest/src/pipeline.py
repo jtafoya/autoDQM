@@ -150,7 +150,7 @@ from .combine import check_no_uncombined_run_outputs, step_combine_specific_runs
 from .evaluate import step_evaluate
 from .report import step_report
 from .plot import step_plots
-from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files, catalogue_counts, extract_run_number
+from .run_list import resolve_run_list, resolve_full_sample, resolve_run_files, catalogue_counts
 
 
 # ── Private helpers ───────────────────────────────────────────────────────────
@@ -222,7 +222,7 @@ def _resolve_apply_list(args, cfg: dict) -> list:
             fraction   = _catalogue_fraction,
             seed       = args.test_seed,
         )
-    if args.apply_specific_run is not None and args.train_goodRunList:
+    if args.apply_specific_run is not None:
         # Catalogue-independent: scan the slab directory directly so any run
         # can be targeted regardless of its quality flags.
         print(
@@ -233,15 +233,6 @@ def _resolve_apply_list(args, cfg: dict) -> list:
             slab_dir = cfg["full_sample_slab_dir"],
             run      = args.apply_specific_run,
         )
-    if args.apply_specific_run is not None:
-        # Text-list path: filter the apply list to only files for this run.
-        all_paths  = resolve_run_list(args.apply_list)
-        run_paths  = [p for p in all_paths if extract_run_number(p) == args.apply_specific_run]
-        print(
-            f"  [--apply-specific-run {args.apply_specific_run}] Filtered apply list "
-            f"to {len(run_paths)} file(s) for run {args.apply_specific_run}."
-        )
-        return run_paths
     return resolve_run_list(args.apply_list)
 
 
@@ -396,10 +387,6 @@ def main() -> None:
 
     validate_full_sample_args(parser, args)
 
-    # ── --apply-specific-run validation ──────────────────────────────────────
-    if args.apply_specific_run is not None and not args.train_goodRunList:
-        parser.error("--apply-specific-run requires --train-goodRunList")
-
     random.seed(args.test_seed)
 
     # Config flags: baseline from config, --no-* CLI flags can disable
@@ -519,19 +506,12 @@ def main() -> None:
             f"[quality={args.full_sample_apply_quality}, "
             f"fraction={args.full_sample_apply_fraction}]"
         )
-    elif args.apply_specific_run is not None and args.train_goodRunList:
+    elif args.apply_specific_run is not None:
         apply_source = (
             f"{cfg['full_sample_slab_dir']} "
             f"[run={args.apply_specific_run}, "
             f"fraction={args.apply_specific_run_fraction} within run, "
             f"direct disk scan]"
-        )
-    elif args.apply_specific_run is not None:
-        apply_source = (
-            f"{args.apply_list} "
-            f"[run={args.apply_specific_run}, "
-            f"fraction={args.apply_specific_run_fraction} within run, "
-            f"filtered from apply list]"
         )
     else:
         apply_source = args.apply_list
