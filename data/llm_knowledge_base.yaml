@@ -20,7 +20,7 @@
 # ── Add entries below ─────────────────────────────────────────────────────────
 
 # Example (replace with real documented runs):
-#
+
 - run: 1640
   category: broken_PMT_base
   cause: Damaged PMT base due to unknown reasons, possibly power grid fluctuations propagating through the LV supplies; appeared first as change of channel ch32/33 behaviour (both are coupled through the same LVDS pin) leading e.g. to smaller VMax readouts; eventually the channel HV tripped and completely turned off contributions from these channels/LVDS
@@ -64,3 +64,70 @@
     Physical intervention: Carefully press in all the jumper wires while the run is off, and check again by starting a new run. It may take a few iterations.
     Check physical channel mapping and cable connections for the flagged channels.
   recovery: Trigger rates recover to nominal values
+
+- run: 1710
+  category: daq_failure
+  cause: Notes + sampled subrun number indicate a daq failure occurred when the run was started and then was restarted.
+  action: >
+    Check the DAQ system logs for any error messages or warnings.
+    Restart the DAQ system and monitor its performance during the next run.
+  recovery: DAQ system operates normally without further failures.
+
+- run: 1711
+  category: daq_failure
+  cause: Sampled subrun number indicate a daq failure occurred when the run was started.
+  action: >
+    Check the DAQ system logs for any error messages or warnings.
+    Restart the DAQ system and monitor its performance during the next run.
+  recovery: DAQ system operates normally without further failures.
+
+- run: 2012
+  category: high_pulse_rate
+  cause: Unclear. Subruns show similar signature as run 2014, but not as extreme. Short-lived extreme-z across multiple channels dominantly in nPulses_median becomes considerably more frequent later in the run.
+  action: >
+    Investigate the source of the high pulse rate.
+    Adjust the trigger thresholds or other parameters as needed.
+  recovery: Pulse rate returns to normal values.
+
+- run: 2013
+  category: unknown
+
+- run: 2014
+  category: high_pulse_rate
+  cause: Notes indicate that this run was stopped early due to a high number of average pulses in the panels. Short-lived extreme-z across multiple channels dominantly in nPulses_median becomes considerably more frequent later in the run.
+  action: >
+    Investigate the source of the high pulse rate.
+    Adjust the trigger thresholds or other parameters as needed.
+  recovery: Pulse rate returns to normal values.
+
+- run: 2088
+  category: high_pulse_rate
+  cause: Unclear. Subruns show similar signature as run 2014, but not as extreme. Short-lived extreme-z across multiple channels dominantly in nPulses_median becomes considerably more frequent later in the run.
+  action: >
+    Investigate the source of the high pulse rate.
+    Adjust the trigger thresholds or other parameters as needed.
+  recovery: Pulse rate returns to normal values.
+
+- run: 2089
+  category: high_pulse_rate
+  cause: Unclear. Subruns show similar signature as run 2014, but not as extreme. Short-lived extreme-z across multiple channels dominantly in nPulses_median becomes considerably more frequent later in the run.
+  action: >
+    Investigate the source of the high pulse rate.
+    Adjust the trigger thresholds or other parameters as needed.
+  recovery: Pulse rate returns to normal values.
+
+- run: 2007
+  category: shifter_run
+  cause: Notes indicate that Run 2007 was taken to check that the debug message from run 2006 doesn't affect data taking.
+  action: >
+    No action needed, this run was taken for debugging purposes.
+  recovery: No recovery needed, this run was taken for debugging purposes.
+
+- run 1770:
+  category: test_run
+  cause: Notes indicate that Run 1770 was taken to test the triple coincidence trigger configuration.
+  action: >
+    No action needed, this run was taken for testing purposes.
+  recovery: No recovery needed, this run was taken for testing purposes.
+
+- run 1754:

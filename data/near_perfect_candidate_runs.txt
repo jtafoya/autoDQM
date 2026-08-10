@@ -1,0 +1,32 @@
+# Near-perfect candidate runs — follow-up list from the training-fraction scan
+# (visual selection from per-run ok-rates, 2026-07-16; cross-checked against
+# good_run_list_TRAINING.txt and goodRunsListSlab_extended.json).
+#
+# Active lines: runs the models call near-perfect that are NOT in the training
+# set — the only ones whose clean verdict is independent evidence.  None are
+# Tight-certified (1619 is Loose+Medium in the catalogue; the rest are absent
+# from the catalogue entirely), so these are candidates for extending the
+# certified good-run list after manual inspection.
+# Format: one EOS glob per run, as in the other data/ run lists.
+
+# -- Independent near-perfect candidates --------------------------------------
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1618_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1619_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1692_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1697_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1698_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1699_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1700/Digitizer_run1705_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1700/Digitizer_run1716_subrun*.csv
+/eos/experiment/milliqan/run3_MilliMon/slab/1700/Digitizer_run1719_subrun*.csv
+
+# -- Excluded with cause -------------------------------------------------------
+# 1617: no usable data on EOS (1 catalogue subrun) — verdict meaningless.
+# 1637: documented incident from subrun 357 (see good_run_list_TRAINING.txt);
+#       looks near-perfect only because the incident hits the run's tail.
+#/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1617_subrun*.csv
+#/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1637_subrun*.csv
+
+# -- Also selected, but circular (model was TRAINED on these; see
+#    good_run_list_TRAINING.txt) — listed for completeness only ---------------
+# 1601-1616, 1620-1636, 1644-1646, 1688-1691, 1706-1709, 1712-1715
