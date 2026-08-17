@@ -132,3 +132,15 @@ parameters; (4) optional `--z-rescan` raising z_threshold offline (lowering it
 needs a re-apply — sub-threshold z values are not logged).
 Run from `isolation_forest/` against the combined log and the model's
 `reference.npz`.
+
+### `llm_model_eval.py`
+Compares LLM models on the alert-categorization task using elog-labelled KB
+runs as ground truth. Builds test alerts by replaying the canonical alert
+logic on supplied anomaly logs, then queries each model with the production
+prompt from `src/llm.py` — with the tested run's own KB entry REMOVED
+(leave-one-out), so success requires signature matching, not run-number
+lookup. Case types: `matchable` (category has a sibling entry — core accuracy),
+`unmatchable` (singleton category — scores honesty: a confident wrong assertion
+fails), `control` (no hold-out — sanity, expect ~100%). `--dry-run` prints the
+case table and prompt size without any API calls; defaults bound cost
+(3 models max, 2 alerts/run, 15-case cap).
