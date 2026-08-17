@@ -140,6 +140,12 @@ def score_case(case: dict, resp: dict) -> dict:
 
 
 def main() -> None:
+    # Line-buffer stdout so progress streams through pipes/tee (API calls are
+    # minutes apart — block buffering makes the run look frozen).
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except AttributeError:
+        pass
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
     ap.add_argument("--kb", required=True)
     ap.add_argument("--log", action="append", required=True,
