@@ -53,11 +53,19 @@ def _call_api(system: str, user: str, model: str, provider: str) -> str:
         client  = anthropic.Anthropic()
         message = client.messages.create(
             model=model,
-            max_tokens=512,
+            # max_tokens caps thinking + answer together on Claude 5-era models
+            # (thinking is on by default there), so leave headroom beyond the
+            # ~300-token JSON answer or the response truncates mid-thought.
+            max_tokens=2048,
             system=system,
             messages=[{"role": "user", "content": user}],
         )
-        return message.content[0].text.strip()
+        # Claude 5-era models prepend a thinking block to content; the answer
+        # is the first text-type block, never content[0] unconditionally.
+        for block in message.content:
+            if block.type == "text":
+                return block.text.strip()
+        return ""
 
     raise NotImplementedError(
         f"LLM provider '{provider}' is not implemented.  "

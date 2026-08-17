@@ -139,8 +139,8 @@ llm_provider         LLM provider to use.  Currently supported: "anthropic".
                      To add a new provider, implement one elif branch in
                      src/llm.py:_call_api() and install its package.
 llm_model            Model ID passed to the provider API.
-                     Default: "claude-haiku-4-5-20251001" (fast, cheap).
-                     Swap to e.g. "claude-sonnet-4-6" for better reasoning.
+                     Default: "claude-haiku-4-5" (fast, cheap).
+                     Swap to e.g. "claude-sonnet-5" or "claude-opus-5" for better reasoning.
 llm_knowledge_base   Path to the YAML file mapping bad run numbers to human
                      annotations (category, cause, action, recovery).  Anomaly
                      snapshots for referenced runs are injected automatically
@@ -220,7 +220,7 @@ DEFAULTS: dict = {
     ### LLM anomaly categorization
     "llm_enabled":          False,
     "llm_provider":         "anthropic",
-    "llm_model":            "claude-haiku-4-5-20251001",
+    "llm_model":            "claude-haiku-4-5",
     "llm_knowledge_base":   "../data/llm_knowledge_base.yaml",
     "llm_historical_log":   "",   # defaults to the current apply/monitor log when empty
 }

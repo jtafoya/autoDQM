@@ -401,7 +401,7 @@ Add to `config.yaml`:
 ```yaml
 llm_enabled:        true
 llm_provider:       anthropic          # only supported provider currently
-llm_model:          claude-haiku-4-5-20251001   # or claude-sonnet-4-6 for better reasoning
+llm_model:          claude-haiku-4-5   # or claude-sonnet-5 / claude-opus-5 for better reasoning
 llm_knowledge_base: ../data/llm_knowledge_base.yaml
 llm_historical_log: ""                 # path to a pre-existing batch apply log for historical
                                        # snapshots; if empty, defaults automatically to the
