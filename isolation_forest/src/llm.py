@@ -243,13 +243,22 @@ def query_llm(
         return result
 
     current_block = _format_current_alert(run, subrun, alert_reasons, anomalous_df)
-    case_blocks = [
-        _format_historical_case(
+    # A malformed KB entry (missing/non-integer "run") must not kill the apply
+    # run — the LLM layer is advisory. Skip it with a warning instead.
+    case_blocks = []
+    for entry in knowledge_base:
+        if not isinstance(entry, dict) or not isinstance(entry.get("run"), int):
+            print(f"[LLM WARN] skipping malformed knowledge-base entry: {entry!r:.120}",
+                  file=sys.stderr)
+            continue
+        case_blocks.append(_format_historical_case(
             entry,
             _historical_snapshot(historical_log_path, entry["run"]),
-        )
-        for entry in knowledge_base
-    ]
+        ))
+    if not case_blocks:
+        result = {"error": "knowledge base has no valid entries", "run": run, "subrun": subrun}
+        _append_suggestion(suggestions_path, result)
+        return result
 
     user_prompt = (
         "## Current alert\n\n"

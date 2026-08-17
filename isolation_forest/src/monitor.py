@@ -343,17 +343,22 @@ def process_file(
         if llm_enabled and llm_suggestions_path:
             run_num, sub_num = parse_run_subrun(filename)
             from .llm import query_llm
-            suggestion = query_llm(
-                run                 = int(run_num) if run_num is not None else -1,
-                subrun              = int(sub_num) if sub_num is not None else -1,
-                alert_reasons       = reasons,
-                anomalous_df        = anomalies,
-                knowledge_base_path = llm_knowledge_base,
-                historical_log_path = llm_historical_log or log_path,
-                suggestions_path    = llm_suggestions_path,
-                model               = llm_model,
-                provider            = llm_provider,
-            )
+            # The LLM layer is advisory — no failure in it may abort the apply.
+            try:
+                suggestion = query_llm(
+                    run                 = int(run_num) if run_num is not None else -1,
+                    subrun              = int(sub_num) if sub_num is not None else -1,
+                    alert_reasons       = reasons,
+                    anomalous_df        = anomalies,
+                    knowledge_base_path = llm_knowledge_base,
+                    historical_log_path = llm_historical_log or log_path,
+                    suggestions_path    = llm_suggestions_path,
+                    model               = llm_model,
+                    provider            = llm_provider,
+                )
+            except Exception as exc:
+                print(f"[LLM ERROR] {exc} — continuing without suggestion", file=sys.stderr)
+                suggestion = {}
             candidates = suggestion.get("candidates", [])
             if not candidates:
                 print("[LLM]   (no candidates returned)")
