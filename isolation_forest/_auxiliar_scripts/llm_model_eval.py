@@ -157,6 +157,8 @@ def main() -> None:
     ap.add_argument("--controls", type=int, default=2)
     ap.add_argument("--max-cases", type=int, default=15)
     ap.add_argument("--provider", default="anthropic")
+    ap.add_argument("--workers", type=int, default=4,
+                    help="parallel API calls per model (lower to 2 if you hit 429s)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--out-json", default="llm_model_eval_results.json")
     args = ap.parse_args()
@@ -217,28 +219,40 @@ def main() -> None:
         print(f"\n[dry-run] first prompt: {len(p):,} chars (~{len(p)//4:,} tokens); no API calls made.")
         return
 
+    # Prompts depend only on the case, not the model — build each exactly once.
+    # (llm.py caches the parsed snapshot log, so this is seconds, not minutes.)
+    print("\nBuilding prompts ...")
+    t0 = time.monotonic()
+    for c in cases:
+        holdout_kb = kb if c["mode"] == "control" else [e for e in kb if e["run"] != c["run"]]
+        c["prompt"] = build_prompt(c["run"], c["subrun"], c["reasons"], c["anom_df"],
+                                   holdout_kb, args.snapshot_log)
+    print(f"  {len(cases)} prompts in {time.monotonic() - t0:.1f}s")
+
+    def run_one(model: str, c: dict) -> dict:
+        t0 = time.monotonic()
+        try:
+            raw = _call_api(_SYSTEM, c["prompt"], model, args.provider)
+            resp = parse_response(raw)
+        except Exception as exc:
+            resp = {"parse_error": True, "raw": f"API error: {exc}"}
+        dt = time.monotonic() - t0
+        s = score_case(c, resp)
+        return {"model": model, "run": c["run"], "subrun": c["subrun"],
+                "mode": c["mode"], "expected": c["expected_category"],
+                "latency_s": round(dt, 1), **s}
+
+    from concurrent.futures import ThreadPoolExecutor
     results = []
     for model in models:
-        print(f"\n── {model} ──────────────────────────────────────────")
-        for c in cases:
-            holdout_kb = kb if c["mode"] == "control" else [e for e in kb if e["run"] != c["run"]]
-            prompt = build_prompt(c["run"], c["subrun"], c["reasons"], c["anom_df"],
-                                  holdout_kb, args.snapshot_log)
-            t0 = time.monotonic()
-            try:
-                raw = _call_api(_SYSTEM, prompt, model, args.provider)
-                resp = parse_response(raw)
-            except Exception as exc:
-                resp = {"parse_error": True, "raw": f"API error: {exc}"}
-            dt = time.monotonic() - t0
-            s = score_case(c, resp)
-            results.append({"model": model, "run": c["run"], "subrun": c["subrun"],
-                            "mode": c["mode"], "expected": c["expected_category"],
-                            "latency_s": round(dt, 1), **s})
-            mark = "OK " if s["correct"] else "MISS"
-            print(f"  [{mark}] run{c['run']}/sub{c['subrun']} {c['mode']:<12} "
-                  f"expect={c['expected_category']:<22} got={s['top_category']} "
-                  f"({s['confidence']}) {dt:.0f}s")
+        print(f"\n── {model} ({args.workers} parallel calls) ─────────────────────")
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            for r in pool.map(lambda c: run_one(model, c), cases):
+                results.append(r)
+                mark = "OK " if r["correct"] else "MISS"
+                print(f"  [{mark}] run{r['run']}/sub{r['subrun']} {r['mode']:<12} "
+                      f"expect={r['expected']:<22} got={r['top_category']} "
+                      f"({r['confidence']}) {r['latency_s']:.0f}s")
 
     print("\n══ SUMMARY ═══════════════════════════════════════════")
     print(f"{'model':<22} {'matchable':>10} {'honesty':>8} {'control':>8} "

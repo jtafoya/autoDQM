@@ -126,6 +126,33 @@ def _summarise_anomaly_df(df: pd.DataFrame, top_n: int = 5) -> str:
     return "\n".join(lines)
 
 
+# Parsed-log cache: reading + run/subrun-parsing a large historical log costs
+# tens of seconds, and _historical_snapshot is called once per KB entry per
+# alert. Cache by (path, mtime) so a static reference log parses once per
+# process while a still-growing live log is re-read when it changes.
+_LOG_CACHE: dict = {}
+
+
+def _load_parsed_log(log_path: str) -> "pd.DataFrame":
+    import os
+    mtime = os.stat(log_path).st_mtime
+    cached = _LOG_CACHE.get(log_path)
+    if cached is not None and cached[0] == mtime:
+        return cached[1]
+    df = pd.read_csv(log_path)
+    if not df.empty:
+        from .run_list import parse_run_subrun
+        parsed = df["filename"].apply(
+            lambda f: pd.Series(parse_run_subrun(f), index=["run", "subrun"])
+        )
+        df = pd.concat([df, parsed], axis=1).dropna(subset=["run"])
+        df["run"]    = df["run"].astype(int)
+        df["subrun"] = df["subrun"].astype(int)
+    _LOG_CACHE.clear()          # keep at most one parsed log in memory
+    _LOG_CACHE[log_path] = (mtime, df)
+    return df
+
+
 def _historical_snapshot(log_path: str, run: int) -> str:
     """
     Pull the anomaly snapshot for a historical run from the log CSV.
@@ -134,16 +161,9 @@ def _historical_snapshot(log_path: str, run: int) -> str:
     absent from the log or the log cannot be read — does not raise.
     """
     try:
-        df = pd.read_csv(log_path)
+        df = _load_parsed_log(log_path)
         if df.empty:
             return "  (log is empty)"
-        from .run_list import parse_run_subrun
-        parsed = df["filename"].apply(
-            lambda f: pd.Series(parse_run_subrun(f), index=["run", "subrun"])
-        )
-        df = pd.concat([df, parsed], axis=1).dropna(subset=["run"])
-        df["run"]    = df["run"].astype(int)
-        df["subrun"] = df["subrun"].astype(int)
 
         run_df = df[df["run"] == run]
         if run_df.empty:
