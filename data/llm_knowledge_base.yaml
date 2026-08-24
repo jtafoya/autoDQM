@@ -65,6 +65,35 @@
     Check physical channel mapping and cable connections for the flagged channels.
   recovery: Trigger rates recover to nominal values
 
+# From Branch 
+
+# Source: MilliQanRun3 ELOG 343 (2026-04-10) and 344 (2026-04-17).
+- run: 2126
+  category: LVDS_noise
+  cause: >-
+    DAQ board-matching efficiency dropped below 100% beginning in run 2126,
+    file 26, around event 700. The DAQ queue filled with mostly empty,
+    unmatched digitizer events and the apparent digitizer trigger rate became
+    abnormally high while the trigger-board files remained normal.
+    Trigger-mask tests localized the problem to digitizer 0 LVDS channel 0,
+    corresponding to detector channels 0 and 1. The subsequent intervention
+    indicated an intermittent or degraded LVDS-pin, jumper-wire, or MCX signal
+    connection.
+  action: >-
+    Temporarily mask LVDS channel 0 or the affected trigger path to permit data
+    taking. Isolate the problematic connection by removing trigger-mask
+    channels one at a time and restoring them until the problem reappears.
+    Inspect and reseat the LVDS pins at both the trigger board and digitizer,
+    the LVDS jumper wires, and the MCX signal cables for digitizer channels 0
+    and 1. Start a new run after each connection change and monitor board
+    matching, DAQ queue occupancy, and trigger rates.
+  recovery: >-
+    Board-matching efficiency returns to 100%, the DAQ queue no longer fills
+    with empty unmatched events, trigger rates return to their normal range,
+    and all affected cables and channels can remain connected and enabled
+    without the problem recurring.
+
+# Sampled from shifter notes in the MilliQan Run log (Leo)
 - run: 1710
   category: daq_failure
   cause: Notes + sampled subrun number indicate a daq failure occurred when the run was started and then was restarted.
@@ -88,9 +117,6 @@
     Investigate the source of the high pulse rate.
     Adjust the trigger thresholds or other parameters as needed.
   recovery: Pulse rate returns to normal values.
-
-- run: 2013
-  category: unknown
 
 - run: 2014
   category: high_pulse_rate
@@ -123,11 +149,14 @@
     No action needed, this run was taken for debugging purposes.
   recovery: No recovery needed, this run was taken for debugging purposes.
 
-- run 1770:
+- run: 1770
   category: test_run
   cause: Notes indicate that Run 1770 was taken to test the triple coincidence trigger configuration.
   action: >
     No action needed, this run was taken for testing purposes.
   recovery: No recovery needed, this run was taken for testing purposes.
 
-- run 1754:
+# - run 1754:
+
+# - run: 2013
+#   category: unknown
