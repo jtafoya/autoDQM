@@ -1,0 +1,8 @@
+- Coverage: 129 rows spanning subruns 1-129.
+- Total LVDS counts: median 1.57e+07, range 7.88e+06 to 1.68e+07. Temporal behavior: stable/persistent (largest adjacent relative change 0.4931).
+- Persistent zero signal pins: none.
+- Persistent missing signal pins: none.
+- Persistently abnormally low signal pins: none.
+- Persistently abnormally high signal pins: none.
+- Strongest pin transitions: pin36->channels 72/73 near subrun 33 (relative change 2.358), pin40->channels 80/81 near subrun 90 (relative change 2.072).
+- Mapping basis: repository mapping for 48 signal pins; non-signal LVDS columns are omitted from abnormal-pin classification.

@@ -1,0 +1,14 @@
+  Subruns in log: 202  |  subruns with anomalies: 202
+  Total anomalous channel-entries: 532
+  Detector-ranked anomalous channels:
+  channel=25  method=statistical+IF  max_z=1000000.0  if_score=-0.669  features=[nPulses_mean;nPulses_std;nPulses_median;pulseArea_max_median]
+  channel=42  method=statistical  max_z=500000.0  if_score=-0.573  features=[nPulses_mean;nPulses_std;nPulses_median]
+  channel=32  method=statistical+IF  max_z=238.2  if_score=-0.694  features=[sideband_rms_median;nPulses_mean;nPulses_std;nPulses_median;pulseHeight_max_mean;pulseHeight_max_std;pulseHeight_min_std]
+  channel=33  method=statistical+IF  max_z=91.8  if_score=-0.694  features=[sideband_mean_median;sideband_rms_median;nPulses_mean;nPulses_std;nPulses_median;pulseHeight_max_mean;pulseHeight_max_std;pulseDuriation_max_mean;pulseDuriation_max_median]
+  channel=31  method=statistical  max_z=58.3  if_score=-0.594  features=[nPulses_mean;nPulses_std;nPulses_median]
+  channel=32  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=33  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=32  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=33  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=32  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  ... and 522 more anomalous channels

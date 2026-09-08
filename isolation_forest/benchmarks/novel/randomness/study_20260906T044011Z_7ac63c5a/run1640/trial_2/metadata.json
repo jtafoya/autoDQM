@@ -1,0 +1,102 @@
+{
+  "run": 1640,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "trial": 2,
+  "timestamp": "2026-09-06T04:42:33.865669+00:00",
+  "status": "completed",
+  "prompt_sha256": "310b6e955c73e942d2ae8d8e12d425cefa8a9d410620ae4ad9f6604a87f7295e",
+  "filtered_kb_sha256": "2ea2633afb795a51e43253e10f004264bea8ba47273fb021a82c3f39e47a14e1",
+  "context_sha256": "7ebf59951189397201834437b05ac07ee709c91ed4781e2c0110a5e309e5d4a8",
+  "anomaly_sha256": "7b7f7950fc97045477e56487fd944d0629defa4a16d307ac301481bc8e4c3fd8",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 1,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "09f68dfce57de1bc2a480f4668f18fc98aeaff2b790fcecd77b6e89faa9603f8",
+  "request_body_sha256": "8f84a60a5801da42c33c62be82eaa8b678d1184f9c67b12874ce40a254f761db",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_eef326df1c814e6d92ab2df9529acd6f",
+  "prediction": {
+    "category": "channel_32_33_suppression_or_readout_dropout",
+    "cause": "unknown; channels 32 and 33 may be intentionally suppressed by the trigger-mask configuration, or may have an intermittent downstream digitizer/readout failure",
+    "action": "First verify from raw per-subrun data and configuration history whether channels 32 and 33 are expected to be absent because both physical pins are masked. If intentional, update the AutoDQM mask/baseline so suppressed channels are not flagged. If not intentional, compare their digitizer event presence with LVDS pin 16, board-matching efficiency, queue occupancy, and neighboring channels; then inspect/reseat the mapped signal and digitizer connections while the run is off, or restart the affected digitizer/DAQ component only if those checks confirm a readout fault.",
+    "confidence": 0.62,
+    "supporting_historical_runs": [
+      1620,
+      2068,
+      2126
+    ],
+    "reasoning_summary": "OBSERVED: 740 of 741 subruns are anomalous; channel 32 has extreme pulse, occupancy, and sideband deviations, while channels 32 and 33 repeatedly appear missing. Both are listed among the masked physical pins. Their mapped LVDS input is not persistently missing, zero, high, or low. INFERRED: suppression or failure downstream of the LVDS counter is more plausible than a persistent upstream LVDS-pin failure; intentional masking/configuration mismatch is a strong alternative to hardware dropout. Historical runs 1620, 2068, and 2126 provide only partial analogies involving digitizer or missing-channel/LVDS behavior—there is no exact match. UNKNOWN: within-run configuration changes, raw channel presence, board matching, synchronization, and queue telemetry are unavailable, preventing separation of intentional suppression from readout failure."
+  },
+  "response_model_id": "gpt-5.6-sol",
+  "response_id": "resp_082a1bc5b2b68f66006a9cef3a06bc87d2be112cbc5ba9a829",
+  "token_usage": {
+    "input_tokens": 7903,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 7900
+    },
+    "output_tokens": 1412,
+    "output_tokens_details": {
+      "reasoning_tokens": 1034
+    },
+    "total_tokens": 9315
+  },
+  "latency_seconds": 21.870026787742972
+}

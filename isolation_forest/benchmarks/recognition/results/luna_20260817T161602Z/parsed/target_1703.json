@@ -1,0 +1,11 @@
+{
+  "category": "vmax_distribution_shift",
+  "cause": "Unknown; the pattern is consistent with a software or zero-suppression configuration change affecting pulse selection, but this is not confirmed by the supplied evidence.",
+  "action": "Conditionally test reverting to operation without zero suppression, after verifying the run configuration and comparing Vmax and pulse-count distributions with a known-good run.",
+  "recovery": "Unknown; confirm by checking whether Vmax and pulse distributions return to baseline in a subsequent run.",
+  "confidence": 0.9,
+  "supporting_historical_runs": [
+    1702
+  ],
+  "reasoning_summary": "The current alert shows anomalies in all 627 subruns and 52,957 channel-entries, with prominent channels 50, 57, and 25 and features dominated by nPulses, pulseHeight, and pulseArea. This closely matches run 1702, which had all subruns anomalous, 10,816 anomalous entries, the same prominent channels, similarly extreme z-scores, and the same feature family; that case was annotated as a Vmax distribution shift associated with a possibly changed zero-suppression or software configuration. The supplied evidence does not establish the actual configuration change or recovery."
+}

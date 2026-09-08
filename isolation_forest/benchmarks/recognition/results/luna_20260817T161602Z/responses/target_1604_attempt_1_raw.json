@@ -1,0 +1,158 @@
+{
+  "id": "resp_0fc877c7b6a1de30006a83340ce9bc81a2bb95d3ecd9e709d6",
+  "created_at": 1786983436.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0fc877c7b6a1de30006a83340db03c81a29642cf917a55ec6a",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQT6VYXfKfK2R8inUZW9uyPYqn_7Qj2wpyiaqw4p-2U35D5s2yeY_8wjauERibwFQdjtbOE49AC4SyP8lXLAhXNh1b7Eq1nJfhzhL18jQlKxLDk3XOiEQeHAnZ3iah922MdRVUcFKpZXBFlnNLLcXZuvHpQqTkLV_exu1lQcRxMPm58TICWKgd7x3TFumXjGnL5hJX7Cg-UYOS83ihbFBWYN-lyBbzIOkiuhgJtaDSgEVdsnAPdkVTQxuC_5Zay6aD9BFSBBiMNOg2h5-t0hASsT8FBpedo-SBsRcqfEL4uD9Rb5apmLGC_gwAOmpNggU1T9KntMmnXAfZx3vjtdf7yTS8AKj4UcR09wd4xVS8PJCSm29ErHdvjl8uOVMJXnVuOjn5YEREBUpGhYC57iUHHPA8KR-WDE34USZXL2Uvq8BaNuH3xIrkNYqZN2bpA5s-EKlObvz0lFgjd7IJcUIluzuxwIGrI44SePjr28YN14edUye9Y28bCcJTqoI5FdzM0esCl2Sklm1DEg7_jQvdVz6pyWL6a2ehkv9Hl_YwiqSm_YfPqfhoC-vcf6XlA4wQ-SHNfZ_irdo9QW6RPTDSKR841sOrb7m-EOfVjG8dvz_5tB68gq9flLyoswg-PQQzUeXxh4h7eEXIfUmAE6InHuGJUVPlkCr1jwutpZaeG3RTOkgTv7tKSppDzKEsAZKZYPEQrLJ1h5P46As-63ZSyXAG25js2DLJSW3s6fBTu3GxNSILIiC0tVvyYClAzS4jf-U6q5dIdQQd05F3IcT7ZoTdAwDvuajSBlb7iOZ4QFpqowfR1BZtJX1jSjww-afy6-eikEVVUYU6jubT_DJ3-nA0qQ_C3peHlV95K-eSF0Z9X1d_xb-lelJf2UUL9r5U9pc_xtPUiAmXzUNq7EBdL6gkCBlmDoZ-1FuSSqZqv6fsxP398cqqAXwVpqaO2RReJmL0Wra0yJuvMst3u5snqbm6GSObphmOGgPbtzDrDboN_84zO8bLeyTFCSpXD7utPnlAZTgtL6csoNLmp0-5rNikfQUpRDyFKDqNFeN0PtSuujli2g2xrcN6Ra-rI3gcxlK4i_6MiA3varHaJTYOG1G_MVOfobKWg2ajSQ46GipSaiPzY7x3RoUhUAyLxYerIHM8BlQSR-3QugfYVKWSjL2gsDnDLg7dciejkrCcJwkPZJr5v11juco1NPgLeCk-VSWY00cNdYw5H-CZ2EssOyBl9e9CPpohe3m77Gol4gDPQLzNjnyCYBDenl0cwiNNq5DYE_Kd6H2rpHPQfMqdKNuduA07UKOlcAJ367Lq6Qv8uDsAtmqzYnM1EzkmDCnbYf_0lNwq3AHCS4P2wdhLMLeCeL1uI894FHXqSrc-tRaA1aClr8lJxdcoQZGo9OUiSgBe4lJW6N0IcJn46WotKHTyEQsjqSqOGn3PEfdwOaExI0wCplGHlXzALnVCYUNiYnygM37ms_4gEV8S3z7pMajuEx0i6sDLy4FzZRyG9nvr44Nc318KB6J1YXKHKb82uyT_N39qOIEPsNHmPAW9wZTU_Y6pIh1p1-iv2oeLdHduDhGds5OPXsKa9nJ_UlgU2d4wie08tay4DEQeOsX2qDol8dDq27kz24ieezxldMElL2mYZgKklWTMzyiElXc93Pn867YfSzOpO2lgBPmNY1Q598N6WxLbolD-hNtXpkEI6qaZs_DAX4aq5oSALZ-lGvLqttVVldCbWmtVwSTe_fgQqc11QP8mWfptY5Fjhs4_T8oebwmSu02ahvL_5ax71BF5Tma8p9LDDlFJfgQ9_icLx98byGrt0e3xu8_k8Rf-la3ooDjuGhyC75-AkVJ6kRzqxfV6ssv-fJ588qxkeO28u5xQK_AYpUcGawEm9qpEyXXW9ox_zIT23LF8Tc0J4IGsG3_g_Lok6XA-Kqoq5lygzhXQv8N0hSL6ZSa2WKAdkX30CQ93yV542dY0y0-zEOHF0AltX7OkuLGUoDcNrQ97b--wuKyepBgdDTt7kfUf_jnWbWpfLxrAkUFmK14MizT5vrC3EQTXBh1eLHEdzTdVMFTjuGqERecEi-iBLcZ2q7ODp4C7cUWUin9tUOwC8pHMzHFlepaPN95WQsLR1F5WAp2hEfq_uJ64YoXrOHS1nU2ax41I5Sxt30bTyFDXo8-3s4opG6epUGH2-UeeEVNZMnUVTekJBGlwRSbQcpklqVyGOR5YPe-HnI5slN8xnS4ujEYyR6noXOCszYZgub8EHHzmCX7ZFLgp-JABDHajHbxoQzLom4-2sI8eBP2aWfUVx45-OEvl1XLSQIP4unHx2IJeKR1UV6NlEYABQjE0wOP2D3rkVPOfwKGAsvf3n1TPIM0K7BCuohGz5cs_jTUikDLG964sfVgj4mRVJEgJaQdsXhnAt_FxvLi6ugB7Pszhp-Sn9Q3lCPl1q2qWpBFjkSYkHIumCwDjhyUREVVFUZZnkgsqPJx6cRk0VTDj1a4Uh1lNgexIIJWd0YN5bDzolJn3syo3dQUEYdLqyQcLseki7PmUfdYdj9Z4R4oTG_8hkMiJP4oO7syvIi1Iz8q1Zv6hKc_6zLHNsRWZS19weN9qbxqkhArSFLv6JAWBP0ICrjWGbgJbzxYMAFwT6T2NeV3H3Agf9-vYyrPIBNszxhVySHZhBi-75TAoD5idXbb_i0AW6SkEJFVG0GkTbHTe7xKGO8rSOTDTAhKcAY23W7xqgOwL0FzVbHDt6UHliKQWzmxaVL79tZTat2NPkZ4HLTPqbobjCDLBxYQVS4DNBfiCU3vwUUWMw6I6eNTAq36Jko6yJoBQeoMnzHiXltHVvxNuBOOVT8sp_ufaagSEpsN-SC7H8jhMCY4BBMCD1vF-uG7i_BEhhaxbeXFkBHiD-26Lfn_OglsP929C3pJ90MLSxEIUUZmjqX2fFljDz7_EtxlUGr2d-EOs_QvFbVeedARRZ2pq9WV6ekFkTLInhmcVjbnpxVbg6XqRp-xT4RnPRgpuieei2rZIzL_HER3yVSqO4m8pHi_VSWasAQlkXgLJJl6MKmpqIh5W63Xfu",
+      "status": null
+    },
+    {
+      "id": "msg_0fc877c7b6a1de30006a833411884081a29bc19b0b0e36aed0",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"digitizer_lockup\",\"cause\":\"unknown\",\"action\":\"Conditionally restart the slab DAQ PC while the VME is powered off, after confirming the issue is a digitizer/DAQ lockup and preserving relevant logs.\",\"recovery\":\"unknown\",\"confidence\":0.65,\"supporting_historical_runs\":[1620],\"reasoning_summary\":\"OBSERVED: 86 of 641 subruns contain anomalies, with 97 anomalous channel-entries; the strongest repeated abnormalities are nPulses_median anomalies, including channel 0 at max_z=45.8 and additional channels with large z-scores. INFERRED: This resembles run 1620, where repeated nPulses_median anomalies and a matching channel-0 max_z=45.8 were associated with a digitizer lockup. The current alert does not provide CPU, DAQ-state, firmware, HV/LVDS, timing, or subsequent-run evidence, so the cause and recovery cannot be established. Check DAQ/digitizer logs and channel behavior before applying the conditional restart.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983443.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7606,
+    "input_tokens_details": {
+      "cache_write_tokens": 7603,
+      "cached_tokens": 0
+    },
+    "output_tokens": 553,
+    "output_tokens_details": {
+      "reasoning_tokens": 319
+    },
+    "total_tokens": 8159
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

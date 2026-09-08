@@ -1,0 +1,11 @@
+{
+  "category": "digitizer_lockup",
+  "cause": "unknown",
+  "action": "Conditionally restart the slab DAQ PC while the VME is powered off, after confirming the issue is a digitizer/DAQ lockup and preserving relevant logs.",
+  "recovery": "unknown",
+  "confidence": 0.65,
+  "supporting_historical_runs": [
+    1620
+  ],
+  "reasoning_summary": "OBSERVED: 86 of 641 subruns contain anomalies, with 97 anomalous channel-entries; the strongest repeated abnormalities are nPulses_median anomalies, including channel 0 at max_z=45.8 and additional channels with large z-scores. INFERRED: This resembles run 1620, where repeated nPulses_median anomalies and a matching channel-0 max_z=45.8 were associated with a digitizer lockup. The current alert does not provide CPU, DAQ-state, firmware, HV/LVDS, timing, or subsequent-run evidence, so the cause and recovery cannot be established. Check DAQ/digitizer logs and channel behavior before applying the conditional restart."
+}

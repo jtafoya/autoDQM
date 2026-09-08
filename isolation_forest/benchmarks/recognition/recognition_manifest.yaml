@@ -1,0 +1,58 @@
+schema_version: 1
+benchmark_id: autoflame_known_failure_recognition_v1
+ground_truth_kb: kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/postprocess/llm_knowledge_base_expanded.yaml
+campaign_root: kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1
+evidence_pattern: runs/run{run}/anomaly_log.csv
+excluded_bad_data_runs: [2071, 2268, 2402]
+non_target_runs:
+  1605: unique_failure_type
+  1620: unique_failure_type
+  1747: unique_failure_type_limited_data_inferred_mapping
+  2071: zero_event_run
+  2268: no_digitizer_data
+  2402: no_digitizer_data
+families:
+  daq_auto_restart:
+    display_name: DAQ automatic restart
+    canonical_category: daq_auto_restart
+    accepted_category_aliases: [daq_auto_restart, daq_automatic_restart]
+  broken_pmt_base:
+    display_name: broken PMT base
+    canonical_category: broken_PMT_base
+    accepted_category_aliases: [broken_PMT_base]
+  vmax_distribution_shift:
+    display_name: VMax distribution shift
+    canonical_category: vmax_distribution_shift
+    accepted_category_aliases: [vmax_distribution_shift]
+  lvds_noise:
+    display_name: LVDS connection/noise failure
+    canonical_category: LVDS_noise
+    accepted_category_aliases: [LVDS_noise]
+targets:
+  - run: 1500
+    family: daq_auto_restart
+    expected_peers: [1604]
+  - run: 1604
+    family: daq_auto_restart
+    expected_peers: [1500]
+  - run: 1637
+    family: broken_pmt_base
+    expected_peers: [1640, 1642]
+  - run: 1640
+    family: broken_pmt_base
+    expected_peers: [1637, 1642]
+  - run: 1642
+    family: broken_pmt_base
+    expected_peers: [1637, 1640]
+  - run: 1702
+    family: vmax_distribution_shift
+    expected_peers: [1703]
+  - run: 1703
+    family: vmax_distribution_shift
+    expected_peers: [1702]
+  - run: 2068
+    family: lvds_noise
+    expected_peers: [2126]
+  - run: 2126
+    family: lvds_noise
+    expected_peers: [2068]

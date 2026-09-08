@@ -1,0 +1,7 @@
+- Coverage: 40 rows spanning subruns 1-40.
+- Total trigger rate: median 2.368, range 2.245 to 2.549. Temporal behavior: stable/persistent.
+- Total trigger counts: median 1028, range 483 to 1037. Temporal behavior: large transition near subrun 40 (largest adjacent relative change 0.5315).
+- Dominant nonzero trigger bits: bit14 median=1.529, bit13 median=0.5003, bit9 median=0.1608, bit7 median=0.1247, bit5 median=0.04524, bit1 median=0.01029.
+- Variable/intermittent trigger bits: bit1 variability=1.129, nonzero_fraction=1, bit2 variability=3.033, nonzero_fraction=0.75.
+- Prescale interpretation (median rates): bit14 recorded=1.529, prescale=1, physical~1.529; bit13 recorded=0.5003, prescale=1, physical~0.5003; bit9 recorded=0.1608, prescale=1, physical~0.1608; bit7 recorded=0.1247, prescale=0.0001, physical~1247; bit5 recorded=0.04524, prescale=1e-06, physical~4.52e+04; bit1 recorded=0.01029, prescale=0.0002, physical~51.46.
+- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.

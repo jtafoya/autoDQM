@@ -1,0 +1,12 @@
+{
+  "category": "suspected_trigger_path_or_readout_synchronization_fault",
+  "cause": "unknown",
+  "action": "First verify trigger-board versus digitizer rates, board-matching efficiency, DAQ queue occupancy, event completeness, and the subrun-by-subrun onset. If unmatched or empty digitizer events or abnormal rates confirm a trigger/LVDS synchronization fault, use trigger masks to localize the path, then inspect and reseat the implicated LVDS pins, jumper wires, and signal cables while the run is off. If synchronization is normal, check run configuration and AutoDQM reference/scaling before replacing hardware.",
+  "confidence": 0.58,
+  "supporting_historical_runs": [
+    2126,
+    2068,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: all 129 subruns are anomalous, with 10,816 channel-entries and extreme pulse-count deviations across several channels; channels 50, 69, 47, 57, and 25 also show pulse-height/area changes. INFERRED: the persistent, broad pattern favors a run-wide trigger/readout or configuration problem over one failed PMT. Runs 2126 and 2068 partially resemble this through extreme nPulses anomalies and distributed channel effects; run 1605 shares channels 47/69 but had far fewer anomalies. No exact historical match exists. CONTRADICTING/MISSING: no missing-channel entries, trigger-rate data, board-matching metrics, queue status, CPU data, HV logs, or raw values are supplied. A configuration/reference mismatch remains an alternative and should be separated from hardware synchronization by the listed checks."
+}

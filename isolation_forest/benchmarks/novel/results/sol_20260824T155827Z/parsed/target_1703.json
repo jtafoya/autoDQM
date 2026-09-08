@@ -1,0 +1,12 @@
+{
+  "category": "suspected_detector_wide_high_occupancy_or_configuration_shift",
+  "cause": "unknown",
+  "action": "If a detector-wide high-occupancy or configuration shift is confirmed, compare the run configuration and anomaly reference with a known-good run, inspect raw waveforms and per-channel pulse counts, and check trigger rates, trigger masks, board matching, DAQ queue status, and recent firmware or cabling changes. If rates or matching are abnormal, isolate trigger paths or LVDS connections before restarting; if acquisition is normal, rebuild or select the correct AutoDQM reference.",
+  "confidence": 0.42,
+  "supporting_historical_runs": [
+    1642,
+    1747,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: all 627 subruns are anomalous, with 52,957 channel-entries and extreme deviations spanning pulse counts, pulse heights, and pulse areas on several channels. No missing-channel flags are shown. INFERRED: the persistence and scale favor a run-wide high-occupancy or configuration/reference shift over a single PMT failure. No historical case is an exact match; runs 1642 and 2126 partially resemble the extreme nPulses anomalies, while 1747 provides a high-rate analogy. CONTRADICTING/UNKNOWN: actual trigger rate, occupancy, board matching, DAQ status, raw waveforms, channel distribution, and configuration changes are unavailable, so high trigger rate, LVDS trouble, and reference mismatch cannot be distinguished."
+}

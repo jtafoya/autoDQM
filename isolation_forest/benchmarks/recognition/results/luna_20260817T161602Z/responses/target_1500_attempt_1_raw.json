@@ -1,0 +1,158 @@
+{
+  "id": "resp_06555962dc9f555d006a833405b828819e948973a02d48164c",
+  "created_at": 1786983429.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_06555962dc9f555d006a833406bb40819eb06c016b768f0dff",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQMUBU5z6hcJrA10ecUCFOItGGOW-0EaAvlhaLpFLELE4e5Znl-d5VPSit9bLeO91CWXfGI-NbvLMVY-jCqE3sl2mc40H8OAP3DZ_hD-YgKvkilXIi5CAtw6AR_da3twT5NNdkt3UNnuSEam0iK8YkMf33sW1dXELH_6YfiBP7deZl2FWT9VRWNu2wkHOk1BSVezV93VEiAl0lHe-FdzivLGSY7_fEu9C7dp5KI1dc7XX0AOwNElBy1k6YGAF4rPHiaWpy0wnxrDO2MZ9LFEC6S3H59uV1fpGWZO-F43CPPSQiRpkiC8g8CZSTeLWI_l0QToQ7GC6NWTGufYB1FpXep5vxhSvaarYYgHYekdM8agENEJkIMYkoj8b1YvthhEEFI7gloSKVJ2EA---7HbzBVxsjulcnFsBzwGqHG2Qr9NokmOomczkHSankLkXpGSNShxKyXYVbzxFjsooMIb188HTSoervde1HNu7Xmgj58nyUQPfdcsu4okWKyHvzEKN9_9yjioKzXiQzLDTllkk45_LWCrGgXT3GerF3BR5sshBXuPHA8EiK6pivvF5qw4KGhN126f8gSe9U8xYLOh16M3i02AubB_MXc1YU6uWL2qAnaDE-PGMVV99s40Kv8bnrX3MUZZimX8cOGpENrsgtezO2nYwLAHePzqhXcXgn6fL7hmHfYfwOaYjLn7kf46TQ1ZRXByJqpnAjaux_kMMWApJ4ApxZN3ipX7_MiwG29r6B81aWi1kbwzTolcORctl6mV2a0uS_ynFydLHSssreUCPXT1SE51-KPcx7PjiAstf7AlgiNbi42es-Gtj3r8cGAETuKUTs9oFthMNl7CF68zsRU7TrRRwAMeD_ZjYVZFAIgvJnUmrOl8rEsBYic9a1Vls8fnkoQkXfsAujnE9_sZF1JjMUhG9VJ0bXLSbHy-0i5YtBy42ue5CfIhjt4vUWnr1CGicjHIRyLvmrn0qJUs9kl4S-FGJNV_v5F3GecERphGp6DrCZxBt1d3M_U92WNM2_7XXx1ur6-cvOyn4UO1zMgljPB8qKlotwNTbTPWtMs2BMwCyzA8IZp7wHWrul7ZuYqQNhkEFfAe1-ZT9efHu2H7wX8zq8l6p7ah7OR4XBQ1DgSpX18bUeBUGG-RrsjoqRR61t05LbuCnGqKkbG3pT67yKcJw3IPUp5sInFjrWQL0-_ulCHKOJXK7Itgt9q_PLY43x75r-3td2vyV3r2kOULgxF0xFFIJrYXkNRFx4ImJZuYSE0KGkNzhV00RT78_j4RDA1rK3sxOLiMfdgvNBOuPA8tAtRkzynRFxcXym4WuBke9iKR-154uFEM8x6mGRrPIWcliANE6-yPYLYOQht32e84ucv6YhvO_SN21axgFTI0pau6eCJC-XzKzft2isYHAh9nx_IpJiEAf6QJs5zC3B_MRGsm3gScByJCxG2_rYZMvzfN5erwc9qudvS1V1dcuSAz8ni9c9k_wcEv5XGNYOsEKXkDRc6x4dyXu7n6lqX-Ykkr1vayD53mTE_QhO0HqDw-r-TSnBGozqSbDpMezFisss9x7eTFQCe893IGaXmrcsaFgKAhoaXNZSdZWbuoju57DehtyWIAhLKgiMkuYpWbnFDQLsDF0zA-0flHj2qS-Tfmh-CT2xt4hQf5Z5gVbx3RkM6Fd-QGT1SGNiZeWVp7EMxOl-dYL8cL7j9hju9ZkM6WemoILlvzCtLKpVZh7B-9klgR9-4TGEyt2Z2FstdTLNdDKxDuoJcAk4QUT5WqQ9wmT68BEBaPcvwAVUO4bvFyRvHLQZkkB6tBClSFVvgNpFv6FKSoC4LmxqIaiMkOfeEctcAby3R_V_qR4TjZ4Q822HPRkeotAZZM1kP-Z4U4btTjAaqX3zP7AcrW5xGSmqqf_kVs0bSYi8ks1Y8WqS_W5GeVFsgQg3siuTx_7q9uurbi6oLn1sRZo7xvHbE679wg8RtjVALixUJ09MpeHyahnhDjSL3rWMoFT5o3y_xuJrCSHTrqmdEpTyNBR22-3JYwyW6zPU30HU9OTE6P5AMwB5ZF2G9kS4vqjRbUnikMtrAFGjJHs7j_yLTZX4dSTqi5JBx0QtK1G9PadzH-1Pt2hl9LuGhw3Ta0-MJD8jMROmeSkR6N6nbtmXHkS9ny-WRiY6_ohuAJgD3bFkPJSs77bjsQKEWvBp8URbbiY8Jtw_He3QIxU6W97aPYl69DPZMZkmoCAtImNol9-WguGlyBzrDfq-sJgjIb7O-tWpTuiziEs5vuLAJLdvpLNBiwNRPfiQMVlMWKIkmO7_u6Svr41ewr5Ozr2TmdZR28e-TkdRt3H0w7UrQmqqOa0IoPQ97OrG1rXXSkU26QssRAykDHXETENd34Sbysk_RqBDNgNRnOqIy4kjo74sHA_t8XKZb2kf0SjsRpARbMVM15PSKyyhP_lSDf1t_YlNQby9z-Wg2FLqR3DTYpksOIAhfljc3SrXTHzYLnhcbaDsczm9601KBwySvVkZ6W_-rvB567RqTFhaHYK33EiFk2kun05hh0NnLdrTDYcSDg9Ghn_KNae_8yu8uU1qggsoYuhuOHsT3bsSzYkVwyPiLs8yG8lzFKkptnf8co4rJrB7I7TNaRlf2W-d_yMNuaSk4Mv-jXXayOfOrSNcoWFU18xiS2opW1ipT1PTlb7U27Af9AoJsITIO1EVzUsN7unrj9tPof8SE_KXqPUulK5k21nMz_tW49Nf06uJeR5FRw0l0qMvuGbb9rn_34U1BP-LhoRNVgqrWPTkrxiS4AqdAjyqEx4Cq8QuFE5_Dtgd_TsVS6ZFJ-Y1o_4H5xd26NWJOXkS79YfxlgfIWJLAhEjCetBRgQqv_3M4YDshgUAp55KH8WW-LnAcWNhUrmVKlYPV30xMfjC1hfeKqPxFxalAnosbBpr87-AVXCxkO34-",
+      "status": null
+    },
+    {
+      "id": "msg_06555962dc9f555d006a833409ded0819e9cdcd41135fceed0",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"high_trigger_rate\",\"cause\":\"unknown\",\"action\":\"Conditionally check the detector trigger rate, trigger logic, DAQ/firmware configuration, and LVDS cable and pin connections. If a high-rate or trigger-matching problem is confirmed, recompile MilliDAQ after any firmware reflash and repair or reseat the faulty LVDS connection.\",\"recovery\":\"unknown\",\"confidence\":0.6,\"supporting_historical_runs\":[1747,2068,2126],\"reasoning_summary\":\"OBSERVED: all 84 subruns contain anomalies; 315 channel-entries are anomalous; channel 24 is repeatedly flagged by statistical and isolation-forest methods with very large z-scores, and many other channels are affected. INFERRED: this broad, persistent pattern is most similar to the high-trigger-rate case 1747, with partial similarity to LVDS-noise cases 2068 and 2126 because those also involve widespread anomalies and trigger-path effects. No trigger-rate, board-matching, power-trip, firmware, or missing-channel evidence is supplied, so the failure family is not confirmed and the cause and recovery remain unknown.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983436.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7617,
+    "input_tokens_details": {
+      "cache_write_tokens": 7614,
+      "cached_tokens": 0
+    },
+    "output_tokens": 513,
+    "output_tokens_details": {
+      "reasoning_tokens": 265
+    },
+    "total_tokens": 8130
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

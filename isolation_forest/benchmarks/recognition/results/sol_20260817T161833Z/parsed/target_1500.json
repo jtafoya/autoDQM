@@ -1,0 +1,13 @@
+{
+  "category": "high_trigger_rate",
+  "cause": "unknown",
+  "action": "Check the actual trigger rate and trigger-logic behavior, and review whether firmware was recently reflashed or DAQ software/configuration changed. If a firmware/software mismatch is confirmed, recompile and redeploy MilliDAQ. If the anomaly localizes to an LVDS path, inspect, reseat, and test the associated LVDS cable and connectors, especially those mapped to channel 24.",
+  "recovery": "Conditionally, trigger rates and trigger logic return to nominal behavior and the channel-24 pulse-duration and sideband anomalies disappear in a new run.",
+  "confidence": 0.76,
+  "supporting_historical_runs": [
+    1747,
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: All 84 subruns are anomalous; channel 24 repeatedly dominates with z-scores up to 63.6 and a feature pattern centered on sideband mean and pulse-duration extrema. INFERRED: This strongly resembles run 1747's high-trigger-rate signature, which involved nearly the same pulse-duration feature set. Runs 2068 and 2126 provide weaker support for an LVDS/trigger-path alternative. No exact match is established because the current evidence supplies neither trigger-rate measurements nor firmware, software, cable, queue, or board-matching status. Missing/discriminating checks: inspect trigger rates and logic, compare digitizer and trigger-board rates, check board matching and queue occupancy, review recent firmware/configuration changes, and localize channel 24's LVDS mapping. Lack of reported missing channels or nPulses-dominated anomalies weakens the LVDS-noise hypothesis."
+}

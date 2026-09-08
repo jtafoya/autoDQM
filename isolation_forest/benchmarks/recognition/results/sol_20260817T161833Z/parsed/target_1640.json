@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "Likely a damaged PMT base or associated HV cable/connector affecting channels 32 and 33; the exact failed component and initiating cause are unknown.",
+  "action": "Check the HV trip log and current draw for channels 32 and 33. If current is absent, unstable, or non-nominal, switch off the affected HV path and isolate the fault by testing the HV cables, connectors, and PMT bases individually with validated components. Replace the base only if testing localizes the failure to it. Also inspect LVDS connectivity if HV behavior is nominal.",
+  "recovery": "Expected recovery is stable nominal HV current, nonzero channel/LVDS pulse contributions, restored occupancy and pulse-height behavior, and disappearance of repeated missing-channel alerts in a subsequent run.",
+  "confidence": 0.9,
+  "supporting_historical_runs": [
+    1637,
+    1642
+  ],
+  "reasoning_summary": "OBSERVED: 740 of 741 subruns are anomalous; channel 32 repeatedly has extreme deviations in sideband, pulse-count, pulse-height, and occupancy features, while channels 32 and 33 repeatedly appear missing. INFERRED: This closely matches run 1642, including the same channels, missing-channel pattern, and feature family, and partially matches the channel-32 signature preceding the broken-base diagnosis in run 1637. The lower reported maximum z-score and different anomaly count do not contradict the family but prevent asserting identical severity. A degraded LVDS connection is a weaker alternative because missing channels can occur in LVDS cases, but the current signature is substantially closer to the broken-PMT-base history. UNKNOWN: HV current, HV-trip timing, LVDS counts, waveform presence, physical mapping, and onset time. These checks discriminate a PMT-base/HV-path failure from LVDS or readout connectivity problems."
+}

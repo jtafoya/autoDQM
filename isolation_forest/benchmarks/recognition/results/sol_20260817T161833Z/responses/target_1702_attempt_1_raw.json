@@ -1,0 +1,158 @@
+{
+  "id": "resp_0c3c4f78e5673955006a8334f1a24c87d2bbd388acac14733a",
+  "created_at": 1786983665.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-sol",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0c3c4f78e5673955006a8334f2fbb887d2befdc39f6eafa75b",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzUAxF5qCydMRGgTMTOMX7BPfzTen6dPiBPDQfEta2hvdgG0zW0o-MIc-WUArvAtpOJI_h5t6pH3bpc9PtvLVCpGbK4jTYKbnWL35_9B4QUsW91Swu8o2mUITpwsJuTfDW4xrpPumwuqQTaCT_OfQ45w7SbOWf6z-zWvnE2c_C4ymasqNB9IOofrhu-mwmVuWbfMIc__fASI3RFSWn3G7p1rZJlwCPu3La58oIbPH0_0j11w3S3DFPhT_nHI1DazJyqI6gVUJsMw0P8K8oC76ACCiA1AfjX_9cqeRl_btSioH8UtMBruKGuxrNX9cBsCT5CtaSlS_tR_arNM-qMC2H4owQiJpupZLWtwFbyeworOo9gJm-35UIdyTZNKtnhsEkGlPmxkr179qYlEWyKfadI_D5GcWTU1pG84DXdVVKj3Bc8xBrilyAhsIhfV4wIe1GLNJyiG0j_hPbMSMHEL3LN7exKgcOxt28YNXUEmIQfxzwHHWfqa_Ec2QG3KQrXBDbOTaTI1aYWoCV-LBe75eDFrA1xaH2jmrlQA6RnR7Vr1bABNbhFQ9mgp_wK5IklPoXC8vsUvzkLNNvkuOqEd8zQ2Ngkw3EQeL_Er0kj0fEXcvCY_BRNu3U7a4n_oZoy7ej6bGubokYeV6Bf3LnuonmMWPNkeix5MelUMY9kWYU66gYYFBZ0TvLrkWwWasyHw7erKVJDBBAjT_YJoHbjjrOIOtU4lAfKoaYib-YkU9d7mrtelXVGyH51I0TwxK7I1jtcWsRSzsEO7gyNO2O2hfqEimvgfykrhp0RapydjLN-rzHGe0teAAtDtTG-_Ie1u5NKqPlRAUtrLfDCpbM5qXfExtI3iGDoIgFCKdW50i_6cx-EcTwoJ4Ty0r7ZDtQil_xiJppHJNGwiNRmnPUYcBK5Wdu0fc3hpysKYpREzm31CURFgSYzkPVbe-z3SSHfjmKnTQ_fmy8YpmyXxPNHJuGMTW-_PITw42NEq9LZg8BSH6tov_nubJv_v_90K3vQHAYPsprCwiYaYazHiwaidr4pYxOlpWHrws04RAZexBYhx232Qnvk0uEvFSIHX8z_KWpI9kZJ4fhcNCLlKMuUG1X3XVVtOzqhWT8kNSWUeyaAnoUPJ3LVKjtSPy6PFC-NXXuwwCmPQPANJizwt42gGDSRW8SV6F3vn9NPUpoHBaeArLXnfaCPrbBHF2fs37uIPFzcWpkVHhLxMj_IWmkUx8bJePR1kTxDXoDH0BMGXAJQ9gG5SzoGQhl1ZxvXuANOHOHyOc2wAwGcSei_bL9juJONXYQG9Mb3MrHocmJ0KsIynh-rblGjtYAKequrD-uvuDTHBk_UU8kl65jhpFJqJ7cGHPWsfR6gmfKkZRlCw9K8JS5aFcJEzqyYEIWCz9YcJ8SY6Tj9RgzKgZearXdzGqyMJ5ToYctcnbi-sTtLfyRUA6xRqD5jnwxYGBwP7mrts2WRMGVsX5IHK3c8o3aval0XRs9zoBNwVbTXntzeAOGW03UttDoAaUoL845_p6UDFRQMXZhfA2jglZzMcbadHc8MoCVRVmcn2KywwG1liEQ67jSsIbUjN52j1aXhA2PGUO6EX-naynxZgBWSok10wAlkGjMsx396cLm6gmDPWlz-wUTZncLZlkg50voB9WhTYmMbmLG8PxbtRBzmJlfLDN3sT77H8zWUqLHanH11PhGKPUg6L1Zk0_JHLV3OFZSqWVhCHNIO94OmAD-l8R7BkxKfHWVSmoE_OGoiLu3IxTPIQMoj7fWb5x13gttCgfQ6J0GPS4MOkSQEIFwj9TVA31PsH7yOiZx3ryXIc98zK3QsBMReDOCUmm7N2x1mFa0VkJ9KI6n_HHC79dkovmdn3kMqFecd9lje6kS93QazQKCGiyQV9Hw22PpSTPX-n_Da81GdkDHur3AX1stkcYGU32_H2FWJ_PzRW-37uvyIJiptZ8LCWINsk7FppCmfrlArGqBFVPAQKja6sETo0fAWOJDm22R3CuZVakLcApcwXaoANYmKYo190iDZO8ZWrYlKyimHf7nAiW-q85wrno1TPG0B5fsIfUmYEL9c8LooqLj7a3d1Jx1KckySB9TveO-kw91Yxf5gAHWxyBJH05iPiWecH9AJckyyEE8sO-7raCFbQq7ANF0ys9WXeF9bbnOwm18u-oGjx7uuOhvUf1vPDadLTMOkeeAU-YbOnlMPVK1hKtcVwfN4x6Vk0qu2P1g_bWDVa-ff_-3lUgx2rvz82tX_o6r7XwwoZZZMjn-H1IxGvBrQ0DxcrOOnRczViGtgeaK7aNr0jbChS7e4GpFtxnfecqp1lc9UW6W41_hVH061RjodyKZ4ac0ojv1G-XQ7UVD9uAesi_rHbOl_1OoWxWp2v0fDZ-y-hbEbkWBuJb9u9OePOX_I06fyY3FG1T7i_C8GjIzD7J1HQnQrL5_hxoIZaeu_Q4kXy3IDBxllAYox9VP6U1o_BIeiYF-_yMzTShkXVj-PZIB2eN9MK_jw482NehLLxdFrciigjWIkp9ONImACamoXExpcnazSiMQrsFD2yq6tE13-Ojr8Mu-6gq0wxoQGeEJbKDePUDHWWFxtxWJmnzq4xCFGzYVuuWtsASAMUMbtbZbFrNyu9gWJ55u14YBq1PGGzgxkn4w7x-Nh3-zz5eFUooVoppJ7RbzNtEY_Nzwe336Fax2PaIxa5fpPADbVLf628Bb1KorBLgkCKcLbrHd1-ioUIDqH-kxjvdxYarhNxTEJd1M30C9nY9TcfxwhKpa4FRz1u0WbNA2ihimxqhMJRLypDLtuQ9i5oFg63QVfpTlJgTJQkyuURSKWbsW3ny9iuKTzc6R7bxDxGqf65j6A086pdPQ6DNK2qtNGmdNKHVSJIDLE3ZxHeqL_pGeIz1rDBT1pDpQFzPOhoTeMRQ3FKhUfgAfClSCcTQBmRxpeEqIfLrb0qvJ90Qa5F612fjcr9ki6lSIFmNwoqMsNTM9HKhti6ntfHsS2QGvaRQryRVjnYgpwIFY41Kf3EmFI4VtgD0qKC7oQAUMzpwdWJYO5TCqNehOuDY2fgk4YfS3PRC7oD4D0Ai62HT78QpP38jzd5C6W7Z1EtXLv-ThVrVGEtqLr6EBOEb5L-ZqqYmSSVFOXSquRh1BwcwJfaC0FVXxT-X5raytfJ8FSEJkhZNDZJ9db92V0OA534RXczHCYI82hQd8Au29I8_0qyp3iSeOLZHGPWfbb9Jdq_rFgmrxDEBUjP2sRyKLWWsE2P1B18CpQ9Ka58KBAs7RKpxzd4zDMRiBJk9Y3CGkJq0rDw04boqyl_qUr_Pb2KXZmQJyilr60TjsKGcZB5InBEFU6jaGo066OiNQ0lezo2CCTYiIzyRu6AZAQOUW7IMMct-5gjeNz8fDHwPBt96lLVZe2BfuE76baFAJ9mxHAxrugnJ-I0g84TrzdQ3ERckVZWe_GcpU35RZw397CBb2rd25wBA6sekP0Z4wd44BZAniXeM1cK2kj9eUbcaSAcN0n0ilBhBENp32iW_M48aXC1-210iZwNy1lOz5YKO4zUGORB_LlgXprYpceY6t_u8IQnDpItS4dnHA8fEA-q1z_XFLzIu_hQT_oFrfVSB7zKk9AAn5epFpXmIrDl-5XtMyG3FkND6hOdQ8Hu58yz5ChRCpdlnPry0xUn5SNs0-GtA8Ho3e9nHqatMGxmnka_Wy3oEJoN1mSztBW1RlfY7MJiWNWCfV0JeFEzZMrM8MzYuZe1-igGHLulUkqjiMaHGZ2rLJWap0_sd5OCD7vjOHmuYWpVuCcrOTwlnj5S_xKvA5cn8pqJZNBTIWcVTTgXC74YQKyhI9jUyIrCxczJx_WSsRnYx1N6fZHX10RHKG2L6Lg=",
+      "status": null
+    },
+    {
+      "id": "msg_0c3c4f78e5673955006a8334fb0f6887d2b455a1742e9b2a93",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"vmax_distribution_shift\",\"cause\":\"unknown\",\"action\":\"Verify whether zero suppression or pulse-selection software/configuration changed before this run. If confirmed, revert to running without zero suppression and start a validation run; otherwise investigate other run-wide configuration changes before modifying hardware.\",\"recovery\":\"Confirm that pulse-height/Vmax, pulse-area, and pulse-count distributions return to their previous baseline in a subsequent run.\",\"confidence\":0.95,\"supporting_historical_runs\":[1703],\"reasoning_summary\":\"OBSERVED: All 129 subruns are anomalous, with 10,816 entries and extreme deviations across pulse-count, pulse-height, and pulse-area features, especially on channels 50, 57, and 25. INFERRED: This closely matches run 1703 in affected channels, features, extreme z-scores, universal subrun coverage, and anomaly density; that case was a Vmax distribution shift associated with an unconfirmed software/zero-suppression change. No equally close match appears among the hardware-failure cases, which were more localized or included explicit missing channels. UNKNOWN: The direction of the distributions, current zero-suppression setting, timing of configuration changes, trigger rate, and channel completeness. Discriminating checks are comparison of raw Vmax/pulse distributions and run configuration against the preceding healthy run; only if a zero-suppression change is verified should it be reverted.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983680.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7557,
+    "input_tokens_details": {
+      "cache_write_tokens": 7554,
+      "cached_tokens": 0
+    },
+    "output_tokens": 705,
+    "output_tokens_details": {
+      "reasoning_tokens": 404
+    },
+    "total_tokens": 8262
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "unknown; the channel-32/33 pattern is consistent with an emerging coupled PMT-base, HV, or LVDS-path problem, but the supplied evidence does not establish the physical cause.",
+  "action": "Conditionally inspect HV current and HV-trip logs for channels 32 and 33, then check LVDS counts and VMax behavior. If HV is unstable or non-nominal, switch off the affected path and isolate the cable, connector, and PMT base by controlled substitution before replacing hardware.",
+  "recovery": "unknown; confirm recovery only if HV draw is nominal and stable, LVDS counts are non-zero, and VMax and channel pulse behavior return to normal in a subsequent run.",
+  "confidence": 0.84,
+  "supporting_historical_runs": [
+    1640,
+    1642
+  ],
+  "reasoning_summary": "OBSERVED: 65 of 359 subruns contain anomalies, with repeated high-significance anomalies on channel 32 and a related anomaly on channel 33 involving sideband, pulse-count, pulse-height variability, and occupancy features. INFERRED: this closely matches runs 1640 and 1642, where coupled channels 32/33 preceded or accompanied a broken-PMT-base failure. The current case has no reported missing-channel entries, HV trip, LVDS count loss, or recovery result, so it may be an earlier or less severe stage and the diagnosis is not confirmed. Channel 39 and the broader anomaly population are less specific."
+}

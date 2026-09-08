@@ -1,0 +1,23 @@
+{
+  "mode": "dry-run",
+  "benchmark_id": "autoflame_known_failure_recognition_v1",
+  "created_at": "2026-08-17T16:15:51.051020+00:00",
+  "target_runs": [
+    1500,
+    1604,
+    1637,
+    1640,
+    1642,
+    1702,
+    1703,
+    2068,
+    2126
+  ],
+  "ground_truth_kb": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/postprocess/llm_knowledge_base_expanded.yaml",
+  "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+  "git": {
+    "commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+    "dirty": true
+  },
+  "api_calls": 0
+}

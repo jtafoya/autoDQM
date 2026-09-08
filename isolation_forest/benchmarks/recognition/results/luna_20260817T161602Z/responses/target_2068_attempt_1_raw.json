@@ -1,0 +1,158 @@
+{
+  "id": "resp_0ae139ea8e4694d1006a833438c69081a2abc301adf4569d41",
+  "created_at": 1786983480.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0ae139ea8e4694d1006a833439506881a2a1cbc95f334446eb",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzRBiopbdKC5WcO0LpzEV448ituDmS_VcbzKj-SVYC7o-EZ3psyCo4urE_eicPyeR2lXvMnTHjZT_WIKjRYNYk3E1s_fFS0m-O0rwTNxIodk4BDVo3wbmYpOeJUB0NskmPtzenX32lRAa8qHvccG80aZte33jXdxIJOCopCCwtRVEMvfg0UsAr_C5PgaTVFRjqt_fBqhsDbgRuobKpWJ9xCdjN1LbR8qIkFyZUe5OSnxWnKABfrBmZqozRHR74tFr0bTBPAF69X7ufH11732pBn8qFOJesW5gLtweQqFNGsmf12IZvhKwbHWqj2Ggs3vCBVw94jGZj7yfNIydcRxo7YyKbZ1pg0UoiL8iTs7BxG7exBBbmMOPuFpDVNZMBmhUt7Py22-7_xKSPJuNeUzK5yPIdwEGR36ispJJVvhvAZ9OO3bJZfFvHsvd9d-p9am0amJ8oc7LdkXgBW5z49IOwyblHYO3MEYnFiJPLNi0aABt61PxGuya5Cl4k3W8G52WY2DF94AH9PBRYQoEKEGJ-_NigELd4dXnVDCAbmhtg_G5FeYDWgJc1d81LgIXlTZidMNWYRuFU1rhRxrgW1ideJBPx1Cnv77CvVyZzsZXod-3TqWdgLIZD3LZ4Jn5OJvYHBqU6qywznyYiHSKqm9hIu2rDSxv1aM6Ij6e7DVENFESP21r1F6MxZWCrFSu3OJyjmqpdUOCGdqkmvXW0LEr5Hk4Shzz5VrXh1fSzleg5VDb5oo9MNWMK6TTOyaY6b-ToX6zuB-bGs-L89kzz-PmofTpbLOoiNTebK6VFLAZpQrJII5-a3KaImA-tfsCU7dLMhu_WwKMyaAX6aeJmXBGGNe6jJaie_OXUztbkN97wFLX6h6yunsqeK2QmlfNt6xToK5TP1zjsJSR_QV6m614-jplZvY88VOrci_HUiV2hW_a2Of2-WkVU24dVKc9iJOPr1tQLs9muIkt3SJIJGUHcVtsY-qm5uBRM-IQA3evs_jBlybwWb58xp2JbegpF5EavhZevsQiQDQwZqw9LJefrBZNtCGeAmtOl_VuS9gR987jVUZfnmSP12ER9Z6iXNbXAV97TYoJ4RkYJ7dNK1EK5ZH51ikr3OxcWipvYzlG3H8iJl4xj-Cen19zstPJo-y45xJ6v7VSkvmQ5uPvgTI97gaPz6Nd7Y6s81PpmoOecErc_AQAJtHPVCEbrLWHK4qT9c0X0I_txD3FXl8wSfeS6CGRwnlsRkYy5ca5PODSOxmDJ5br8qcWJCyG6DG3dOBuJkt0TVLyvIKUExyilkD_QatMh-UZ02A2cwiGDCcgcRuYbiz56-mYEwXqYXbWXiB8s8Lg9YfByq8_liRAR_KGm5a3qcFetsXxtcPZLG5IvbmM_GvpmI91BLg2xa0HAGFmHC8ukziuv7N6oNUbt9e2AIpNPv_hr_fICe8dFci2plI_wUCjmqrUbFLXD7ZYoSPqEtKBnAqnknxLqTx5GqpRpnXhti_afyFbbmlD9fdIu7Uxl7y54DyvSEfnSbDepowSyDl4Cl9sg42XLYCRIQzHPdOHL_FeSfPOrYoTpnN7gLfJbcNThBFg8U3Pk2XgxCj78mBGaMMwWN7pG418x2tPS40M10US0eE8867o6AAZxGqoR43fjTnKjrP-VuaF_SM1Z3rwZh28nIqiufXt4r7v_SkznEusKZhwyiEBf_kzAlnpKCvnHY5yflAqjBRQJhmF770Wb2mlA7f28Gn6OyCMnRW3RDN9q0QqgdcnYnFQE8UjQ6NLw268IHJDys45D7R9xST5qtNPh90A4D2T_kqIueu1gWsZU1ikx097A13Yl7U3TBZuHWDZAWyOWAYTucl9kBapyJrJiXQOgaEa4UJ3eMshzDtvlVpUIiWRKFN4BC3x1sbxK9agnXj9w6jKkkaVEQmLhfWSLpCk583VUd5sBnvl1_ksWnHJvviHu1cIIts7_UCHG_8BoGDfWHUNBLsCvhARPo42MHTfR9p0nA-w0GybN6_I2oYssCXquuMsWphVxAacVujgmu6VgnDsjqDPUn28He35xWNay_TI-cXK0WJXBLibLMEhGjPflW_BsJ2iJec7V7hTafd_rU0K4YQ7Ijmo0rFv2Q7Rw4o45YRMXBU2LKv0EtrCHkVbeTs59tmK60iuL9REVpE5QEtLdYennIkWTPWcj7cT9evUZxEbMztbXmZ-dtINylqG5ymXvfWLQ4667JyIRzJOT5JY1Mnx96hZvmu4lLUYzn56HYwM9JZZ_Re0qxeQg8Zk53DHpeXIG98s26KbPDwDOjr-RRKBCbvbDBgblaH_hK76pGYo1V1RQu3DCXLVlqH-FXIizBfugZoire-hol_HVNi8zXD5K2d4y1i1Jyydd8YxUP2-oEtyN05TBHY9h05oE7V-f_KZG7vXDpqSYg4MqMyXtUZengyA77KICCqlbhRPxAIlZQBZIIpexbYiH1fvwf-oI3J6x0GNWtCEwSv9UyGiHBxZlBNjdh7KgUYPhsgKsK-HVMt5NbhxNEz3IlYu5XhpIyhF1z8wcfrbbxoxOvhGQzAeCWYBb3vhf9JTbS6cSfGqYoRC1OXOSHpOBsYkdW7WrFFHiZkwcsimoG1As4zrAl0_65YUPNf6rnOiJMGIu995IsJlzbGEqqoPAoqzW1UbQsrkZo3EqmGOJ3itnCgszYKxEgN9O78b1UXedK9froR1bplB0iJ50vvoyqrgvawrcLSb6gr7T_TahGWoY5-JpWP8e1S0LpHUt1-hbFSjtikNH4XxeTaIZEQbHzluWTh_pLsPD-Atr2hOqBbStUcMs-XXgHiQPAAWi6Tf3Rr8Y6RzmkDTog835jygG6jXqGsVeRRBOWI4kIr5V0Mik1_XgopzbocNe0qSNH5bDxv2XCnFFf9wY4WbKC89xIhKMJkKwyDXBpsDx4p0XKM_kQZSU6iCO7n1XREtxYWtW7SZKlrpeZymfvknLilzFlLEeO6z8-0ftN8oHfSdKvcH8uJssGM3I5Sl79Du6vMlWTPwG1HRV4PGw_ITZ1eiSCVwm7FjcCgA6R4LC5hZmfUvtIRI3OzKSJ0Te-ZZN57cE2XploLWNbm_gWGmL1qnkERqmH03U9H0oCp2B18HPC9Zqo_lZpjQUKwVJJhdlDmhFfOWOZMSkm7mH8oL7fxfz8Do8iMIPbySd2gPNiiCCqyZTUOQcOkQ2oM7Enii3pihyJ2PVC9ZPNar4EC9xb1pdOBqDr99JtaMFQb7NCTTdiSOmFRHqs-2nxcYhhihp8RrEqrWraBu529XbogoEycIPKINlWGx8XNGrWiumc2mA1OYvEhmFRqh4-c6UlOlI-TTi0rbKWWQjnM47jeQX9eJmHQnfHOyUfJXCAO7W73wzqS3k-KSy9KPYUU2NqHqL1Fi-LCCm6spQCr6hAv4Vdjjgyi3IFASMhRguQYB3igKX78sz3Osjli5it1DrpK8ux-QUmD463kHu2J4Ci2aPgMlFwRYqcZN7jBkgGdybl1ZMmq9fcK6NOmTsWYtpYEB-HArwOGRd4xbi4L7zsfMine2zbF0BF6E3_mFtFSPIyGjZ-Tv4M1tuDfo2yoK42dM3VyDEPClK9F8eY6LpDSLcnIxjSnzuAaL56SmvhiklTMju564MlVgaqnwdkF12GmKhLGwGt137MIG7zGqrZ8njQLZlZc1XUwud-8tzfURDY-KIgFoHGZOmFgiFA42OI2qFAZZ-eMcVo8Pe1h8IoJxXikazC3pq8GW9unOHoxHel9cpMbyuVqF3GRxuS2Y1h3B8T4Lz7uQepUEWt4Oj73JzGef5miXdH7Rt3JUFJlrKOQgnCAGEWkEB8ivZ8J6xSFYFxi_GHwGcvdOqexOs_ZblCK5O8Cwi7MGefkOsRdtNBlJ1JuqXOwhN86vnQw",
+      "status": null
+    },
+    {
+      "id": "msg_0ae139ea8e4694d1006a83343ec6ec81a29f91704a77139f40",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"daq_auto_restart\",\"cause\":\"unknown\",\"action\":\"unknown\",\"recovery\":\"unknown\",\"confidence\":0.45,\"supporting_historical_runs\":[1500,1604,1605,1620],\"reasoning_summary\":\"OBSERVED: all 5 subruns contain anomalies, with extreme nPulses_median outliers on channels 47 and 4, repeated missing-channel alerts for channel 2, and additional isolation-forest anomalies. INFERRED: this is more consistent with a short-lived DAQ-wide or digitizer/DAQ disruption than an isolated detector channel fault. The broad, run-spanning pattern partially resembles the daq_auto_restart cases 1500 and 1604; the channel-47 nPulses signature also resembles high-CPU case 1605, while missing-channel and pulse-count anomalies have partial similarity to digitizer-lockup case 1620. No historical case is an exact match, and the supplied evidence does not establish a confirmed cause, intervention, or recovery.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983488.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7530,
+    "input_tokens_details": {
+      "cache_write_tokens": 7527,
+      "cached_tokens": 0
+    },
+    "output_tokens": 739,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 8269
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

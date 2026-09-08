@@ -1,0 +1,15 @@
+{
+  "category": "DAQ-wide acquisition interruption or restart",
+  "cause": "Unknown; the broad missing-channel pattern and repeated extreme nPulses_median anomalies suggest a DAQ/data-stream or configuration problem more than an isolated detector channel fault.",
+  "action": "Check DAQ and digitizer logs for an automatic restart, lockup, firmware/configuration change, or acquisition interruption near the affected subruns; compare channel presence and pulse counts before and after the onset. If a DAQ lockup or restart is confirmed, restart the affected DAQ component using the approved procedure and verify channel recovery.",
+  "confidence": 0.48,
+  "supporting_historical_runs": [
+    1500,
+    1604,
+    1605,
+    1620,
+    1702,
+    1703
+  ],
+  "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 anomalous channel-entries, many missing-channel flags, and repeated extreme statistical anomalies in nPulses_median, including channel 69. INFERRED: the breadth across channels is more consistent with a DAQ-wide acquisition interruption, restart, lockup, or configuration effect than a single PMT fault. PARTIAL ANALOGIES: runs 1500 and 1604 show broad anomalies associated with DAQ auto-restart; run 1620 shows nPulses anomalies from a digitizer lockup; runs 1702-1703 show broad pulse-distribution changes after configuration/software changes. UNKNOWN: restart timing, CPU/load state, trigger rate, firmware/configuration, and whether missing channels are simultaneous. No exact historical match is established."
+}

@@ -1,0 +1,106 @@
+{
+  "target_test_id": 1702,
+  "context_mode": "full",
+  "exclude_runs": [
+    1702,
+    1703
+  ],
+  "model_visible_components": [
+    "production_system_instruction",
+    "target_frozen_if_autodqm_anomaly_summary",
+    "trigger_summary",
+    "lvds_summary",
+    "daq_config_summary",
+    "filtered_historical_kb_with_frozen_autodqm_snapshots"
+  ],
+  "direct_context_not_added": {
+    "raw_digitizer_data": true,
+    "triggerboard_data": false,
+    "lvds_counts": false,
+    "daq_status": true,
+    "cpu_data": true,
+    "board_matching": true,
+    "queue_state": true,
+    "trigger_configuration": false,
+    "elog_or_provenance": true,
+    "target_ground_truth": true
+  },
+  "context_sources_included": {
+    "trigger": true,
+    "lvds": true,
+    "daq_config": true
+  },
+  "context_source_types": {
+    "trigger": "TriggerBoard detector telemetry CSV",
+    "lvds": "LVDS detector telemetry CSV",
+    "daq_config": "MilliDAQ run configuration through repository parsers"
+  },
+  "context_summaries_compact": true,
+  "kb_elog_sentences_redacted": 1,
+  "no_elog_or_provenance_text_present": true,
+  "audit_note": "Full mode adds compact detector/DAQ/config summaries from allowlisted sources.",
+  "exact_serialized_prompt_inspected": true,
+  "prompt_only_allowlisted_components": true,
+  "target_identifier_masked": true,
+  "excluded_run_identifiers_absent": {
+    "1702": true,
+    "1703": true
+  },
+  "target_kb_entry_absent": true,
+  "required_family_entries_absent": true,
+  "target_ground_truth_fields_absent": {
+    "category": true,
+    "cause": true,
+    "action": true,
+    "recovery": true
+  },
+  "target_ground_truth_literal_absent": {
+    "category": true,
+    "cause": true,
+    "action": true,
+    "recovery": true
+  },
+  "target_ground_truth_independent_historical_collision": {
+    "category": false,
+    "cause": false,
+    "action": false,
+    "recovery": false
+  },
+  "target_source_path_and_filename_absent": true,
+  "prompt_sha256": "1c1c97105e9fde4f302cb41266c439a230318f0cced347456ed5e6bd42cfc30d",
+  "target_evidence_source": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+  "historical_evidence_sources": [
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+  ],
+  "context_source_paths": {
+    "trigger": [
+      "/eos/experiment/milliqan/run3_MilliMon/slab/1700/TriggerBoard_run1702.csv"
+    ],
+    "lvds": [
+      "/eos/experiment/milliqan/run3_MilliMon/slab/1700/TriggerBoardSlab_run1702_LVDSCounts.csv"
+    ],
+    "daq_config": [
+      "/eos/experiment/milliqan/run3/slab/configs/Run1702TriggerDefault.py",
+      "/eos/experiment/milliqan/run3/slab/configs/Run1702DAQDefault.py",
+      "/eos/experiment/milliqan/run3/slab/configs/thresholds.json"
+    ]
+  },
+  "context_source_availability": {
+    "trigger": true,
+    "lvds": true,
+    "daq_config": true
+  },
+  "evidence_source_type": "frozen_campaign_per_run_autodqm_anomaly_log"
+}

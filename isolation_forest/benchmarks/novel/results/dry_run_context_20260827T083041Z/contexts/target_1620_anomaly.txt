@@ -1,0 +1,11 @@
+  Subruns in log: 259  |  subruns with anomalies: 35
+  Total anomalous channel-entries: 42
+  Detector-ranked anomalous channels:
+  channel=38  method=statistical  max_z=67.4  if_score=-0.564  features=[nPulses_median]
+  channel=0  method=statistical  max_z=45.8  if_score=-0.484  features=[nPulses_median]
+  channel=0  method=statistical  max_z=45.8  if_score=-0.566  features=[nPulses_median]
+  channel=5  method=statistical  max_z=29.2  if_score=-0.521  features=[nPulses_median]
+  channel=12  method=statistical  max_z=23.3  if_score=-0.489  features=[nPulses_median]
+  channel=8  method=isolation_forest  max_z=5.8  if_score=-0.651  features=[none]
+  channel=10  method=isolation_forest  max_z=4.9  if_score=-0.641  features=[none]
+  ... and 35 more anomalous channels

@@ -1,0 +1,11 @@
+{
+  "category": "suspected_daq_auto_restart",
+  "cause": "unknown; a transient DAQ/processing interruption, potentially associated with high CPU load, is plausible but unconfirmed",
+  "action": "Check DAQ and MilliDAQ logs at the anomalous subruns for automatic restarts, process crashes, file boundaries, high CPU usage, synchronization loss, board-matching degradation, or queue buildup. If a restart or stalled process is confirmed, restart or stabilize the affected DAQ service and address the identified resource issue; otherwise inspect channel-level nPulses time series before making hardware changes.",
+  "confidence": 0.72,
+  "supporting_historical_runs": [
+    1604,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: anomalies are sparse (35/259 subruns; 42 entries), dominated by extreme nPulses_median deviations across several channels, while trigger rate and LVDS totals remain broadly stable; no persistently abnormal or missing LVDS pin is reported. INFERRED: this most closely resembles run 1604, labeled DAQ auto-restart, including the identical channel-0 z-score and a normal ~4.85 Hz rate; run 1605 provides a weaker high-CPU analogy. No exact diagnosis is established. CONTRADICTING/UNKNOWN: no restart, CPU, synchronization, board-matching, queue, or within-run configuration telemetry is available. Persistent PMT-base, LVDS-noise, and global Vmax-shift explanations are less supported because their characteristic missing pins/channels, abnormal rates, or pulse-shape/height changes are absent."
+}

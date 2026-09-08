@@ -1,0 +1,11 @@
+{
+  "category": "suspected_daq_auto_restart",
+  "cause": "unknown",
+  "action": "Check DAQ, run-control, trigger-rate, and CPU logs at the 35 anomalous subruns for a restart or transient acquisition interruption. If a restart is confirmed, verify that configuration and trigger rates returned to nominal; perform a controlled MilliDAQ restart only if acquisition remains abnormal. If anomalies instead remain localized to particular channels, inspect their readout and pulse-count paths before intervening.",
+  "confidence": 0.68,
+  "supporting_historical_runs": [
+    1604,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: 35/259 subruns contain 42 anomalous entries, dominated by large nPulses_median deviations on several channels; no missing-channel or broad pulse-shape anomaly is reported. INFERRED: This sparse, pulse-count-dominated pattern most closely resembles run 1604, annotated as a DAQ auto-restart, with partial similarity to run 1605's CPU-associated anomalies. It is less consistent with persistent broken-base or LVDS cases, which showed missing channels, richer feature changes, or much broader persistence. UNKNOWN: restart timing, event/trigger rates, CPU load, board matching, and whether affected channels share hardware. Thus a DAQ restart is plausible but not established; a transient trigger/readout disturbance remains an alternative."
+}

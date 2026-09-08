@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "unknown",
+  "action": "Conditional on confirming a PMT/HV fault: check HV current draw and HV logs for trips or unstable currents on the affected channels, then inspect HV cables, connectors, and PMT bases. Also verify LVDS connections because channels 32 and 33 are reported missing.",
+  "recovery": "unknown",
+  "confidence": 0.88,
+  "supporting_historical_runs": [
+    1637,
+    1642
+  ],
+  "reasoning_summary": "OBSERVED: nearly all subruns contain anomalies; channel 32 has repeated statistical+isolation-forest anomalies with the same sideband_mean_median, nPulses, pulseHeight_max_std, and occupancy pattern seen in run 1637, and channels 32/33 repeatedly appear as missing. INFERRED: this strongly resembles the broken-PMT-base family, with run 1642 providing an additional similarity through missing channels 32/33. UNKNOWN: HV currents, HV trips, timing of onset, physical inspection results, and whether the missing channels are caused by hardware or DAQ readout. The broad anomaly coverage leaves DAQ/LVDS-related alternatives possible, so the proposed hardware diagnosis remains conditional."
+}

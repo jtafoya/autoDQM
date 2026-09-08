@@ -1,0 +1,14 @@
+{
+  "category": "daq_systemic_or_data_integrity_anomaly",
+  "cause": "unknown",
+  "action": "Conditionally, if raw-data and operational checks confirm a DAQ or configuration fault, inspect DAQ restart/error logs, trigger and digitizer rates, board-matching efficiency, queue occupancy, channel completeness, firmware/configuration consistency, and representative raw waveforms; then reinitialize or restart the affected DAQ component and validate a new run.",
+  "confidence": 0.62,
+  "supporting_historical_runs": [
+    1500,
+    1604,
+    1642,
+    2068,
+    2126
+  ],
+  "reasoning_summary": "No historical case is an exact match. OBSERVED: anomalies occur in all 627 subruns, affect 52,957 channel-entries, span many channels, and include extreme multi-feature statistical flags plus broad isolation-forest flags. INFERRED: the run-wide scale is more consistent with a systemic DAQ, trigger/data-integrity, or processing/configuration problem than a localized PMT fault; the extreme z-scores may also reflect a distribution or reference-data artifact. Partial similarities include all-subrun DAQ anomalies in runs 1500 and 1604, and broad data-integrity/LVDS issues in runs 1642, 2068, and 2126. UNKNOWN: trigger rates, board matching, queue state, missing-channel extent, raw waveforms, timing, DAQ logs, and firmware/configuration changes are unavailable. These checks discriminate a DAQ-wide fault from a detector-wide physical or analysis artifact."
+}

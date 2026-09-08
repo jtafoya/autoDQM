@@ -1,0 +1,13 @@
+{
+  "category": "intermittent_multi-channel_readout_loss",
+  "cause": "unknown; the pattern is consistent with intermittent DAQ/digitizer data loss or a global acquisition/trigger disruption, but the snapshot cannot distinguish these possibilities",
+  "action": "First verify raw per-subrun channel presence, event counts, and trigger rate, and map missing channels to digitizer/DAQ hardware boundaries. Check DAQ logs for readout errors, synchronization loss, or restarts. If losses cluster on a digitizer, conditionally restart and inspect that digitizer, its DAQ process, and connections; if losses are detector-wide and coincide with a trigger-rate collapse, inspect the trigger and LVDS path instead.",
+  "confidence": 0.62,
+  "supporting_historical_runs": [
+    1620,
+    1640,
+    1642,
+    2068
+  ],
+  "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 entries, repeated capped nPulses_median z-scores, and multiple missing channels spanning at least 0, 1, 4, 5, and 8. INFERRED: this favors broad intermittent readout or acquisition loss over one failed PMT. Runs 1640/1642 and 2068 partially resemble the missing-channel pattern, while run 1620 provides a partial digitizer-lockup analogy; none is an exact match. The broad channel spread contradicts the localized 32/33 PMT-base failures. UNKNOWN: temporal persistence, hardware grouping, raw event counts, trigger rate, HV status, and DAQ errors are needed to distinguish digitizer/DAQ loss from trigger disruption or multiple hardware faults."
+}

@@ -1,0 +1,11 @@
+{
+  "category": "AutoDQM reference or feature-normalization mismatch",
+  "cause": "Unknown; the leading hypothesis is a detector-wide mismatch between the run's pulse-feature distributions and the AutoDQM reference, potentially amplified by zero or near-zero reference dispersion and producing million-scale z-scores. A genuine DAQ or detector-wide waveform change is not excluded.",
+  "action": "First validate several flagged and unflagged channels against raw waveforms and per-subrun feature values, and inspect the z-score denominator/reference distributions. Compare the run configuration, thresholds, firmware, and feature-extraction version with the reference sample. Also obtain digitizer rates, board-matching, synchronization, queue occupancy, and within-run configuration telemetry. If raw data are nominal and only normalization is pathological, rebuild or correct the AutoDQM reference; if raw pulse distributions are genuinely shifted, isolate the responsible digitizer/configuration before restarting or changing hardware.",
+  "confidence": 0.62,
+  "supporting_historical_runs": [
+    1642,
+    1640
+  ],
+  "reasoning_summary": "OBSERVED: all 627 subruns are anomalous, with 52,957 channel-entries and several million-scale z-scores across pulse-count, height, area, and duration features. Trigger rate is stable near 4.8, enabled trigger bits are stable, and no persistent zero, missing, low, or high LVDS signal pin is reported. INFERRED: this broad persistent pattern with nominal trigger/LVDS summaries is more consistent with a reference/normalization or common configuration mismatch than a localized PMT-base or LVDS fault. Runs 1640 and 1642 are only partial analogies because they were persistent and feature-rich, but they had localized channels and missing-channel evidence absent here; therefore no exact historical match exists. UNKNOWN: raw feature values, waveform appearance, HV/current status, digitizer-board rates, board matching, queue state, synchronization, and configuration changes. These checks discriminate a DQM artifact from a genuine common-mode DAQ or detector shift."
+}

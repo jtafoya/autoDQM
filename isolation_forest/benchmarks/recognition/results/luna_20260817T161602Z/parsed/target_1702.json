@@ -1,0 +1,11 @@
+{
+  "category": "vmax_distribution_shift",
+  "cause": "unknown",
+  "action": "If confirmed to be associated with a zero-suppression or software configuration change, revert to running without zero suppression.",
+  "recovery": "unknown",
+  "confidence": 0.86,
+  "supporting_historical_runs": [
+    1703
+  ],
+  "reasoning_summary": "Observed: all 129 subruns contain anomalies, with 10,816 anomalous channel-entries and dominant statistical+IF flags on channels 50, 57, and 25 involving pulse counts, pulse heights, and pulse areas; several max_z values are clipped at very large values. Inferred: this closely matches run 1703, which had the same dominant channels and feature family with anomalies in every subrun, supporting a Vmax/pulse-distribution shift. No direct Vmax measurement, configuration-change record, or recovery result is supplied, so the specific cause and confirmed corrective outcome remain unknown."
+}

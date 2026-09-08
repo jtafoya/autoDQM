@@ -1,0 +1,12 @@
+{
+  "category": "global waveform-feature or AutoDQM reference mismatch",
+  "cause": "unknown",
+  "action": "First verify that CASE_TARGET used the correct detector configuration, channel map, calibration, feature definitions, and AutoDQM reference population. Compare raw waveforms and pulse-feature distributions with a known-good run. If the raw data are normal, correct the reference/configuration and rerun AutoDQM. If the raw data show a genuine detector-wide shift, inspect CPU load, event completeness, board matching, synchronization, queue occupancy, and digitizer firmware/configuration before restarting or reconfiguring the affected DAQ component.",
+  "confidence": 0.45,
+  "supporting_historical_runs": [
+    1500,
+    1604,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: anomalies affect every subrun and roughly 84 channel-entries per subrun, while the total trigger rate remains stably near 4.86 Hz and no LVDS pin is persistently missing, zero, high, or low. Several extreme z-scores involve nPulses and pulse-shape features; channels 47 and 69 resemble run 1605, and broad operational anomalies with otherwise normal-rate running partially resemble runs 1500 and 1604. INFERRED: the detector-wide persistence with normal trigger/LVDS summaries favors a global feature-distribution, processing, or reference/configuration mismatch over a localized PMT, HV, or LVDS failure. The final count drops are compatible with a shortened last subrun because trigger and LVDS totals both fall similarly, but duration data are unavailable. CONTRADICTING/MISSING: there is no exact historical match, and CPU, board matching, synchronization, queue, raw-waveform, digitizer-rate, and within-run configuration telemetry are unavailable; therefore a DAQ processing fault cannot be distinguished from an AutoDQM reference artifact without those checks."
+}

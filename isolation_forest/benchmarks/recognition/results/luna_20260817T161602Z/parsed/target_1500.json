@@ -1,0 +1,13 @@
+{
+  "category": "high_trigger_rate",
+  "cause": "unknown",
+  "action": "Conditionally check the detector trigger rate, trigger logic, DAQ/firmware configuration, and LVDS cable and pin connections. If a high-rate or trigger-matching problem is confirmed, recompile MilliDAQ after any firmware reflash and repair or reseat the faulty LVDS connection.",
+  "recovery": "unknown",
+  "confidence": 0.6,
+  "supporting_historical_runs": [
+    1747,
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: all 84 subruns contain anomalies; 315 channel-entries are anomalous; channel 24 is repeatedly flagged by statistical and isolation-forest methods with very large z-scores, and many other channels are affected. INFERRED: this broad, persistent pattern is most similar to the high-trigger-rate case 1747, with partial similarity to LVDS-noise cases 2068 and 2126 because those also involve widespread anomalies and trigger-path effects. No trigger-rate, board-matching, power-trip, firmware, or missing-channel evidence is supplied, so the failure family is not confirmed and the cause and recovery remain unknown."
+}

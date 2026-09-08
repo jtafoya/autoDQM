@@ -1,0 +1,11 @@
+{
+  "category": "daq_auto_restart",
+  "cause": "unknown",
+  "action": "If a DAQ restart or transient DAQ state change is confirmed near the anomalous subruns, review the restart and run-control logs, verify configuration continuity, and restart or reinitialize the affected DAQ components before retaking data. If no restart is found, inspect LVDS/trigger matching and channel-level pulse-count behavior to distinguish a readout issue from detector hardware.",
+  "confidence": 0.68,
+  "supporting_historical_runs": [
+    1500,
+    1604
+  ],
+  "reasoning_summary": "OBSERVED: 35 of 259 subruns contain anomalies, with 42 anomalous channel-entries; the strongest statistical anomalies are repeated nPulses_median deviations, led by channels 38, 0, 5, and 12, while some channels also have isolation-forest flags. INFERRED: this sparse, pulse-count-dominated pattern is most similar to runs 1500 and 1604, both annotated daq_auto_restart, rather than the persistent widespread missing-channel patterns of the broken-PMT-base cases. UNKNOWN: no restart timestamps, trigger/rate history, CPU data, LVDS matching, or HV measurements are provided, so the category remains provisional and the cause is unsupported."
+}

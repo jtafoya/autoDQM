@@ -1,0 +1,19 @@
+  Subruns in log: 86  |  subruns with anomalies: 65
+  Total anomalous channel-entries: 936
+  Detector-ranked anomalous channels:
+  channel=69  method=statistical  max_z=1000000.0  if_score=-0.582  features=[nPulses_median]
+  channel=69  method=statistical  max_z=1000000.0  if_score=-0.630  features=[nPulses_median]
+  channel=50  method=statistical  max_z=1000000.0  if_score=-0.605  features=[nPulses_median]
+  channel=69  method=statistical  max_z=1000000.0  if_score=-0.607  features=[nPulses_median]
+  channel=42  method=statistical  max_z=1000000.0  if_score=-0.608  features=[nPulses_median]
+  channel=43  method=isolation_forest  max_z=5.4  if_score=-0.699  features=[none]
+  channel=78  method=isolation_forest  max_z=6.8  if_score=-0.682  features=[none]
+  channel=8  method=isolation_forest  max_z=5.6  if_score=-0.678  features=[none]
+  channel=41  method=isolation_forest  max_z=7.2  if_score=-0.675  features=[none]
+  channel=32  method=isolation_forest  max_z=6.7  if_score=-0.672  features=[none]
+  channel=0  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=1  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=4  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=5  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  channel=8  method=missing_channel  max_z=n/a  if_score=n/a  features=[missing_channel]
+  ... and 921 more anomalous channels

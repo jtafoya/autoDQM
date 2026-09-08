@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "unknown; suspected intermittent degradation in the PMT base, HV path, or shared LVDS path affecting channels 32 and 33",
+  "action": "Check timestamp-aligned HV trip logs and current draw for channels 32/33, and compare their pulse-height, occupancy, and count trends. If HV current is unstable or non-nominal, disable the affected HV path and isolate the base, cable, and connector using a validated cable/base substitution test. If HV is nominal, inspect the shared LVDS mapping and connections before replacing hardware.",
+  "recovery": "Not observed. If this diagnosis is confirmed and corrected, recovery should be demonstrated by stable nominal HV current, nonzero and stable counts/occupancy, recovered pulse-height behavior, and no recurrence in subsequent subruns.",
+  "confidence": 0.86,
+  "supporting_historical_runs": [
+    1640,
+    1642
+  ],
+  "reasoning_summary": "OBSERVED: Channels 32 and 33 dominate the alert; channel 32 has the same sideband, pulse-count, pulse-height-variation, and occupancy feature combination seen in run 1640, with a similarly large z-score. INFERRED: This is a strong match to the early channel-32/33 signature of the broken-PMT-base family. Support includes the exact channel pair and feature pattern. Contradictions are that only 65/359 subruns are anomalous and no missing-channel or HV-trip evidence is supplied, unlike the persistent/later failures in runs 1640/1642. UNKNOWN: HV current/trip history, direction of pulse-height and occupancy changes, LVDS counts, and temporal correlation between channels 32/33. A DAQ-rate disturbance is a secondary possibility because pulse-count anomalies occur, but it does not explain the highly specific 32/33 pattern as well. HV/current checks and LVDS/path isolation are the discriminating tests."
+}

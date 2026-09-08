@@ -1,0 +1,12 @@
+{
+  "category": "localized_channel_32_33_readout_failure",
+  "cause": "unknown; possible channel-pair front-end, digitizer, cabling, or PMT-base fault",
+  "action": "If the channel-32/33 dropout is confirmed in raw data, stop the run and inspect/reseat the corresponding signal, power, and readout connections; verify channel mapping and digitizer status, then start a short test run. If channel 32 remains present but its pulse and occupancy distributions remain abnormal, separately test its PMT base and front-end electronics.",
+  "confidence": 0.68,
+  "supporting_historical_runs": [
+    1637,
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: 740 of 741 subruns are anomalous; channel 32 repeatedly has extreme deviations across baseline, pulse-count, pulse-height, and occupancy features, while channels 32 and 33 also appear as missing. INFERRED: this persistent concentration on an adjacent channel pair most plausibly indicates a localized readout-path failure rather than a transient run-wide condition. Run 1637 is a strong partial match for channel 32 and the same feature pattern, but its confirmed broken PMT base began only near the run end and does not explain channel 33 missing here. Runs 2068 and 2126 provide only partial analogies for missing-channel and connection-related faults. UNKNOWN: raw-data presence, onset timing, board mapping, trigger rate, board matching, and hardware status; these checks are needed to distinguish PMT-base failure from digitizer, cabling, LVDS, or data-format loss."
+}

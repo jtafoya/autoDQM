@@ -1,0 +1,13 @@
+{
+  "category": "vmax_distribution_shift",
+  "cause": "unknown",
+  "action": "Conditionally compare the run configuration with the preceding slab-detector tests, especially zero-suppression settings and software changes. If a configuration change is confirmed and Vmax distributions shifted, test reverting zero suppression.",
+  "recovery": "unknown",
+  "confidence": 0.72,
+  "supporting_historical_runs": [
+    1702,
+    1703,
+    1605
+  ],
+  "reasoning_summary": "Observed: 65 of 86 subruns contain anomalies, with 936 anomalous channel-entries; channels 69 and 50 show saturated max_z=1000000 and nPulses_median anomalies, alongside many missing-channel flags. This is partially similar to runs 1702 and 1703, which prominently affected channels 50 and 69 with saturated statistical scores and broad detector anomalies, and to run 1605 for the nPulses_median pattern. However, the current evidence does not include Vmax features, configuration history, or recovery results, so a Vmax distribution shift is a cautious family-level match rather than a confirmed diagnosis."
+}

@@ -1,0 +1,11 @@
+{
+  "category": "trigger_mask_configuration_mismatch",
+  "cause": "Channels 32 and 33 are configured as masked physical pins, but AutoDQM appears to evaluate them as normally active channels; this likely produces repeated missing-channel alerts and abnormal low-statistics pulse/occupancy features. Whether the masking itself is intentional is unknown.",
+  "action": "Verify that physical pins/channels 32 and 33 are intentionally masked and compare the mask active in each subrun with the static snapshot. If intentional, exclude masked channels from missing-channel and occupancy-based anomaly checks. If unintended, restore the correct mask configuration and start a validation run. If channel 32 remains anomalous when enabled, inspect its digitizer input and compare channels 32/33 waveforms, rates, and board matching before considering cable or hardware intervention.",
+  "confidence": 0.78,
+  "supporting_historical_runs": [
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: anomalies occur in 740/741 subruns; channel 32 repeatedly has extreme pulse/occupancy deviations, channels 32/33 are repeatedly missing, and both are listed among masked physical pins. LVDS telemetry shows no persistently missing, zero, low, or high pin, arguing against a clear persistent LVDS failure. INFERRED: mask-aware monitoring or configuration inconsistency is more plausible than established digitizer lockup or LVDS noise. UNKNOWN: per-subrun mask changes, board matching, digitizer rates, synchronization, and whether the mask was intentional. No exact historical match exists; runs 2068 and 2126 provide only partial missing-channel/LVDS analogies."
+}

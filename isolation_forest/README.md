@@ -959,9 +959,9 @@ python3 -m src.pipeline --train-goodRunList --apply-to-training-list
 When the full-sample catalogue is too large to apply in a single job, each run can be
 processed independently and the outputs combined afterwards.
 
-`--apply-specific-run` combined with `--train-goodRunList` scans the slab directory on
-disk for **every subrun** of the requested run (catalogue-independent — any run can be
-targeted regardless of quality).  Use `--apply-specific-run-fraction` to score a random
+`--apply-specific-run` scans the slab directory on disk for **every subrun** of the
+requested run (catalogue-independent — any run can be targeted regardless of quality).
+Use `--apply-specific-run-fraction` to score a random
 fraction of that run's files (default 1.0 = all files); this is decoupled from
 `--train-goodRunList-fraction`.  No `--read-full-sample-apply` flag is needed.
 
@@ -1041,7 +1041,7 @@ Options:
 | `--full-sample-apply-quality` | from config.yaml | Quality filter for the apply step: `Loose`, `Medium`, `Tight`, or `All` |
 | `--full-sample-apply-fraction` | from config.yaml | Fraction of the quality-filtered catalogue to score (0 < F ≤ 1) |
 | `--apply-to-training-list` | off | Apply on exactly the same files used for training (same quality, fraction, seed). Requires `--train-goodRunList`. Overrides apply-side quality/fraction flags |
-| `--apply-specific-run RUN` | off | Scan the slab directory on disk for all subruns of run RUN (catalogue-independent — any run can be targeted; requires `--train-goodRunList`). Writes output to `logs/<tag>_run<RUN>.csv`. No report or plots produced. Cannot be combined with `--apply-to-training-list` |
+| `--apply-specific-run RUN` | off | Scan the slab directory on disk for all subruns of run RUN (catalogue-independent — any run can be targeted). Writes output to `logs/<tag>_run<RUN>.csv`. No report or plots produced. Cannot be combined with `--apply-to-training-list` |
 | `--apply-specific-run-fraction F` | `1.0` | Fraction of the run's files to score when `--apply-specific-run` is set (0 < F ≤ 1). Decoupled from `--train-goodRunList-fraction` |
 | `--combine-specific-run-outputs PATTERN` | off | Combine per-run CSVs matching `logs/<tag>_run<PATTERN>.csv` into `logs/<tag>.csv`. Accepts shell wildcards (e.g. `'*'` for all, `'100?'` for runs 1000–1009). Exits after combining |
 | `--delete-model-tag TAG` | off | Delete all outputs for the given model tag (models, log, reports, plots) after a confirmation prompt, then exit. Cannot be combined with other flags except `--config` |

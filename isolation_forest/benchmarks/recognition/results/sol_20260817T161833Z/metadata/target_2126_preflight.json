@@ -1,0 +1,26 @@
+{
+  "target_test_id": 2126,
+  "family": "lvds_noise",
+  "peer_runs_available": [
+    2068
+  ],
+  "prompt_sha256": "90561499f7c4873a2dc15fef59babc68cbe04ed7ad70e1fc48b5355d4b24ff36",
+  "target_identifier_masked": true,
+  "target_kb_entry_absent": true,
+  "bad_data_entries_absent": true,
+  "expected_peer_visible": true,
+  "target_evidence_source": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+  "historical_evidence_sources": [
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv"
+  ]
+}

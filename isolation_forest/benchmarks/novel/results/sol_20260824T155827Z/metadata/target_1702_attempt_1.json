@@ -1,0 +1,46 @@
+{
+  "model_id": "gpt-5.6-sol",
+  "model_alias": "sol",
+  "target_test_id": 1702,
+  "excluded_runs": [
+    1702,
+    1703
+  ],
+  "timestamp": "2026-08-24T16:00:14.716929+00:00",
+  "sanitized_prompt_sha256": "ae29a832665b415525c77577a38b2cfc7a2421ecd849f3afaa17aacd88792a7d",
+  "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+  "detector_evidence_source_files": [
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+  ],
+  "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+  "git_dirty": true,
+  "attempt": 1,
+  "status": "completed",
+  "response_latency_seconds": 17.88022201694548,
+  "token_usage": {
+    "input_tokens": 7353,
+    "input_tokens_details": {
+      "cache_write_tokens": 7350,
+      "cached_tokens": 0
+    },
+    "output_tokens": 858,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 8211
+  },
+  "api_error_retry_count": 0
+}

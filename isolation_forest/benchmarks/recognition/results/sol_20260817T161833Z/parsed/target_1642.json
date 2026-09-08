@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "Suspected damaged PMT base or associated HV cable/connector path affecting coupled channels 32 and 33; not confirmed from the supplied snapshot.",
+  "action": "Check the HV trip log and current draw for channels 32/33 near the run timestamp. If current is abnormal or unstable, disable the affected HV path and isolate the cable, connector, and PMT base using a validated cable and one-at-a-time tests. Also inspect the shared LVDS connection; if HV behavior is nominal, test LVDS noise or connection failure as an alternative diagnosis.",
+  "recovery": "HV current is nominal and stable, channels 32/33 remain present with nonzero counts, and their pulse-height and sideband metrics return to baseline in a subsequent run.",
+  "confidence": 0.9,
+  "supporting_historical_runs": [
+    1640,
+    1637
+  ],
+  "reasoning_summary": "OBSERVED: all 202 subruns are anomalous; channels 32/33 repeatedly appear as missing and also show strong sideband, pulse-count, and pulse-height anomalies. INFERRED: this closely matches run 1640, where coupled channels 32/33 progressed to missing contributions following a PMT-base/HV failure; run 1637 provides a weaker precursor match. Unlike the LVDS-noise references, the target specifically reproduces the 32/33 feature pattern from run 1640. UNKNOWN: HV current/trip history, anomaly timing within the run, LVDS counts, board matching, and physical connection status. These checks are required to distinguish a damaged base/HV path from LVDS or DAQ connectivity failure."
+}

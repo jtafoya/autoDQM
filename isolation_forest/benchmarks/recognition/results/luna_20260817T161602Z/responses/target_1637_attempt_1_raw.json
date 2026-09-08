@@ -1,0 +1,158 @@
+{
+  "id": "resp_0d7ad7dd1d7cb0a8006a8334140814819e894f42d2b2480d11",
+  "created_at": 1786983444.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0d7ad7dd1d7cb0a8006a833414d284819e8ef8fe2d2b0f89fe",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQdPffq7IeAkVjTkWF029uBCuCGbZRrZonNTc25iGd5eq0kWYfddlbhnEMD6r2GfLitlvuKLyA4u0kM4I9ucJIqp2yISAhqICqvkH6z4saPsFBvGpT5eQgRJsvtrqcpLlencgL4c_gNW5GjJkjx--OY93g1CDudvlbrxcGRlbWPXU4e86A9QJZsfVh9zAaan1vTuTXm2sJXw488koKQ9Xld6ue_gPoM3VCkHzyMwSLRfpdW26zcKQNEEwwzvE5myfsB527V8Go6rpycq9iVkvJScAbrAO-L2crgpdxDhU52wTeHtAl10yCT_9XcRrGJ4Axjoujp_Ex-lrEasMxzP75h7Uzzv5tWxJyVGhkqnvSPlaNdo9IbBxB_tl_oJJP4yK9dRieX2lPG-4HFq2gycKTJudCMYaR4ROj6T8wcp3cidUEr2kVPrQnkUAwqbUoq74C393swxxFO-uAf9dG-Jw3q4B-tFLx1Fa4kc9g0oJphg71SbtFeyyjmEA6gynxV23jiu2r0yiQDA2t3GSGGoa0dLs0kz5GNY0BMGncZeVosb5dlrRVzCzpXIJpx-_lo4l3-QkS-TMwY-stUvlKvdWC4Ev4o1-SG5TSa5Q36mUTBEYyvOpm798x0bEnoKYjmwaG4gOQzImknTiDMaQxcz7ROoQZJhCGCfiCSlkNMnYvzlFNnYSSbzFn6KItGGYJi98vpyF93Orf36jE9lOYRPtzWxgcpiuQeMiE2zCLJWlNsnW1TZNMJnqbMAcbDX7nWLfeG3Bn7vK-6aY260mPqFp9tqre5p9tnF3aLRfHuIatXYDuC1mu90mydvKSC4ab_9sMRdT7EiefuOmdavavJcnw-TVzG1Z5huvQsA1NEE7iN9ZCC3H-Jg7waGA0aoF4cBNe_uJA97k8BmMfLVkPZjt0c2diHMve_D8F8NQZrOt3_KkXLBgry29SBmD2oco7qTgLHxlXZNTxutntT8k2v6OhVuypyNgFHcRPBwe40xXHQpAfO3EIhQkAeLP4R56uBayv0MbK_Bc4I1CkNlsEFWkHcJB_Sh9v_zAVZ20MeZs5kUDg2J12ubCDqgi1ohILE_o4IsmMVXPqCqqJIX6zQYqr9mc8DPfFZ7t36lpp1LZascUJJkGScR0KiLtheJ3P0ntTnQ1sYJMY_yiHMxcSK_tOgz_Usd5XKxDvw3eY565g9pwqlW5rMUEE3qMpB1Hdw-xe3aTaOPdmWswRvlZrcfovWTViGlDQo32Y1yhTC3_fsc3tNa_GyO45EqrtW5ezGz21dVwqNOKl-EdZ9azMawfVJrZQhd880rq77ibahrIi-mH32CCE5DC_aqUQK84BnFSorulsu6W65o9FtR-0ZEm2qGW_6Uc9ymNhkVEYLj1vhdgB46hz6b-56oK4G9RNTbCvfQdo75KDjN0jXOVamJUKpinr1p8q63XpsWwCWiTbmJUzpBcS8RaArxMdMxyaEHGp25Gv78SfCUBI5f_5z3rP2TnmegvunxjpeVbZxhPHNuGSjptl0Lv4Gbm1-uD3-V-a8LpWq1TiBTh-LPGT1VoqEEgnvfO7sqF3hjDXmPFQr4ju3a5tGJm-M5SszV8o-3za0YyXemKOQqGd0LLm60Z8Lmg6ORD6Dme5BIoNYshGC7wQxIOEH2S4viOP0S8hbGhLk-YfqCjsQXKc0I6jBrQ0YaNZYuwc30bfdDqvIM2aMHZ3BTvpg-YnP-QvOAq-NTTs0bDyK-311OiWcASOGemfJuCHYgozgu-wqj2J9s7yas031-1cQAx_OmmnZNf2-ZsFZhY9SB_d3Tr1SJzrDntLwGOQP7GTDiRwQ_DmoEI0rfxQsVGI5NGpGw7lyPiC3OGZmxU-RIhQZpzLpHpeu8liVM12KagzVixWu_imJLS2R-oQSSC-NV32E5jMOvzozLMdcgAQLbVHab_zK9TSBAX5hMKfpZjBtkwUhYAD5zWDszD8SD8pAk0vg3yBQMoQXZZ-yRathIHx4vGu4QE4EhmVzJaKYquY_ebQ-0NwdKWSBCqu1uGxWF3mHosu98yCkZWYLQCcsLPwwnsu8BmUnx_uPY23jUZigKcuOJM_HR0gADprEEqxBZxFaHYLywhSfGdlwPF1KGrLk0DUSKQX2metyil92BeyBN0PSIsdAfPBTDiPhWEwLziMbm2Jod5Snl2igsyXK1WcvFOihSqi71iSiUCl2XPFcDkjTRH9iYg2Lb3WQPfiQzTZkMJqkhmfwktAXJ3HG_y7jjzSIsxKI5aEtm5q5LU2v57gkKHZ6mFDZKuAq0XC91YGJOt4D2R8nNRmOk4KNjslaczaQklVH3hC_yNeKTo5ea_bDeIWBV3utCcfSzg8bz9Xa0HkRB1fXH_vOoAhhKYqwtR9yXkskIMFJh8U5LdGvAs5gFgOUHvasHxOhaXyUFfRlmxpTX9MEFeTUKOUvSsHDf5py1B5RkntFUXKJjIMjL6JLaK7DNh5XzQAOw0psWnmyVlrFERXUGP_N7GajY1j-fg8V9-WvSA9QWMrRqv4Hx8gYOUdyK2WK7eEoiR0hWwWnd0dzWMf6YPWcENT-hIaHfgaT2q2LsmuPYnaVXM30yAATNM9m8NVXCexcsP09_ipi5UGcw4wByHMftkWZC7y0pD4aqYHojLI2kcKWCmL3fT8dKPeo8X0JccRoLYjzLiQk5d8GY3EwSQt5LIK9U6KpdJQVHoYChvWJS3Y8MH8Bvv_1GxyfML8lRvHlUMEcvqNAvuM0S769u4o1LRs5UzU4bJ1mAAwMGOAhoWY0X9WtNJup577Nbr4EYsSyN81OqhGdYG1Bd0O5BddMHhHcmxc5S2lymROTYewPmCP8DlLI_6bhyi9yfFG33eoHRyRxkSUtw89SvdL3Tda-YEx6M0oqZes4gsd-o7v3askXMFxv0yNQdx51XuxCZ8wi6H41S9kydrYg5rTl3O6YzysWS_NAbaU1qhF13e3Qew_j5dCLOyBx9M2pC1-G6rVRFdlUZ-mnWxu9yKv7jBV5VddgcbpwxLjyQXeXFh0f4De140EBNuKYNDj52nOu3gRPHPg8cTrDGDKxvmZwYH8Oa50mw3PjQtL48qXqfLSma4PrRatdZqGTV8-lsTp6ogYTQiafVwysv-yLeol0dLzJCRs3G5gbEkIkZDnVDohBsOxkiAx8eSm4uCDOQ3egcwQ4kfVBqe4E4zjDl_WCdGb69tfn_oHY37TxHr2_aIfwu_tkk6kYmFUwsaf0Kx3wwmgg6SSUyX6-CzgsrMWG1WE5XB2po1dO1zI26kP8zTjwOKbE9HG0m5RozykDOKv4536vbfrF3ntz3crl7MthWgP71KMoC3udswG2aYpEo11MLfpCR89yTo1dBkjtkfyC6h59lryHlDwAUouENE1jK-drd_tph2ayPpOrjGFs8HfTLW0m-5ENsleRN8UxjjJUZ4trwe_bStmq6pjzvdtWfIbkBFD5ZjpfAfelZpZfyv8BivawnmfGBJ7n7KFee--HBkOpsMS7QRKYoZ31627AqbLDHv2kAE-7j1YuuLl7mJX1zVfMqXFSItf1GyiJdyTV2GTI8woqoCguOBoJYNiw8jtd8Bf9nI6ML2ttVnByzzSn0X41r3IIF8at-_Z0uPyOHKBU8C76rHrrQYsKq41t47yfRxDBHMBvC4iyQPPXb4zGnurnL6xGbw-qxlCQop7Mcn1VaM2oMi0EJlqZx6T2sdmML95wvsyf2QB8RNDnHGXnlSyNEqnruc9iz5ctNwbmjiDYAOOPnvwF8ns9aQwEBOk1wX8fkQ7VbNsCZtyKkgejAzWUXi-HN0TF8J4NIBC97UNWzt7cGqTF20zSHWWCGyHF-37_KFLI-UyMKRwBpa3VN48zknRAy0dZsf_pDOLm-le_qzRRTxh6YjuU_WmornP9cpHCke5iNvloY44vnYAGohuwF7Yrk-0D2VZ4rJFbORTo5u21mfKL1W2JmJhTeXwXUrLP-6OuyuzctLqriffPq7O7meiYOX9GSaggZO8X_0axMmruymqhH8t_PJZtmTPbiXTBYRRcfSm8slJpZYysMBX65WvDjlFH2dGKrlqRS8d5wtGfBVc4VdmnML-gpypUJ0GjWq32tDjh6O7OI1RLDg==",
+      "status": null
+    },
+    {
+      "id": "msg_0d7ad7dd1d7cb0a8006a83341a7234819ead035b3edbfefb59",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"broken_PMT_base\",\"cause\":\"unknown; the channel-32/33 pattern is consistent with an emerging coupled PMT-base, HV, or LVDS-path problem, but the supplied evidence does not establish the physical cause.\",\"action\":\"Conditionally inspect HV current and HV-trip logs for channels 32 and 33, then check LVDS counts and VMax behavior. If HV is unstable or non-nominal, switch off the affected path and isolate the cable, connector, and PMT base by controlled substitution before replacing hardware.\",\"recovery\":\"unknown; confirm recovery only if HV draw is nominal and stable, LVDS counts are non-zero, and VMax and channel pulse behavior return to normal in a subsequent run.\",\"confidence\":0.84,\"supporting_historical_runs\":[1640,1642],\"reasoning_summary\":\"OBSERVED: 65 of 359 subruns contain anomalies, with repeated high-significance anomalies on channel 32 and a related anomaly on channel 33 involving sideband, pulse-count, pulse-height variability, and occupancy features. INFERRED: this closely matches runs 1640 and 1642, where coupled channels 32/33 preceded or accompanied a broken-PMT-base failure. The current case has no reported missing-channel entries, HV trip, LVDS count loss, or recovery result, so it may be an earlier or less severe stage and the diagnosis is not confirmed. Channel 39 and the broader anomaly population are less specific.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983453.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7597,
+    "input_tokens_details": {
+      "cache_write_tokens": 7594,
+      "cached_tokens": 0
+    },
+    "output_tokens": 776,
+    "output_tokens_details": {
+      "reasoning_tokens": 460
+    },
+    "total_tokens": 8373
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

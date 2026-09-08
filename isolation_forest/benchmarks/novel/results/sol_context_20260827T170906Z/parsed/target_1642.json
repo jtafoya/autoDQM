@@ -1,0 +1,13 @@
+{
+  "category": "localized LVDS signal loss",
+  "cause": "Suspected open, disconnected, or failed LVDS pin-16 signal path serving detector channels 32/33; intentional masking or a mapping/configuration effect remains a plausible alternative.",
+  "action": "First verify whether the configured masks for physical channels 32/33 are expected to suppress LVDS pin-16 counts and confirm the channel mapping. If not expected, stop the run and inspect/reseat the pin-16 LVDS jumper and connectors at both digitizer and trigger-board ends; use a known-good cable or input swap to isolate cable versus board hardware. Start a new run after each change and monitor pin-16 counts, channels 32/33, board matching, queue occupancy, and digitizer-versus-trigger-board rates.",
+  "confidence": 0.86,
+  "supporting_historical_runs": [
+    2068,
+    2071,
+    2126,
+    1747
+  ],
+  "reasoning_summary": "OBSERVED: LVDS pin16, mapped to channels 32/33, has a persistent zero median while other signal pins are near 3.0–3.4e5; channels 32/33 repeatedly appear as missing and anomalous. Trigger rate is stable, although pin16 shows a transition near subrun 201. INFERRED: this strongly localizes the primary issue to loss of one LVDS path rather than a detector-wide trigger failure. Historical runs 2068/2071/2126 and 1747 provide partial analogies involving degraded LVDS connections, but no exact match exists: those cases emphasized noise, matching failures, or abnormal rates, whereas the present evidence shows localized zero activity and no available matching telemetry. CONTRADICTING/ALTERNATIVE: physical channels 32/33 are masked, which could make the zero intentional or configuration-related. UNKNOWN: raw digitizer activity, board matching, queue state, within-run configuration changes, and whether masking suppresses these LVDS counters. The proposed mapping check and cable/input swap discriminate configuration from cable, connector, or board failure."
+}

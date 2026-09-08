@@ -1,0 +1,12 @@
+{
+  "category": "LVDS_noise",
+  "cause": "unknown; the repeated missing-channel flags for channels 32 and 33, together with persistent pulse-count and pulse-feature anomalies, are consistent with a possible intermittent LVDS, trigger-path, or related channel connection problem. A broader DAQ/data-path fault remains possible.",
+  "action": "Conditional on confirming a connection or trigger-path fault: stop data taking, inspect and reseat the LVDS pins, jumper wires, MCX cables, and channel mapping for channels 32 and 33, then run trigger-mask/isolation tests while monitoring missing-channel counts, board matching, queue occupancy, and trigger rates. If those checks are normal, investigate DAQ restart or configuration/software state instead.",
+  "confidence": 0.64,
+  "supporting_historical_runs": [
+    1637,
+    2068,
+    2126
+  ],
+  "reasoning_summary": "Observed: all 202 subruns contain anomalies; channels 32 and 33 repeatedly appear as missing, while channels 25, 42, 31, 32, and 33 show strong nPulses-related deviations and channels 32/33 also show sideband and pulse-height deviations. Inferred: this favors a persistent or intermittent channel/trigger-data path issue over an isolated sensor failure, with LVDS connectivity as the leading hypothesis. Historical cases 2068 and 2126 show missing-channel and broad pulse-count anomalies associated with LVDS problems, while 1637 provides the closest channel/feature similarity for channels 32 and 33 but was attributed to a broken PMT base. No exact historical match exists, and board-matching, trigger-rate, queue, timing, and hardware measurements are unavailable."
+}

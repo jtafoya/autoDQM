@@ -1,0 +1,10 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "Unknown. The strongest hypothesis is a hardware/readout fault affecting the channel-32/33 region, possibly a broken PMT base or associated connection. This is an analogy rather than an exact historical match.",
+  "action": "Conditionally, inspect and reseat the PMT base, cabling, channel mapping, and readout connections for channels 32 and 33; check the anomaly onset by subrun and compare the affected channels with neighboring channels before replacing hardware. Also verify DAQ configuration because nearly every subrun is affected.",
+  "confidence": 0.78,
+  "supporting_historical_runs": [
+    1637
+  ],
+  "reasoning_summary": "OBSERVED: 740/741 subruns contain anomalies; channel 32 has repeated statistical+IF anomalies with max_z up to 54.2 and features [sideband_mean_median, nPulses_mean, nPulses_median, pulseHeight_max_std, occupancy]; channels 32 and 33 also have missing-channel entries. INFERRED: this closely resembles run 1637, where channel 32 and 33 showed a similar feature signature and the confirmed category was broken_PMT_base. The much larger anomaly scope and missing-channel flags also leave a DAQ/configuration or connection fault plausible. UNKNOWN: physical signal levels, HV, exact onset, channel mapping, and DAQ/log evidence needed to distinguish these causes."
+}

@@ -1,0 +1,62 @@
+{
+  "summary": {
+    "preflight_passed": 6,
+    "api_calls": 0
+  },
+  "tests": [
+    {
+      "target_run": 1620,
+      "exclude_runs": [
+        1620
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "d39d3b830b2f1b43d1d130ceaa8e025cb3d7e94f151863f00d3b924e89b4da9c"
+    },
+    {
+      "target_run": 1640,
+      "exclude_runs": [
+        1640,
+        1642,
+        1637
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "310b6e955c73e942d2ae8d8e12d425cefa8a9d410620ae4ad9f6604a87f7295e"
+    },
+    {
+      "target_run": 1642,
+      "exclude_runs": [
+        1642,
+        1640,
+        1637
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "6e2ea417199191effdcf64fc616ba4e1f2af6c994e3782a6ff9b5294c6fea30d"
+    },
+    {
+      "target_run": 1702,
+      "exclude_runs": [
+        1702,
+        1703
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "1c1c97105e9fde4f302cb41266c439a230318f0cced347456ed5e6bd42cfc30d"
+    },
+    {
+      "target_run": 1703,
+      "exclude_runs": [
+        1703,
+        1702
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "49735c47e30712f28eecb4d5403bffd5f3c8146c7b5c968eb7c00323efdc4c9d"
+    },
+    {
+      "target_run": 2126,
+      "exclude_runs": [
+        2126
+      ],
+      "status": "preflight_passed",
+      "prompt_sha256": "d38cd60d2e7f06d6fd1b4f66f6687acb74fbaa54e4c5598c65347dba9b232aaf"
+    }
+  ]
+}

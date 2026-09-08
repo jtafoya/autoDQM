@@ -1,0 +1,12 @@
+{
+  "category": "broken_PMT_base",
+  "cause": "unknown; the concentration of anomalies in channels 32 and 33, including repeated missing-channel detections, is consistent with a coupled PMT-base/HV/LVDS-path failure seen in run 1640, but no HV or hardware measurements are provided.",
+  "action": "Conditionally, check HV current draws and HV logs for channels 32 and 33, then inspect and reseat the associated HV/LVDS cables, connectors, and PMT bases. Keep affected HV off until the fault is isolated if currents are unstable or non-nominal.",
+  "recovery": "unknown",
+  "confidence": 0.82,
+  "supporting_historical_runs": [
+    1640,
+    1637
+  ],
+  "reasoning_summary": "OBSERVED: all 202 subruns contain anomalies; channels 32 and 33 repeatedly show statistical/isolation-forest anomalies and missing-channel entries, with 532 anomalous channel-entries overall. INFERRED: this closely matches run 1640, where channels 32/33 first exhibited similar feature shifts and then became missing because of a documented PMT-base/HV/LVDS failure; run 1637 provides a partial similarity involving channels 32/33. UNKNOWN: HV currents, HV-trip timing, LVDS counts, VMax behavior, physical cabling, and whether the channels recover after intervention. Therefore the category is a strong analogical match, but the cause and recovery are not confirmed."
+}

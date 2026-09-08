@@ -1,0 +1,58 @@
+{
+  "target_test_id": 1703,
+  "exclude_runs": [
+    1703,
+    1702
+  ],
+  "model_visible_components": [
+    "production_system_instruction",
+    "target_frozen_if_autodqm_anomaly_summary",
+    "filtered_historical_kb_with_frozen_autodqm_snapshots"
+  ],
+  "direct_context_not_added": {
+    "raw_digitizer_data": true,
+    "triggerboard_data": true,
+    "lvds_counts": true,
+    "daq_status": true,
+    "cpu_data": true,
+    "board_matching": true,
+    "queue_state": true,
+    "trigger_configuration": true,
+    "elog_or_provenance": true,
+    "target_ground_truth": true
+  },
+  "audit_note": "Allowed historical KB annotations may mention detector/DAQ terms; no separate direct context source was appended.",
+  "exact_serialized_prompt_inspected": true,
+  "prompt_only_allowlisted_components": true,
+  "target_identifier_masked": true,
+  "excluded_run_identifiers_absent": {
+    "1703": true,
+    "1702": true
+  },
+  "target_kb_entry_absent": true,
+  "required_family_entries_absent": true,
+  "target_ground_truth_fields_absent": {
+    "cause": true,
+    "action": true,
+    "recovery": true
+  },
+  "target_source_path_and_filename_absent": true,
+  "prompt_sha256": "22bc1212b177e54813c5621b3612b58a89bf2a3642b69a5efa2b7ff02c475953",
+  "target_evidence_source": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+  "historical_evidence_sources": [
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+  ],
+  "evidence_source_type": "frozen_campaign_per_run_autodqm_anomaly_log"
+}

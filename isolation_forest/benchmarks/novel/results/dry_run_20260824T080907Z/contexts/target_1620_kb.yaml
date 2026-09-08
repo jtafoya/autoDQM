@@ -1,0 +1,192 @@
+- run: 1500
+  category: daq_auto_restart
+  cause: unknown
+  action: unknown
+  recovery: Run 1501 was subsequently reported with no issues.
+- run: 1604
+  category: daq_auto_restart
+  cause: unknown
+  action: unknown
+  recovery: 'The run continued in normal configuration at approximately 4.85 Hz, although
+    high CPU usage alerts were observed.
+
+    '
+- run: 1605
+  category: high_cpu_usage
+  cause: unknown
+  action: unknown
+  recovery: unknown
+- run: 1637
+  category: broken_PMT_base
+  cause: 'Broken PMT base. The run was reported as good through subrun 356 and bad
+    after subrun 357 due to the broken PMT base.
+
+    '
+  action: unknown
+  recovery: unknown
+- run: 1640
+  category: broken_PMT_base
+  cause: Damaged PMT base due to unknown reasons, possibly power grid fluctuations
+    propagating through the LV supplies; appeared first as change of channel ch32/33
+    behaviour (both are coupled through the same LVDS pin) leading e.g. to smaller
+    VMax readouts; eventually the channel HV tripped and completely turned off contributions
+    from these channels/LVDS
+  action: 'Check the HV current draw Check HV log for a trip near the run timestamp.
+    If channel current draws are unstable or different from nominal, switch it off
+    until a physical intervention can be carried out. Physical intervention: Check
+    continuity of all HV cables between HVPS and involved channels. Physical intervention:
+    Disconnect the HV off all the relevant PMT bases. Connect one at a time and turn
+    HV on noting which ones don''t draw nominal current values. This allows to indentify
+    the faulty HV paths (problem can be either in the cables, at the connectors, or
+    at the base. Physical intervention: Use a validated healthy HV cable to power
+    the problematic base. If draws are nominal, then the culprit is most likely in
+    the HV cable and/or connector between the HV splitter box and the base. If the
+    current draw is not nominal, then try replacing the base for a new one. N.B. be
+    sure to use the same base version and set exactly the same gain with the switches
+    to match the broken base! Physical intervention: If the problem is in the cables/connectors,
+    do further eliminatory testing to determine isolate the issue. E.g. plug a healthy
+    cable into the output of the HV splitter originally leading to the issue, and
+    use it to power a healtyh PMT. If draws are nominal, the issue is at the original
+    cable not currently being used.
+
+    '
+  recovery: HV draw back to nominal and stable values, LVDS counts non-zero, VMax
+    recovers for the involved channels
+- run: 1642
+  category: broken_PMT_base
+  cause: Damaged PMT base due to unknown reasons, possibly power grid fluctuations
+    propagating through the LV supplies (continuation of issue seen at run 1640);
+    channel HV already tripped, no pulse contributions from these channels/LVDS
+  action: 'Check the HV current draw Check HV log for a trip near the run timestamp.
+    If channel current draws are unstable or different from nominal, switch it off
+    until a physical intervention can be carried out. Physical intervention: Check
+    continuity of all HV cables between HVPS and involved channels. Physical intervention:
+    Disconnect the HV off all the relevant PMT bases. Connect one at a time and turn
+    HV on noting which ones don''t draw nominal current values. This allows to indentify
+    the faulty HV paths (problem can be either in the cables, at the connectors, or
+    at the base. Physical intervention: Use a validated healthy HV cable to power
+    the problematic base. If draws are nominal, then the culprit is most likely in
+    the HV cable and/or connector between the HV splitter box and the base. If the
+    current draw is not nominal, then try replacing the base for a new one. N.B. be
+    sure to use the same base version and set exactly the same gain with the switches
+    to match the broken base! Physical intervention: If the problem is in the cables/connectors,
+    do further eliminatory testing to determine isolate the issue. E.g. plug a healthy
+    cable into the output of the HV splitter originally leading to the issue, and
+    use it to power a healtyh PMT. If draws are nominal, the issue is at the original
+    cable not currently being used.
+
+    '
+  recovery: HV draw back to nominal and stable values, LVDS counts non-zero, VMax
+    recovers for the involved channels
+- run: 1702
+  category: vmax_distribution_shift
+  cause: 'The Vmax pulse distribution increased after changes made during preceding
+    slab detector tests. The eLog suggests that this may have been related to a software
+    or zero-suppression change removing normal-sized pulses, but the cause was not
+    confirmed.
+
+    '
+  action: 'Revert to running without zero suppression.
+
+    '
+  recovery: 'After reverting to no zero suppression, the average Vmax returned to
+    its previous levels by run 1705.
+
+    '
+- run: 1703
+  category: vmax_distribution_shift
+  cause: 'The Vmax pulse distribution increased after changes made during preceding
+    slab detector tests. The eLog suggests that this may have been related to a software
+    or zero-suppression change removing normal-sized pulses, but the cause was not
+    confirmed.
+
+    '
+  action: 'Revert to running without zero suppression.
+
+    '
+  recovery: 'After reverting to no zero suppression, the average Vmax returned to
+    its previous levels by run 1705.
+
+    '
+- run: 1747
+  category: high_trigger_rate
+  cause: 'The slab detector entered a high-rate state following a power trip. The
+    trigger logic was not behaving as expected. During troubleshooting, it was found
+    that MilliDAQ had not been recompiled after the firmware was reflashed, and a
+    faulty LVDS cable was also identified.
+
+    '
+  action: 'Recompile MilliDAQ after reflashing the firmware and fix the faulty LVDS
+    cable.
+
+    '
+  recovery: 'Slab detector rates returned to normal and trigger logic behaved as expected.
+
+    '
+- run: 2068
+  category: LVDS_noise
+  cause: Unclear. Possible charge collection in LVDS pins, or mechanical failure of
+    the LVDS jumper wires needing readjustment; higher trigger rates than usual
+  action: 'Physical intervention: Carefully check whether all the LVDS pins are fully
+    seated into the trigger board and digitizer Physical intervention: Carefully press
+    in all the jumper wires while the run is off, and check again by starting a new
+    run. It may take a few iterations. Check physical channel mapping and cable connections
+    for the flagged channels.
+
+    '
+  recovery: Trigger rates recover to nominal values
+- run: 2071
+  category: LVDS_noise
+  cause: Unclear. Possible charge collection in LVDS pins, or mechanical failure of
+    the LVDS jumper wires needing readjustment; higher trigger rates than usual. Continuation
+    of issue at run 2068, slightly improved by moving LVDS cables but still not fully
+    recovered.
+  action: 'Physical intervention: Carefully check whether all the LVDS pins are fully
+    seated into the trigger board and digitizer Physical intervention: Carefully press
+    in all the jumper wires while the run is off, and check again by starting a new
+    run. It may take a few iterations. Check physical channel mapping and cable connections
+    for the flagged channels.
+
+    '
+  recovery: Trigger rates recover to nominal values
+- run: 2126
+  category: LVDS_noise
+  cause: 'DAQ board-matching efficiency dropped below 100% beginning in run 2126,
+    file 26, around event 700. The DAQ queue filled with mostly empty, unmatched digitizer
+    events and the apparent digitizer trigger rate became abnormally high while the
+    trigger-board files remained normal. Trigger-mask tests localized the problem
+    to digitizer 0 LVDS channel 0, corresponding to detector channels 0 and 1. The
+    subsequent intervention indicated an intermittent or degraded LVDS-pin, jumper-wire,
+    or MCX signal connection.
+
+    '
+  action: 'Temporarily mask LVDS channel 0 or the affected trigger path to permit
+    data taking. Isolate the problematic connection by removing trigger-mask channels
+    one at a time and restoring them until the problem reappears. Inspect and reseat
+    the LVDS pins at both the trigger board and digitizer, the LVDS jumper wires,
+    and the MCX signal cables for digitizer channels 0 and 1. Start a new run after
+    each connection change and monitor board matching, DAQ queue occupancy, and trigger
+    rates.
+
+    '
+  recovery: 'Board-matching efficiency returns to 100%, the DAQ queue no longer fills
+    with empty unmatched events, trigger rates return to their normal range, and all
+    affected cables and channels can remain connected and enabled without the problem
+    recurring.
+
+    '
+- run: 2268
+  category: millidaq_restart
+  cause: unknown
+  action: Restart MilliDAQ.
+  recovery: unknown
+- run: 2402
+  category: unexpected_trigger_rate_drop
+  cause: 'The trigger rate unexpectedly fell to about 2 Hz while using layer 2 to
+    tag muons and study slabs on the back row of layer 1. The eLog suggests either
+    noise associated with layer 3 or increased activity close to the ceiling as possible
+    explanations, but the cause was not determined.
+
+    '
+  action: unknown
+  recovery: unknown

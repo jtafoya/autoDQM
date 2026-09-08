@@ -1,0 +1,12 @@
+{
+  "category": "persistent_channel_dropout",
+  "cause": "unknown",
+  "action": "First verify in raw data and channel-presence logs whether channels 32 and 33 are absent throughout the run rather than merely suppressed by configuration. Check channel masks, mapping, zero-suppression settings, and the shared digitizer/readout path for channels 32–33. If the dropout is hardware-localized, stop the run and inspect/reseat the associated signal and LVDS connections; if readout is stalled, restart the affected DAQ component and validate with a short test run.",
+  "confidence": 0.64,
+  "supporting_historical_runs": [
+    2068,
+    2126,
+    1637
+  ],
+  "reasoning_summary": "OBSERVED: all 202 subruns are anomalous; channels 32 and 33 repeatedly receive missing-channel flags and also show strong pulse, sideband, and pulse-height anomalies. Channels 25 and 42 have extreme pulse-count deviations. INFERRED: the strongest hypothesis is persistent loss or instability of a shared readout path for channels 32–33, with possible additional acquisition-wide distortion. Runs 2068 and 2126 partially resemble the missing-channel pattern associated with connection/readout faults; run 1637 involved the same channels but a broken PMT base and lacked the persistent missing-channel evidence, so it is not an exact match. UNKNOWN: raw channel-presence timing, board mapping, trigger and board-matching rates, DAQ queue state, masks, configuration changes, and hardware status are needed to distinguish cabling/electronics failure from suppression or mapping errors."
+}

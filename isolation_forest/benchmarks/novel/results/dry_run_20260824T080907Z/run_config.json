@@ -1,0 +1,29 @@
+{
+  "mode": "dry-run",
+  "benchmark_id": "autoflame_novel_failure_generation_v1",
+  "created_at": "2026-08-24T08:17:00.739111+00:00",
+  "target_runs": [
+    1620,
+    1640,
+    1642,
+    1702,
+    1703,
+    2126
+  ],
+  "production_kb": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/postprocess/llm_knowledge_base_expanded.yaml",
+  "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+  "manifest_sha256": "ad9e18cfb8f0c4a8122e4c1285a2c408c5ec1f4dca98033e23e653fe51749062",
+  "prompt_sha256": {
+    "1620": "fc7333091a38cdf2a736e18577eb603d5f72fc33bf710adb33d75fb8ac568663",
+    "1640": "2de08b9d2010a44cab734b4c6e5111cf38d88c52ace6f4890f5e1125d49b2890",
+    "1642": "aea9c3d71b1eee1c15b75464dfe8a74f17e514cd8da99134d7fabff1929c0dd3",
+    "1702": "ae29a832665b415525c77577a38b2cfc7a2421ecd849f3afaa17aacd88792a7d",
+    "1703": "22bc1212b177e54813c5621b3612b58a89bf2a3642b69a5efa2b7ff02c475953",
+    "2126": "e91337dba20887af9015f6349d466c36b226876ae55a968f9e4af3bee1c080d5"
+  },
+  "api_calls": 0,
+  "git": {
+    "commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+    "dirty": true
+  }
+}

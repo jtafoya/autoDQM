@@ -1,0 +1,13 @@
+{
+  "category": "LVDS channel-pair signal loss",
+  "cause": "Unknown; the leading hypotheses are an open/intermittent LVDS connection on signal pin 16 or intentional suppression associated with the configured masks for channels 32/33.",
+  "action": "First verify whether channels 32/33 and LVDS pin 16 are intentionally disabled by the active configuration. If not, stop the run and inspect/reseat the pin-16 LVDS connection, jumper wires, and associated digitizer/trigger-board connectors, then start a new run and check raw pin counts and channel presence. Also compare digitizer and trigger-board rates, board-matching efficiency, synchronization, and queue occupancy to distinguish a physical link failure from a DAQ/readout problem.",
+  "confidence": 0.84,
+  "supporting_historical_runs": [
+    1747,
+    2068,
+    2071,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: LVDS pin 16, mapped to channels 32/33, has a persistent zero/abnormally low median while all other signal pins have substantial counts; channels 32/33 repeatedly appear as missing and also show waveform-feature anomalies. The total trigger rate remains stable, favoring a localized fault. INFERRED: this is most consistent with loss of one LVDS channel pair. No historical case is an exact match; runs 2068, 2071, and 2126 provide partial analogies involving degraded LVDS connections, and run 1747 involved a faulty LVDS cable. CONTRADICTING/AMBIGUOUS: physical pins 32/33 are masked, so the zero may be intentional, and the reported pin-16 transition near subrun 201 suggests possible intermittency. UNKNOWN: digitizer/trigger-board rate consistency, board matching, queue state, synchronization, within-run configuration changes, and connector condition."
+}

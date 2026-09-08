@@ -1,0 +1,166 @@
+{
+  "id": "resp_0118a6bca44ec27d006a8334415984819f8d7f2dec3b2d4ca5",
+  "created_at": 1786983489.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0118a6bca44ec27d006a8334423778819fabaaff3e37e07f26",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzRNO-_Cp9P4AeXxxv9QdKqBlLe6x8ilQAenriCq9M1RpvwBmAp9LXGUiEzzOKU-ea33HS6Rym75NX4QJbSO8FhYL3coBOJsw5S8W5PQkVb1lwhfrz9NEOQudqFArYjAc2Ec-zPTFlPylxVFIooudGgVN3kDMKYqROilnu8JBG1TGk6_yDvbpmY_ucOwHRihMLik3i9-ix_8ogd_hd4boRcSJdCUnYVSuBsXWxJ9IqqOcC5Ku15Pq-tqc5U8w6Rcdp5RZKxhH7xyCkJUwpf4Z6kyMAo9CBjKR6VPnoy71DXl7NROilIZ2tM1RbZPJcWXN7eAGhZL_PiXAgPt_DON7nWrzx70Zb4ulMQY7vphHfTZpIbQXwxHBFGcg0aO8T-B1ko7V2u2Y_11QiBdMAnpS2roKOgElK6s4-BY9KEOxWQyZO86S5ZQPbQmRwFOOxuW9XYkyZf_C-m-cX5e8a30LH3TdCgDB4FkiIucxIEpsqd5SanXIPplrCe0QgMBqbCQ524gbaeoKLduAyowNmnSAsdzMVnMfq-3hRUnGM6QNNtBJvyOs3wa-3WXtQjRNy8aEW214oymUnb56wFeacVp3BFwiiuQuIp5fOaAnCEw60wVrqetLX_rEPnpjSiJDNplsq_HOmC9cfp1UyUQmW7_O1oT9OJTAm02Alpz6o2_pRlkcqTUXoLX5f1gWdXw4PEmiG3SSEr_zrQXT0MU3KELVmrAIjRZ1LXO8nTfPSWLJqF136Xf0J5nYcUfRMP23zQV1r5Ai85yK1ovolO7lic_vePTIC4u1tHrnPeX9uNg6ibML2VZm8JCnCfcPd00kI0bYT4j0wVGiHnY_1iP5ZnYhaOG1Ywas88zbpQr_b4zeG1tey4PXwbFAb06R93vwQHRTL02XtSIH_3VKS2lZiIM5L2ay_kI4hyWQQLu3uNFbb1eqe03aIQ4tZsy0Z8P0uNMiZI5nTqUvkgF0RSnQXaUa2q6uoddjr-2Y-hcOGpdzEDyvGsASDSpy2uXTJ57O3bQSD08xp0Ig30BytxrGZpxF1c1NBfcD0RYJyWJ8vTovbZq-reWa1E0YqoSCtdPpq4emZ_7xo6_C696VAnEy_jU2Ah3G55IIXICqMJHipkCeRsyL8pt7F-sp3xK8ziJ_4CNsBFALldDufx8PW1i7VvkxBbV4GLWo-AyCA_Aq0BN3gmJxfpY4SgX750XsjrMBcN99hAkjPO7hTQ0tn8LfHdJ1J0phwKo1uH43J4unBa9VfSb5SwnZfNO4DvHfWartePWv1Jb1RHMEko4BCMs3EwShPXy-MQQ4d_E7LPPVgRWGUszeF02gFzPfNPzgrqbwrGhPMzhjtXY5LGbsaNkEmxLlm0YzUtkjgbd6pLjptlRKpwkPcRviEHJ2rIuB_mlNBkyi2mbUtd7MFS6IpgSEb00MdLXdLr5hL47nCJ-Zt-DTq9ZVgQUrN3npRx1TQ9Jgr6ZAEAYF8_c90Dsbsxi5LnkuchEpPDWrddC2Xmlz25KAupwMftbgknHBNu657DDhtx0dTmq-XsTJ2Dj_u--bJ65OveytnLZStGFFNNb5fLSeniDG4CwchwRzq_HWV3J671oNvFlq5JqWyoyCbRXHR81BoDqSNFhn_kl2sPuJmz83af8v6qf82-X6pKVcGkXF1FujdLyX5x4BhKeWcctMsE0vzdTxU1SrG4duqgrYSXnGGGqsEfXQ6-Cczq77dilfTJI0rNwRCbwq7WAjYbMMLKmSz4AMec46hUgEjSe5aT636_zO9fPH5AbdMPmWbCYuLePbVl1XrThQNBgZed-_nxlhirWH_r5xErHdMjLTibhCoS4KbloFFhgeTYjuiVCLCoGaH1y8KVLkRSbl28V6FDmqujgnau_GjGbCJ9oKKRG-XeifnP7_pQbeVLuGYVrEzRbzejbZceOgn8RW8uxVuMm2rCEVa4oaD9d04rSxi1RcS5Aqr9d174QskjcoJp7pufE_ijrEkndYuTLZg8tKcYXti0CJ0t1IqXRrqSKX5msqF7HD6EXKOZBLfueQ_NAZUbkI5NjkQKnbJAB4F2pWsWnR-gaPJBfUg-3SqryXiPZUFeJ4t1oszN0O8mbLZZPjzIJvIwbyVeZFfvBKwR2cYsI-gryz8PAex-mMSPyXBemBE6ClwIs2daUI55hPduJvdWBgcBtUJxv2iTirZZlAYzxOWQ3bWzmvJJxzWUyZCsJyQM0VIYQrZMVfGJnRBh7okF8n8g1F9NNUQHlazvQC8TVH4_dM4uWCK4lxpQxfPDYhA_2zgpGCUSm3gufqtDrJo-aHl8T0IvLuCPSCdch6nXTAFDRx8AifFvNrmuYnaCykhR3ZYcflfGVyakEth1LL4hf2rTZR2n_CKp26OIdxIloqZ0tGujHnFR_h2sxdfbUxbFPHo3PLFPyiv5sCsgE78Nat2mg4TqxJpyUM1hmDbeQnmVdIdB_N_-6Cdxtqzq9_OvkkAgwX0QTsx0J2B4DfruIPmsWiJhpB9XU-7HVm3r_1cXQWrNayKwWzacCjTCnjJC8Ra9BYIbCOpeGFVXFGPKfwtRpwg37sLSMA0bOOXXcFqM1-p3OAMuiMrnUIazOFaSVSp2n9suSWgXDjVTg7s0sUhQC-RI_edQMAt1JSQoAIvOD56feT2jMfQso_u7qiwWaW5wFddSmlJ6BSfpR1sk9FZZyxtl76UiSrE1gPCau3cJHZFJh2ITrlIAQM7LG7_xuC-IQHMk6AS179Pm5FBLGPWi6rYokoixxb9Z2tfsMLF7Ge5WySJE6VZ5EZaB985XoQVKLcIMq-yIk6H-sUj15wnHi6ftqQkujeSTVyhtMr4p0okq4y7lQzu_jO2QioW99Xh7xB4-rX_tCahVnodL3YjVnPotFIswttitFPUpNIHenDsTMY9lSSjoeRqT8YxzHPSzoiRuyHk9DTGesvYFhrkwqPodOcWERL25aXDRB2wUPzfYEtcB9zlKY-muo9ijZOcOnGwkuOKHWskjnc1lKHJLEo8md_preygsuSHuc0eQO6chQzIyTMNHvLRv-2igzSPoZaUj740uudSVVHslx4uqjf_ekAGVd5QvuQ0v0_mZ-WIKRS7lo-1BGW5ITNAxJ1BFpUlA6TEi6kZYh8FpX6iA2XyU6KAS6P1H6SP5SgmOlBrxQxF9Dwn2ejm8VtgaFt3WmzoSEqfbjkaldZR0j8chajkVLU48u-UePt9PDCQ7DQpHW3TsFndLv5sx0rxQtBMWQwXy7Kf5ff4qfrU4W-JEMiPacEnPucCTMO3MJepU-pFzOmFED43rRk8bL6dLQ-cv-4YLFyF1WA3BAORFZp-J7aFcHe4Zhtzvi46YUR6UK4D0D6m3mTBoZ-W4DxF_rNizjd2cymWxHDiaPkCPNB5-qltJqufMsf_t8n3Fokf6jFzjw5s8sQxTHqqdinhM036kgDilkN8QpLP_Rb60H_kFc1J1YGSrRPIIV7OYZCFl7-jwBcNDLFcv-P3955w65HlfXezP10WscUs3bOghGgcEObM9fq-4HqueoLOwsJbVqQ9srdvOB2WpI4PpBxONWJBnlzZ5jFO86EmOrFR0O5Xq5gPGQkMqOeZusVkAO6qijR9EMyxHQND_LecVScRywMap8Vo6151vfF4VyDAtVBYcv5v8BFzZea8wc_1Voso3GUh6Jld3OLKfGVwtNg8llwfjdY4wtjSacn2lyeSQtZlHd_Dw1yQGGr3QepsFAQI6vdKrszMSitzC9_NJRNfmZpq5GNo86s-3ewtAWsKkLOVTTOeaOOPjP28Hzl345iLv64yIBhTImHNza1JjKAGqBzahhCH1xkVL8FUkFf4-q46RIkLIRuYgC8UrdPWXFf8ukn-Qjght3XvFrj2M427sZq8s=",
+      "status": null
+    },
+    {
+      "id": "rs_0118a6bca44ec27d006a8334486430819fb6c2ee3cb63d091d",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzRNRqq0iwzzeuWwSULVihlM3IkHuemwsV4nIcPFLg5PWtN_4wwEsJySrr7RGNNSVI967vdj99VfJAAWdFjiaa_YeJgy-ygVpqOB1eGKBLDl21k8gARO-iNFkTpXhGKnYafQeyfcCLaoEWISerylZ1AuNpjI4bQKvN0pkJMoZ7yTB8DTp4Rly-k4HJdcj-s9A7okW6iVfwcg6gF4w3wOqp4bABj4pzzjpCDf468CU9CFrwNQtrKsM63LqtX2XFmYITpRUDNwVvcJ448eR-EEY1E3VnaEUvWeU5IWYsP2ypf-kNh-bFEeEDAObrdQb9QXkQSK_zHEmKlP8HwKq3HizyeUFK0ffRTBCBv8Zh58T7N9BziauVtzI1g9ZGQfvarcu9M6o4OxDuLmac67m6e36HHsVM10lLB2uOge-uOEZA7WXnhw-e0XAUFJOzSbp2JcZL_g1kzJ0ac2ReyHNrzIkyYR5y7WHHYA6k_IWipFyfxJQ0PZl9cKIYaAs97wLlYVVsaeZo3snLWrWee1dcQj2R7T8Ftuml24daz2VNlq4od3ylJLbpsCA3vXgIEohVq0JH7K4OQwKDcBlceD_rbjaZbpv6IosMCr9BVcG0cK86OLkXUi8t_LcG6Vnt1FyuPnmSpC4HyKjvzfm-KLnWfw9D1yz9l-bZizE5qWrFpUYnX4g3ZhvgUnhn2ykB_sbYWUs-TP7S5ZUnWUvlzC_3iJASrZI4p9jw5E1h1gXprSoFSPUrpW54hT3NWZ3faXZroxiAfmlKsELV05k1MYnVuBGosZcN6vmS-pk0CFjkmz1s0tOQUVG90di_EgtvtGUmPczFeS97JM8yGWJc0o48xkX1eC6_i_fWmvPkX5t3oel8WQmpRaXBsF7POSxocmq0yCC9DJbQdjBC4Pb2lioqwxpv8iW9I2NyF9zCxQoyPMDzcs7fOLi33xRRwAYX9SSLJIu92KOXpAdlNfRqL6uzuChDsJbJ2GB0MC4IOSya92neNFDidW2p1uoYQ5K-Qn7xLXy3I2ymCmkqkx5amPdO1OBFu6o-GLT2Y1U338tYIG-M5dtyHN5yqN-YGSlwwhxIp18LGV7ZsebAFqFBt7XG7aMPvdTbT537QZm-xpYjj9buPIaRJnEcq6OzKN--JNaBWnXNRqGhGy3PE6NL3xWYsXLlk5TvezukyDZ7Kdf-yhPX4tHQzqzoLcxfHQAZdeSZasecsHLmuNIlKQ8L5TumELONi-2YVxgVYzDsB9qqIyV6Xm-Jr9BQNo8PwarWj6ET_6UvKoY2jwDCKIW20SDLbyHDMefBSO4H0G8B5JCdmzILfrnEjLrJtmacH4uq04ICDdiRHqer72SNEK-XY1kIabEKDoP5ryutaOX6T1KBxlsFWI5Vrd1IsrYie-hKb9d2WvG_4KrMutBM74orNORo2zJS0eMZ3tm8UlU9_zrH8je99emMJNG4PYc4NWZ7-_s7axlnltTZJncLWJQgJ2S_SSkYo16cQDYOvBQJlSyhvQpXMqO44iSnIzA4_0t-IyDwykMtxWgx6zpUuK4YvLWA4VTn3QleFNEoYdSTO8FfkyW7EvG_mf8HQ0NstHU0yrSHfvWrConjgWUzcnIEdxQfVkkzxlD9wOzftgR3NJZwAFH67jZyKgNQgUhl8aEtspp_6vrD426J-A0WRYH0S8JEOnWg3QgWrhIH9EZIwt8dI57HXN3zCMVOetGh3D7qW4PHROVFaXIYlpoPU4D0lH3XqU__ttWp9HhhlY4BzvAf1Wqjt2e8wqnETeOB97WXMjUyQhICyYCWTGukJBn1jFk_J8rQYb8zQrOQHG1UmPn3o_iYP6Oc5_kjwsiodJshLNrm1t60XIsuMxIPzLMIA_0sr2uG2qoNU8A1PLqw6UhyjO7aQ1p4iWPMFW6_B2W-mq_BzJIwVLAHidI0DYvsISDfPWy0G4BzgxPNtcjiGU0Nph3fcaTS--fcjiZ8E51ce8Ry1tWAoEtj4xgYVEL14v1SseLALa_s07KpCfjsQOHieRMP-tda8GGF-XDwg1RTIa6-iZs3ykmjSTqv2dSQEYyT38jH0pllFYVlbxOFg92ZpdiyUcnj_BxbuaCqNPsEBsJCmW6RtYgThEgwbK7ZF5q1hqI38jgSBGq93MFrxwevJp7hfBe-IyQ9NRbkacNoXXBajwd4oFEeiSCHVrvtpEOTMq7A0-VxWcOuxwH11uuzoPPXBD9rSHNBKKDaUtNH7IEHk6yFxQuRGF3UN1icq4oPxuiO5sdLCgtsKnhh9ZAg1mnTZCuVjwH6h1VO2VASZBKkCB9oRkYsJ9UECsjR4mY4LLxMb84fKsW4UMWbOO7UJBtiwFg2LqZTHIJka0psJarmzD0toivlr6iqy5P_xeBVRZjKDpxnFKYdyLwwJnwweEe5Cpc7hEiAcWvNTRo8aNpdmzOpDWI5tup9ZRsZwAFlytE0AG7XFUUCafEWLi3UpcHCNjQDX9pG55QE7Cy7YWQVtjlUUpjQxrkpMcgchx2n-nsxQW46SfwhFYho0dG48IfUjPROU=",
+      "status": null
+    },
+    {
+      "id": "msg_0118a6bca44ec27d006a83344b1228819fa72937502033812b",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"vmax_distribution_shift\",\"cause\":\"unknown\",\"action\":\"Conditionally compare the run configuration with the preceding slab-detector tests, especially zero-suppression settings and software changes. If a configuration change is confirmed and Vmax distributions shifted, test reverting zero suppression.\",\"recovery\":\"unknown\",\"confidence\":0.72,\"supporting_historical_runs\":[1702,1703,1605],\"reasoning_summary\":\"Observed: 65 of 86 subruns contain anomalies, with 936 anomalous channel-entries; channels 69 and 50 show saturated max_z=1000000 and nPulses_median anomalies, alongside many missing-channel flags. This is partially similar to runs 1702 and 1703, which prominently affected channels 50 and 69 with saturated statistical scores and broad detector anomalies, and to run 1605 for the nPulses_median pattern. However, the current evidence does not include Vmax features, configuration history, or recovery results, so a Vmax distribution shift is a cautious family-level match rather than a confirmed diagnosis.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983501.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7378,
+    "input_tokens_details": {
+      "cache_write_tokens": 7375,
+      "cached_tokens": 0
+    },
+    "output_tokens": 948,
+    "output_tokens_details": {
+      "reasoning_tokens": 712
+    },
+    "total_tokens": 8326
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

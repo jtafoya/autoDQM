@@ -1,0 +1,14 @@
+{
+  "category": "digitizer_lockup",
+  "cause": "unknown",
+  "action": "Conditionally, if DAQ logs or channel-status checks confirm a digitizer/readout lockup, stop the run and restart the affected DAQ PC using the run-1620 procedure with the VME powered off. Before restarting, check whether the missing channels cluster by digitizer and inspect DAQ auto-restart, CPU, firmware, and LVDS status.",
+  "recovery": "Confirm in a new run that all expected channels are present and that nPulses and anomaly rates return to nominal values.",
+  "confidence": 0.35,
+  "supporting_historical_runs": [
+    1620,
+    1500,
+    1604,
+    2068
+  ],
+  "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 entries, extreme nPulses_median deviations, and multiple missing channels across distinct IDs. INFERRED: this broad readout-loss pattern is more consistent with a DAQ/digitizer disruption than the localized channel-pair loss of broken-PMT-base cases. Run 1620 provides a partial digitizer-lockup analogue; runs 1500/1604 resemble transient DAQ disruption, and run 2068 partially resembles repeated missing-channel behavior. No historical case is an exact match: run 1620 did not report missing channels in the supplied snapshot, while PMT/LVDS cases were more localized. UNKNOWN: channel-to-digitizer mapping, timing of losses, DAQ restart/CPU logs, firmware state, trigger rate, and HV/LVDS status. These checks are needed to distinguish lockup from auto-restart, LVDS failure, or configuration problems."
+}

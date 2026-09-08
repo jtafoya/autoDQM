@@ -1,0 +1,102 @@
+{
+  "run": 1702,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "trial": 5,
+  "timestamp": "2026-09-06T04:45:44.043621+00:00",
+  "status": "completed",
+  "prompt_sha256": "1c1c97105e9fde4f302cb41266c439a230318f0cced347456ed5e6bd42cfc30d",
+  "filtered_kb_sha256": "d78e9043ff809f055dc32a0dfd8dea1bc22e83052bb2d9c8bd45baf94b3931d4",
+  "context_sha256": "c07358eb4e91fbb88b840eda34a1ce21fd92b6af721916a39c59f3459ec707fb",
+  "anomaly_sha256": "5b40b3313cba23eefb557f7ec6ee90af12342226041e936f3e37ec6d3989aae7",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 1,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "8253939555ddb41db8524014831ff714e582b4ed31e0cdfe9be2753f47c705b8",
+  "request_body_sha256": "c393e8a7b805c435dc9eb0dd189cb9ec40e13397827f13fd2efc24415d0a5f86",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_76ee31cbb0884d85a802670151569452",
+  "prediction": {
+    "category": "digitizer_configuration_or_readout_anomaly",
+    "cause": "unknown; a run-wide digitizer configuration, synchronization, or waveform-processing mismatch is more plausible than an isolated PMT or LVDS failure",
+    "action": "First inspect raw waveforms and per-subrun feature distributions across several affected and unaffected channels. Verify digitizer thresholds, firmware/configuration, channel mapping, and feature-extraction settings against a known-good run; also check board matching, synchronization, queue occupancy, and digitizer-versus-trigger-board rates. If a configuration mismatch is confirmed, restore the validated configuration and start a new run. If synchronization or readout failure is confirmed instead, restart only the affected digitizer/DAQ component according to the operational procedure.",
+    "confidence": 0.58,
+    "supporting_historical_runs": [
+      1605,
+      1642,
+      2126
+    ],
+    "reasoning_summary": "OBSERVED: anomalies affect all 129 subruns and 10,816 channel-entries, with several channels showing extreme nPulses and pulse-shape z-scores. The total trigger rate remains stable near 4.86, while LVDS has no persistent zero, missing, high, or low signal pins. INFERRED: the broad persistence with nominal trigger/LVDS behavior favors a global digitizer-side or analysis/configuration mismatch over a localized PMT-base or LVDS fault. Runs 1605, 1642, and 2126 partially resemble the extreme nPulses anomalies, but no exact historical match exists; 2126 additionally had missing channels and confirmed board-matching failure, which are not observed here. UNKNOWN: raw-waveform behavior, board matching, synchronization, queue occupancy, digitizer rates, and within-run configuration changes are unavailable and are required to distinguish configuration mismatch from digitizer/DAQ readout failure."
+  },
+  "response_model_id": "gpt-5.6-sol",
+  "response_id": "resp_059834ff161ebf23006a9ceff8301887d2b4ba3cc78b9ccb3c",
+  "token_usage": {
+    "input_tokens": 8743,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 8740
+    },
+    "output_tokens": 785,
+    "output_tokens_details": {
+      "reasoning_tokens": 404
+    },
+    "total_tokens": 9528
+  },
+  "latency_seconds": 11.145389309618622
+}

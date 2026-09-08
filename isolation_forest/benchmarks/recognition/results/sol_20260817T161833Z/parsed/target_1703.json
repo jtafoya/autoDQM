@@ -1,0 +1,11 @@
+{
+  "category": "vmax_distribution_shift",
+  "cause": "unknown",
+  "action": "Check whether zero suppression or related slab-detector software/configuration changed before this run. If confirmed, revert to running without zero suppression and start a validation run; otherwise investigate run-wide configuration or acquisition changes before hardware intervention.",
+  "recovery": "Confirm that pulse-height/Vmax distributions and pulse-count/area features return to their prior baseline across subruns and that the widespread channel anomalies clear.",
+  "confidence": 0.95,
+  "supporting_historical_runs": [
+    1702
+  ],
+  "reasoning_summary": "OBSERVED: all 627 subruns are anomalous, with 52,957 entries; channels 50, 57, and 25 show extreme pulse-count, pulse-height, and pulse-area deviations. INFERRED: this is a strong near-exact match to run 1702, including the same leading channels/features, extreme capped z-scores, and run-wide persistence, favoring a Vmax distribution shift over a localized PMT, LVDS, or digitizer fault. UNKNOWN: actual distribution direction, zero-suppression state, configuration history, trigger rates, missing channels, and HV/DAQ status. Check pre-run configuration changes and compare raw Vmax distributions with a known-good run. A localized hardware fault is less supported because the anomaly is widespread, but should be reconsidered if configuration and raw-distribution checks do not reproduce the run-1702 pattern."
+}

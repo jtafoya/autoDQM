@@ -1,0 +1,11 @@
+{
+  "category": "localized_digitizer_channel_pair readout/configuration fault",
+  "cause": "Unknown; the leading hypothesis is intermittent or misconfigured readout of channels 32/33, potentially involving channel enablement, zero suppression, or the associated digitizer input path.",
+  "action": "First verify raw event/channel presence for channels 32 and 33 by subrun, especially around subrun 211, and confirm whether their absence is expected under the trigger mask. Compare channel-enable and zero-suppression settings with a known-good run and inspect digitizer status/error logs. If the channels should be present and configuration is correct, stop the run and inspect or reseat the associated digitizer inputs and connections, then start a short validation run. Escalate to digitizer restart or hardware isolation only if readout/status checks confirm a digitizer-side fault.",
+  "confidence": 0.67,
+  "supporting_historical_runs": [
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: 740/741 subruns are anomalous; channel 32 has extreme baseline, pulse-count, pulse-height, and occupancy deviations, while channels 32/33 are repeatedly reported missing. Both physical pins are masked. LVDS telemetry shows no persistently missing, zero, high, or low signal pin, making a persistent LVDS failure less supported. INFERRED: the localization to a channel pair favors readout/configuration or digitizer-input trouble over a detector-wide trigger problem. Runs 2068 and 2126 provide only partial analogies through missing-channel behavior; no historical case is an exact match. UNKNOWN: raw channel-presence timing, whether missing masked channels is expected, within-run configuration changes, digitizer status, board matching, and queue occupancy."
+}

@@ -1,0 +1,14 @@
+  Subruns in log: 129  |  subruns with anomalies: 129
+  Total anomalous channel-entries: 10816
+  Detector-ranked anomalous channels:
+  channel=50  method=statistical+IF  max_z=2000000.0  if_score=-0.679  features=[nPulses_mean;nPulses_median;pulseHeight_max_mean;pulseHeight_max_median;pulseHeight_min_mean;pulseArea_max_mean;pulseArea_max_median]
+  channel=69  method=statistical+IF  max_z=1000000.0  if_score=-0.643  features=[nPulses_median;pulseArea_max_median]
+  channel=47  method=statistical  max_z=1000000.0  if_score=-0.598  features=[nPulses_median]
+  channel=57  method=statistical+IF  max_z=1000000.0  if_score=-0.682  features=[nPulses_mean;nPulses_median;pulseHeight_max_mean;pulseHeight_max_median;pulseHeight_min_mean;pulseArea_max_mean;pulseArea_max_median;pulseArea_min_mean;pulseDuriation_max_mean;pulseDuriation_max_median]
+  channel=25  method=statistical+IF  max_z=1000000.0  if_score=-0.698  features=[nPulses_median;pulseHeight_max_mean;pulseHeight_max_median;pulseHeight_min_median;pulseArea_max_median;pulseArea_min_median]
+  channel=41  method=isolation_forest  max_z=7.7  if_score=-0.683  features=[none]
+  channel=74  method=isolation_forest  max_z=7.4  if_score=-0.666  features=[none]
+  channel=91  method=isolation_forest  max_z=7.6  if_score=-0.662  features=[none]
+  channel=92  method=isolation_forest  max_z=5.8  if_score=-0.659  features=[none]
+  channel=92  method=isolation_forest  max_z=7.8  if_score=-0.659  features=[none]
+  ... and 10806 more anomalous channels

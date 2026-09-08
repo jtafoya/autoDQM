@@ -1,0 +1,43 @@
+{
+  "model_id": "gpt-5.6-sol",
+  "target_test_id": 1702,
+  "family": "vmax_distribution_shift",
+  "peer_runs_available": [
+    1703
+  ],
+  "timestamp": "2026-08-17T16:21:05.516972+00:00",
+  "sanitized_prompt_sha256": "26a1934f3d96601525ec0a671db3890f7da675142f41c19fe8bda6f2367d8b14",
+  "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+  "detector_evidence_source_files": [
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv"
+  ],
+  "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+  "git_dirty": true,
+  "attempt": 1,
+  "status": "completed",
+  "response_latency_seconds": 15.373012766998727,
+  "token_usage": {
+    "input_tokens": 7557,
+    "input_tokens_details": {
+      "cache_write_tokens": 7554,
+      "cached_tokens": 0
+    },
+    "output_tokens": 705,
+    "output_tokens_details": {
+      "reasoning_tokens": 404
+    },
+    "total_tokens": 8262
+  },
+  "api_error_retry_count": 0
+}

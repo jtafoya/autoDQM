@@ -1,0 +1,12 @@
+{
+  "category": "digitizer_lockup",
+  "cause": "unknown",
+  "action": "Check digitizer responsiveness, DAQ/board status, CPU usage, and the subrun timing and channel grouping of the nPulses changes. If a slab digitizer lockup is confirmed, follow the run-1620 remedy: restart the slab DAQ PC while the VME is powered off, then start a validation run. Do not reboot solely from this anomaly signature without operational confirmation.",
+  "recovery": "unknown",
+  "confidence": 0.86,
+  "supporting_historical_runs": [
+    1620,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: 86 of 641 subruns are anomalous, with 97 anomalous entries dominated by nPulses_median; channel 0 appears twice at max_z=45.8, followed by channels 31, 46, and 83. INFERRED: This is a strong but not exact match to run 1620, which had the same anomaly fraction pattern, repeated channel-0 max_z=45.8, and predominantly nPulses_median anomalies and was diagnosed as a digitizer lockup. Run 1605 is a weaker partial match associated with high CPU usage. Broken-PMT-base, Vmax-shift, and LVDS-noise cases are less supported because the supplied snapshot shows neither missing channels nor broad pulse-height/area/occupancy changes. UNKNOWN: digitizer lock state, affected hardware grouping, CPU status, trigger/board-matching behavior, and whether a reboot restores normal operation; these checks discriminate lockup from high CPU or an LVDS/trigger-path issue."
+}

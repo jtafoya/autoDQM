@@ -1,0 +1,103 @@
+{
+  "run": 2126,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "trial": 4,
+  "timestamp": "2026-09-06T04:47:49.875612+00:00",
+  "status": "completed",
+  "prompt_sha256": "d38cd60d2e7f06d6fd1b4f66f6687acb74fbaa54e4c5598c65347dba9b232aaf",
+  "filtered_kb_sha256": "119b1398dc58c977b55509426ab22de8f6d80d0f95e7623a92400cb46d954d0d",
+  "context_sha256": "80ba6190ca96af9a6d95e4838140a7a990a576742477413b603010dcd42cbe9f",
+  "anomaly_sha256": "938b51b390d40064dd2e174dbdaf5c363084c3e200d5c2c7f8dfadc7dbfbfef5",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 1,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "7f6f72369ba65bffee32139b0853c08cb98f690f87dbc5f6f5c5ddc2bb978a19",
+  "request_body_sha256": "9c06ce0832e616b54de20a462ade53fcff82959ca666ff304a361f4ce447d459",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_ee30a8bec9c2495eb471c8f4416e8f9a",
+  "prediction": {
+    "category": "suspected digitizer/DAQ readout data loss",
+    "cause": "unknown; possible intermittent digitizer lockup, readout synchronization failure, or malformed/incomplete processed data",
+    "action": "First inspect channel presence versus subrun and board mapping, raw event/file integrity, digitizer rates, synchronization/state logs, queue occupancy, CPU load, and restart records—especially near subrun 40. If channels are absent in raw data and a digitizer/readout lockup is confirmed, stop safely and restart the affected digitizer/DAQ host following the approved procedure. If raw data contain the channels, investigate and rerun the processing/parser instead of intervening on detector hardware.",
+    "confidence": 0.68,
+    "supporting_historical_runs": [
+      1620,
+      1500,
+      1604,
+      1605
+    ],
+    "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 anomalous entries, including many missing-channel flags and extreme nPulses_median deviations. Trigger rates are stable and all 48 summarized LVDS signal pins are present and nominal through subrun 40; no digitizer-rate or DAQ-state telemetry is available. INFERRED: this favors a downstream digitizer/readout or data-processing failure over an LVDS, trigger-rate, or isolated PMT-base fault. Run 1620 is the closest partial analogy (digitizer lockup); runs 1500/1604/1605 provide weaker DAQ/CPU analogies. No exact historical match exists. CONTRADICTING/LIMITING: trigger/LVDS summaries cover only subruns 1–40, and normal LVDS does not exclude digitizer failure. UNKNOWN: which channels/boards disappear together, whether raw data are incomplete, and whether a restart, synchronization loss, CPU saturation, or configuration change occurred."
+  },
+  "response_model_id": "gpt-5.6-sol",
+  "response_id": "resp_089e16caf1c301af006a9cf076005887d29926ed66acc96427",
+  "token_usage": {
+    "input_tokens": 9118,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 9115
+    },
+    "output_tokens": 903,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 10021
+  },
+  "latency_seconds": 14.024762637913227
+}

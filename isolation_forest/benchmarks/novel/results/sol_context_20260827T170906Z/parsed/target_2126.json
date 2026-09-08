@@ -1,0 +1,12 @@
+{
+  "category": "digitizer_readout_dropout",
+  "cause": "Unknown; the leading hypothesis is intermittent digitizer or DAQ readout loss downstream of otherwise active LVDS signals.",
+  "action": "First map missing channels by subrun to digitizer boards and inspect raw event/channel presence, digitizer status, synchronization, DAQ restart/error, CPU, and queue logs. Compare digitizer event rates with trigger-board rates. If the missing channels form a board-aligned group and a lockup or synchronization failure is confirmed, stop the run and restart/resynchronize the affected digitizer/DAQ process; reboot the associated DAQ PC only if standard restart does not clear it. Do not replace PMT/HV or LVDS hardware without corresponding HV or pin-level evidence.",
+  "confidence": 0.58,
+  "supporting_historical_runs": [
+    1620,
+    1500,
+    1604
+  ],
+  "reasoning_summary": "No exact historical match is available. OBSERVED: anomalies affect 65/86 subruns with 936 entries, include many missing-channel flags and extreme nPulses_median deviations, while the trigger rate is stable near 2.37 and all 48 LVDS signal pins have nonzero, non-abnormal counts. The count transition near subrun 40 occurs without a comparable rate transition and may reflect exposure length rather than detector failure. INFERRED: broad channel loss with healthy LVDS activity is more consistent with downstream digitizer/readout dropout than a trigger-board, LVDS-pin, or isolated PMT-base fault. Run 1620 is a partial digitizer-lockup analogy; runs 1500 and 1604 provide weaker DAQ-restart analogies. CONTRADICTING/UNKNOWN: board grouping, digitizer rates, synchronization, queue occupancy, DAQ state, CPU state, restart history, and HV telemetry are unavailable, so lockup versus parsing/configuration or transient DAQ loss cannot be distinguished."
+}

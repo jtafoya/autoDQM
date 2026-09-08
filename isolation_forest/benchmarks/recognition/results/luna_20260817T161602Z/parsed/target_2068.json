@@ -1,0 +1,14 @@
+{
+  "category": "daq_auto_restart",
+  "cause": "unknown",
+  "action": "unknown",
+  "recovery": "unknown",
+  "confidence": 0.45,
+  "supporting_historical_runs": [
+    1500,
+    1604,
+    1605,
+    1620
+  ],
+  "reasoning_summary": "OBSERVED: all 5 subruns contain anomalies, with extreme nPulses_median outliers on channels 47 and 4, repeated missing-channel alerts for channel 2, and additional isolation-forest anomalies. INFERRED: this is more consistent with a short-lived DAQ-wide or digitizer/DAQ disruption than an isolated detector channel fault. The broad, run-spanning pattern partially resembles the daq_auto_restart cases 1500 and 1604; the channel-47 nPulses signature also resembles high-CPU case 1605, while missing-channel and pulse-count anomalies have partial similarity to digitizer-lockup case 1620. No historical case is an exact match, and the supplied evidence does not establish a confirmed cause, intervention, or recovery."
+}

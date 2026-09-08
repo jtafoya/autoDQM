@@ -1,0 +1,20 @@
+schema_version: 1
+benchmark_id: autoflame_novel_failure_generation_v1
+production_kb: kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/postprocess/llm_knowledge_base_expanded.yaml
+frozen_campaign: kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1
+evidence_pattern: runs/run{run}/anomaly_log.csv
+evidence_source_type: frozen_campaign_per_run_autodqm_anomaly_log
+expected_case_count: 6
+targets:
+  1620:
+    exclude_runs: [1620]
+  1640:
+    exclude_runs: [1640, 1642]
+  1642:
+    exclude_runs: [1642, 1640]
+  1702:
+    exclude_runs: [1702, 1703]
+  1703:
+    exclude_runs: [1703, 1702]
+  2126:
+    exclude_runs: [2126]

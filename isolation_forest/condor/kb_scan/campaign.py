@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Prepare, execute, and audit the TASK 1 HTCondor campaign."""
+"""Prepare and execute provenance-checked per-run Isolation Forest scans."""
 
 from __future__ import annotations
 
 import argparse
 import csv
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -12,18 +13,18 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections import Counter
 from pathlib import Path
 from typing import Any, Mapping
 
 import numpy as np
+import pandas as pd
+import yaml
 
 ISOLATION_FOREST_DIR = Path(__file__).resolve().parents[2]
 if str(ISOLATION_FOREST_DIR) not in sys.path:
     sys.path.insert(0, str(ISOLATION_FOREST_DIR))
 
 from src.detector import AnomalyDetector  # noqa: E402
-from src.kb_scan import campaign_dir, load_scan_config, utc_now  # noqa: E402
 from src.reference import ReferenceModel  # noqa: E402
 from src.run_list import parse_run_subrun, resolve_run_files, run_subrun_sort_key  # noqa: E402
 
@@ -37,6 +38,28 @@ APPLICATION_CODE_PATHS = [
     "isolation_forest/src/detector.py",
     "isolation_forest/src/run_list.py",
 ]
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def load_scan_config(path: Path) -> dict:
+    with path.open() as handle:
+        cfg = yaml.safe_load(handle)
+    if not isinstance(cfg, dict):
+        raise ValueError(f"Scan configuration must be a mapping: {path}")
+    for section in ("campaign", "model", "scan", "alert_replay"):
+        if section not in cfg:
+            raise ValueError(f"Missing configuration section: {section}")
+    min_run = int(cfg["scan"]["min_run"])
+    max_run = int(cfg["scan"]["max_run"])
+    if min_run > max_run:
+        raise ValueError("scan.min_run must not exceed scan.max_run")
+    return cfg
+
+
+def campaign_dir(cfg: Mapping[str, Any]) -> Path:
+    return Path(cfg["campaign"]["root_dir"]) / str(cfg["campaign"]["tag"])
 
 
 def sha256(path: Path) -> str:
@@ -147,8 +170,6 @@ def git_value(project_dir: Path, *args: str) -> str:
 
 def code_hashes(project_dir: Path) -> dict:
     relative_paths = APPLICATION_CODE_PATHS + [
-        "isolation_forest/src/plot.py",
-        "isolation_forest/src/kb_scan.py",
         "isolation_forest/condor/kb_scan/campaign.py",
         "isolation_forest/condor/kb_scan/run_kb_scan_job.sh",
     ]
@@ -180,7 +201,7 @@ def prepare(config_path: Path) -> dict:
                 "Use a new campaign tag instead of mixing detector outputs."
             )
 
-    for directory in (root / "runs", root / "condor" / "logs", root / "postprocess"):
+    for directory in (root / "runs", root / "condor" / "logs"):
         directory.mkdir(parents=True, exist_ok=True)
     min_run, max_run = int(cfg["scan"]["min_run"]), int(cfg["scan"]["max_run"])
     runs = list(range(min_run, max_run + 1))
@@ -240,31 +261,96 @@ def _write_run_status(run_dir: Path, payload: Mapping[str, Any]) -> None:
     atomic_json(run_dir / "status.json", dict(payload))
 
 
-def _validate_detector_outputs(run: int, expected_inputs: list, csv_path: Path, paths_path: Path) -> None:
-    if not csv_path.is_file() or csv_path.stat().st_size == 0:
-        raise RuntimeError(f"Run {run}: pipeline anomaly log is missing or empty: {csv_path}")
+def _input_has_events(path: Path) -> bool:
+    """Return whether a Digitizer CSV has at least one event row.
+
+    Header-only CSV files are valid empty detector inputs.  A malformed or
+    unreadable file is deliberately not classified as empty: it remains a real
+    processing/validation failure.
+    """
+    try:
+        return not pd.read_csv(path, nrows=1).empty
+    except Exception as exc:
+        raise RuntimeError(f"Cannot validate Digitizer input {path}: {exc}") from exc
+
+
+def _validate_detector_outputs(run: int, expected_inputs: list, csv_path: Path, paths_path: Path) -> dict:
+    """Validate detector publication and account separately for empty inputs."""
+    expected_input_strings = [str(Path(path)) for path in expected_inputs]
     if not paths_path.is_file() or paths_path.stat().st_size == 0:
         raise RuntimeError(f"Run {run}: pipeline path manifest is missing or empty: {paths_path}")
     cached = [line.strip() for line in paths_path.read_text().splitlines() if line.strip()]
     if len(cached) != len(set(cached)):
         raise RuntimeError(f"Run {run}: pipeline path manifest contains duplicates")
-    if len(cached) != len(expected_inputs) or set(cached) != set(expected_inputs):
+    if len(cached) != len(expected_input_strings) or set(cached) != set(expected_input_strings):
         raise RuntimeError(f"Run {run}: pipeline path manifest differs from the preflight input manifest")
-    with csv_path.open(newline="") as handle:
-        rows = csv.DictReader(handle)
-        filenames = {row["filename"] for row in rows}
-    expected_names = {Path(path).name for path in expected_inputs}
-    if filenames != expected_names:
+
+    expected_by_name = {Path(path).name: Path(path) for path in expected_input_strings}
+    if len(expected_by_name) != len(expected_input_strings):
+        raise RuntimeError(f"Run {run}: input files do not have unique basenames")
+
+    filenames = set()
+    if csv_path.is_file() and csv_path.stat().st_size > 0:
+        with csv_path.open(newline="") as handle:
+            rows = csv.DictReader(handle)
+            if not rows.fieldnames or "filename" not in rows.fieldnames:
+                raise RuntimeError(f"Run {run}: anomaly log has no filename column: {csv_path}")
+            filenames = {row["filename"] for row in rows if row.get("filename")}
+
+    unexpected = sorted(filenames - set(expected_by_name))
+    if unexpected:
+        raise RuntimeError(f"Run {run}: anomaly log contains unexpected inputs: {unexpected}")
+
+    missing_names = sorted(set(expected_by_name) - filenames, key=run_subrun_sort_key)
+    empty_paths = []
+    nonempty_missing = []
+    for name in missing_names:
+        path = expected_by_name[name]
+        if _input_has_events(path):
+            nonempty_missing.append(path)
+        else:
+            empty_paths.append(path)
+    if nonempty_missing:
         raise RuntimeError(
-            f"Run {run}: anomaly-log files do not match inputs; "
-            f"expected {len(expected_names)}, observed {len(filenames)}"
+            f"Run {run}: detector output is missing for {len(nonempty_missing)} non-empty input(s): "
+            + ", ".join(path.name for path in nonempty_missing[:10])
         )
+
     parsed = {parse_run_subrun(name)[0] for name in filenames}
-    if parsed != {run}:
+    if filenames and parsed != {run}:
         raise RuntimeError(f"Run {run}: anomaly log contains run numbers {sorted(parsed)}")
 
+    valid_subruns = sorted(parse_run_subrun(name)[1] for name in filenames)
+    empty_subruns = sorted(parse_run_subrun(path.name)[1] for path in empty_paths)
+    if any(value is None for value in valid_subruns + empty_subruns):
+        raise RuntimeError(f"Run {run}: an input filename could not be parsed into a subrun")
+    if len(valid_subruns) != len(set(valid_subruns)):
+        raise RuntimeError(f"Run {run}: detector output contains duplicate subrun numbers")
+    if len(empty_subruns) != len(set(empty_subruns)):
+        raise RuntimeError(f"Run {run}: empty inputs contain duplicate subrun numbers")
+    if set(valid_subruns) & set(empty_subruns):
+        raise RuntimeError(f"Run {run}: a subrun was classified as both valid and empty")
+    if len(valid_subruns) + len(empty_subruns) != len(expected_input_strings):
+        raise RuntimeError(f"Run {run}: detector accounting does not cover every input")
 
-def run_job(config_path: Path, run: int, force: bool = False) -> dict:
+    return {
+        "n_input_subruns": len(expected_input_strings),
+        "n_valid_subruns": len(valid_subruns),
+        "n_empty_subruns": len(empty_subruns),
+        "valid_subruns": valid_subruns,
+        "empty_subruns": empty_subruns,
+    }
+
+
+def _successful_scan_status(accounting: Mapping[str, Any]) -> str:
+    return "completed" if int(accounting["n_valid_subruns"]) > 0 else "no_valid_data"
+
+
+def run_job(
+    config_path: Path,
+    run: int,
+    force: bool = False,
+) -> dict:
     config_path = config_path.resolve()
     cfg = load_scan_config(config_path)
     root = campaign_dir(cfg)
@@ -298,9 +384,9 @@ def run_job(config_path: Path, run: int, force: bool = False) -> dict:
             return previous
         if (
             previous.get("campaign_fingerprint") == campaign_metadata["campaign_fingerprint"]
-            and previous.get("scan_status") == "no_data"
+            and previous.get("scan_status") in {"no_data", "no_valid_data"}
         ):
-            print(f"[SKIP] Run {run} already recorded as no_data. Use --force to rescan.")
+            print(f"[SKIP] Run {run} already recorded as {previous['scan_status']}. Use --force to rescan.")
             return previous
 
     started_at = utc_now()
@@ -316,9 +402,18 @@ def run_job(config_path: Path, run: int, force: bool = False) -> dict:
         "model_resolved_tag": cfg["model"]["resolved_tag"],
         "input_manifest": str(input_manifest),
         "n_input_files": len(input_paths),
+        "n_input_subruns": len(input_paths),
     }
     if not input_paths:
-        result = {**base_status, "finished_at": utc_now(), "scan_status": "no_data"}
+        result = {
+            **base_status,
+            "finished_at": utc_now(),
+            "scan_status": "no_data",
+            "n_valid_subruns": 0,
+            "n_empty_subruns": 0,
+            "valid_subruns": [],
+            "empty_subruns": [],
+        }
         _write_run_status(run_dir, result)
         print(f"[NO DATA] Run {run}: no Digitizer files found under {slab_dir}")
         return result
@@ -348,26 +443,37 @@ def run_job(config_path: Path, run: int, force: bool = False) -> dict:
             generated_dir = logs_dir / tag
             generated_csv = generated_dir / f"{tag}_run{run}.csv"
             generated_paths = generated_dir / f"{tag}_run{run}_paths.txt"
-            _validate_detector_outputs(run, input_paths, generated_csv, generated_paths)
+            accounting = _validate_detector_outputs(run, input_paths, generated_csv, generated_paths)
             final_csv = run_dir / "anomaly_log.csv"
-            publish_csv = run_dir / f".anomaly_log.csv.tmp.{os.getpid()}"
             publish_paths = run_dir / f".pipeline_input_paths.txt.tmp.{os.getpid()}"
-            shutil.copy2(generated_csv, publish_csv)
             shutil.copy2(generated_paths, publish_paths)
             os.replace(publish_paths, run_dir / "pipeline_input_paths.txt")
-            os.replace(publish_csv, final_csv)
+            if accounting["n_valid_subruns"]:
+                publish_csv = run_dir / f".anomaly_log.csv.tmp.{os.getpid()}"
+                shutil.copy2(generated_csv, publish_csv)
+                os.replace(publish_csv, final_csv)
+        scan_status = _successful_scan_status(accounting)
         result = {
             **base_status,
+            **accounting,
             "finished_at": utc_now(),
-            "scan_status": "completed",
+            "scan_status": scan_status,
             "command": command,
             "return_code": 0,
-            "anomaly_log": str(final_csv),
-            "anomaly_log_sha256": sha256(final_csv),
-            "n_valid_subruns": len(input_paths),
         }
+        if accounting["n_valid_subruns"]:
+            result.update({
+                "anomaly_log": str(final_csv),
+                "anomaly_log_sha256": sha256(final_csv),
+            })
+        else:
+            result["data_state_reason"] = "all discovered Digitizer inputs contained zero detector events"
         _write_run_status(run_dir, result)
-        print(f"[COMPLETED] Run {run}: {len(input_paths)} subruns -> {final_csv}")
+        print(
+            f"[{scan_status.upper()}] Run {run}: {accounting['n_input_subruns']} input, "
+            f"{accounting['n_valid_subruns']} valid, {accounting['n_empty_subruns']} empty"
+            + (f" -> {final_csv}" if accounting["n_valid_subruns"] else "")
+        )
         return result
     except Exception as exc:
         result = {
@@ -381,54 +487,6 @@ def run_job(config_path: Path, run: int, force: bool = False) -> dict:
         raise
 
 
-def campaign_status(config_path: Path, require_complete: bool = False) -> dict:
-    cfg = load_scan_config(config_path.resolve())
-    root = campaign_dir(cfg)
-    min_run, max_run = int(cfg["scan"]["min_run"]), int(cfg["scan"]["max_run"])
-    rows = []
-    for run in range(min_run, max_run + 1):
-        status_path = root / "runs" / f"run{run}" / "status.json"
-        if not status_path.exists():
-            rows.append({"run": run, "scan_status": "incomplete", "n_input_files": "", "error": "missing status.json"})
-            continue
-        try:
-            payload = json.loads(status_path.read_text())
-            state = payload.get("scan_status", "incomplete")
-            if state == "completed" and not Path(payload.get("anomaly_log", "")).is_file():
-                state = "incomplete"
-            rows.append({
-                "run": run,
-                "scan_status": state,
-                "n_input_files": payload.get("n_input_files", ""),
-                "error": payload.get("error", ""),
-            })
-        except Exception as exc:
-            rows.append({"run": run, "scan_status": "failed", "n_input_files": "", "error": str(exc)})
-    status_csv = root / "campaign_status.csv"
-    tmp = status_csv.with_name(f".{status_csv.name}.tmp.{os.getpid()}")
-    with tmp.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["run", "scan_status", "n_input_files", "error"])
-        writer.writeheader()
-        writer.writerows(rows)
-    os.replace(tmp, status_csv)
-    pending = [row["run"] for row in rows if row["scan_status"] in {"incomplete", "failed"}]
-    failed = [row["run"] for row in rows if row["scan_status"] == "failed"]
-    atomic_text(root / "pending_or_failed_runs.txt", "".join(f"{run}\n" for run in pending))
-    atomic_text(root / "failed_runs.txt", "".join(f"{run}\n" for run in failed))
-    counts = Counter(row["scan_status"] for row in rows)
-    result = {
-        "campaign": cfg["campaign"]["tag"],
-        "counts": dict(sorted(counts.items())),
-        "complete": not pending,
-        "status_csv": str(status_csv),
-        "pending_manifest": str(root / "pending_or_failed_runs.txt"),
-    }
-    print(json.dumps(result, indent=2, sort_keys=True))
-    if require_complete and pending:
-        raise SystemExit(2)
-    return result
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -438,16 +496,11 @@ def main() -> None:
     run_parser.add_argument("--config", required=True, type=Path)
     run_parser.add_argument("--run", required=True, type=int)
     run_parser.add_argument("--force", action="store_true")
-    status_parser = subparsers.add_parser("status", help="Summarize completed, failed, no-data, and missing jobs")
-    status_parser.add_argument("--config", required=True, type=Path)
-    status_parser.add_argument("--require-complete", action="store_true")
     args = parser.parse_args()
     if args.command == "prepare":
         print(json.dumps(prepare(args.config), indent=2, sort_keys=True))
-    elif args.command == "run-job":
-        print(json.dumps(run_job(args.config, args.run, args.force), indent=2, sort_keys=True))
     else:
-        campaign_status(args.config, args.require_complete)
+        print(json.dumps(run_job(args.config, args.run, args.force), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+- Enabled trigger paths: [1, 2, 5, 7, 9, 13].
+- Disabled trigger paths: [3, 4, 6, 8, 10, 11, 12, 14, 15, 16].
+- Prescales by trigger path: bit1=0.025, bit2=0.05, bit3=1e-07, bit4=1e-05, bit5=1e-06, bit6=1, bit7=0.0001, bit8=1, bit9=1, bit10=1, bit11=1, bit12=1, bit13=1, bit14=1, bit15=1, bit16=1.
+- Trigger mask: 50 unmasked, 14 masked physical pins.
+- Masked physical pins: 32, 33, 34, 35, 36, 37, 38, 39, 43, 57, 58, 59, 60, 61.
+- Trigger configuration fields: dead_time=142, coincidence_time=10, nLayerThreshold=2, nHitThreshold=4, zero_bias=2.5e+08.
+- DAQ trigger thresholds: 96 channels, median -0.022, range -0.04 to -0.015, 10 unique values.
+- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.
+- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.

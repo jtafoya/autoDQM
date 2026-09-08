@@ -1,0 +1,158 @@
+{
+  "id": "resp_02f81e72b18f11ad006a833432eeac819cac0c1c648f6f7132",
+  "created_at": 1786983475.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_02f81e72b18f11ad006a833433a024819c9a485af787576a1c",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQ4tgijpONj_g4YZWsbkAmihe6xTtOWZXS4xmtDGtnrIYkU61Do4gCLq2Ae3sFDxZ3tpKRv8P_e5yujeHvcVy8VIH8sG4jxXc7guQCSXvk1Oa_6Jz89EJsLLsaQCXtomb3RaysXMHTiTulQV0G2FMZ4DMAZyn0l2UopggO91zknJW1OVirbWTzG--EZPc60LavyCUzKu8TVJVoUgo3r5r_9s6L6v_d5M-y5S3F4bnEMzNBBH3bmQlNWJ7Mi8XHLFVOejb9XnF5KoM-__HeF07PmwafDYqYpuDBDMFX3h11ddony4PdayHrSrWIlamtv4uSUgQaMk2wwp2QIMBpIyqXCmiWeVCHSw8mnokNGjwzlDijV4xRCNQkuqAkCAigtpIXwLS8-c1hYoRpCexs2FBIlh_21DKErejyPJqPITlPIBUQrangs-yNp1TosS_CUMRl0j2TNEeFhFJv3m__izEYGTKslyI7NjpLl5zOstvqzLtbZ9T7NlAE1HZr5RvDNztPfGed9xK-cu9AD63ChWvHwnyWsS6cCCI2nOrpXnx7v4azYXiTGFxZ5ouNlt64uUuaSLnqmh5_SYT5pj936x7wBVxrxiYe8LoZpa140XDa4Ck7OSW-_3JOxFVUBSvg9nAk3gBSNDrPgbjE_ZAjHrbEob5_oo3nitjot4AXhORwkamnLBnWeWZKC92qAps_5zRmF4ZxOFQ2ZRKt6mO3v0huEjw81VqYK4SHFQ5XnjOlearGp5LGEd5ms2WYgQjZidXkwUWtYtyQEUUFJlPUC2qMNT2PFtL8UI1J0PqllpVstap4kVZIG1iigtSR-t7gfBtbFymbWzcHnyZoILOJR3AZM-K-n33gitceNFb3UwJkdu37DwRitS_n7gmOsvVASXwFjhAzLmkn470pp-x_pM3YpI4o5o8ZwO5Ni5koEZPwaNxLqKsV6uyJ8BC9kH-X6GrwpIYC8MLvvZ-7XIuFzP5UYQiIvgi8UrTrvwfDWVWr8Jc7NlwcyfxW8eCxFS1ZHHKyQbNDe65aTwb14ED6OmnnRqZuJHe0PZgzoqZ-KQcUKEZZR9MiQZYcnzhaBviYg4djcL2pD_yUK4BUChTHeu81AgKGw8kZYxaq2FwtmirUfi5iuWTJVUnm6qEeCL5TfNoCpjwFq7lCiHI-yvvgOj0DxPh4RdzvUzns6WHNziKAULAJnfU0AdDS8QUekM61Z0iu-B4Oi97fur2PnPdrBIaQCHSSlnvty6lOMmopatB0DgDURMuTuzEFCyF_IWPQNceC4pZmQoHnxoFU8DwZXtYd7GIrmjDQ2StlZ4YWZzsgBiMevoXt0779mmFNK5zvTxcfyZevrOJtBT4MVMfdtgYU1rCitwcvHiFSGoSfm8ZXbVK7fPWst0pa96egQEYDwekiNa1GfP_qKFKpTtC5T7RpbMu7A1i5f3TQiHVBBVwfzLofZ8Yw6CntxbgO-qJyGx6eMOOrXZrwMxHXE7pvCy7TSZ_9uM_ZHLRbu8G52uQiUXei0X2MxvbTgBSlnS_YfF45xp7ZFGYBc-nc9H49v2PYdlnRbFoWb1TK52u30VdaSfjU_jEN_jrGXXvzzbJgU8lqhY8yXWDTF2BGGA_A-GXj-TAmltLGnH5Asz6mwdcC2WySjxFcZlV--KaynaEd3lihWcymvmXgQEvvE_GWMno80ksF2CZ7rP_AeMPwhUhi8TjO8MBuj5dhyvShM83Su8aFT1HyT2QCoiJh9ndOtnjBKTCC94N_xEJ9WCWvfhRt6raxqZkqhKUjaFE0BlftUxv3mXODMTCiqjmXRCtWEexWITXs37E4KgahdLjysTiWHrIs50rwveI9R0mbZyBHFspZIeZtuy7MV6eHdohjJQOCHxzADAGI6TklNvm6QeZy3qZWanVB1_bW11DeUsEPqnNFtIe-DP-SnxIT50MTR05ceWxNVqhEL-jeXLpksn4fzWckykaJa-NL2zryPVYtfOSEKrnLL-cob64-0flAwrAq-nsZlm8RTeYf9Ak0yCW_h6mOOjyLVIkot4zqQe-f6DKBGm8pCUKdWS_uIt0wnYC-cJEzuP8JcihXf7sn53FhUcaRSNLkCLjkDHHgAOUsQ9XnnGZsgOPVdHH59MrVVK6riDaVrM3QpbySTnpcB-62lpp8jevZAy4vxoZQxjHH_sL29q-da2dEHFWc0Rlf0aMLxhe-55j6MYUqrEXNDyiUs4JXjlrx4YD4uEeMwMqR3lDIvwEQrDqyutf-yAB8uxAEICI0WCGkPfIo3lRosqFqEm46O1cq55TO6kOfnQ1vTqW4ntM5YTuMiIUhmKoHnu6xQbrHLNnONyqgdkojRFzu31EwjpxxXtaeYrDd90Nl4GUem",
+      "status": null
+    },
+    {
+      "id": "msg_02f81e72b18f11ad006a833435f190819c8e6c75c867550962",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"vmax_distribution_shift\",\"cause\":\"Unknown; the pattern is consistent with a software or zero-suppression configuration change affecting pulse selection, but this is not confirmed by the supplied evidence.\",\"action\":\"Conditionally test reverting to operation without zero suppression, after verifying the run configuration and comparing Vmax and pulse-count distributions with a known-good run.\",\"recovery\":\"Unknown; confirm by checking whether Vmax and pulse distributions return to baseline in a subsequent run.\",\"confidence\":0.9,\"supporting_historical_runs\":[1702],\"reasoning_summary\":\"The current alert shows anomalies in all 627 subruns and 52,957 channel-entries, with prominent channels 50, 57, and 25 and features dominated by nPulses, pulseHeight, and pulseArea. This closely matches run 1702, which had all subruns anomalous, 10,816 anomalous entries, the same prominent channels, similarly extreme z-scores, and the same feature family; that case was annotated as a Vmax distribution shift associated with a possibly changed zero-suppression or software configuration. The supplied evidence does not establish the actual configuration change or recovery.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983480.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7557,
+    "input_tokens_details": {
+      "cache_write_tokens": 7554,
+      "cached_tokens": 0
+    },
+    "output_tokens": 423,
+    "output_tokens_details": {
+      "reasoning_tokens": 170
+    },
+    "total_tokens": 7980
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

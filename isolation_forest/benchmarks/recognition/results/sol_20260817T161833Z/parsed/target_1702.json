@@ -1,0 +1,11 @@
+{
+  "category": "vmax_distribution_shift",
+  "cause": "unknown",
+  "action": "Verify whether zero suppression or pulse-selection software/configuration changed before this run. If confirmed, revert to running without zero suppression and start a validation run; otherwise investigate other run-wide configuration changes before modifying hardware.",
+  "recovery": "Confirm that pulse-height/Vmax, pulse-area, and pulse-count distributions return to their previous baseline in a subsequent run.",
+  "confidence": 0.95,
+  "supporting_historical_runs": [
+    1703
+  ],
+  "reasoning_summary": "OBSERVED: All 129 subruns are anomalous, with 10,816 entries and extreme deviations across pulse-count, pulse-height, and pulse-area features, especially on channels 50, 57, and 25. INFERRED: This closely matches run 1703 in affected channels, features, extreme z-scores, universal subrun coverage, and anomaly density; that case was a Vmax distribution shift associated with an unconfirmed software/zero-suppression change. No equally close match appears among the hardware-failure cases, which were more localized or included explicit missing channels. UNKNOWN: The direction of the distributions, current zero-suppression setting, timing of configuration changes, trigger rate, and channel completeness. Discriminating checks are comparison of raw Vmax/pulse distributions and run configuration against the preceding healthy run; only if a zero-suppression change is verified should it be reverted."
+}

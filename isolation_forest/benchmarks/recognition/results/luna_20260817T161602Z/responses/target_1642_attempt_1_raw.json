@@ -1,0 +1,158 @@
+{
+  "id": "resp_0fac66697d583d66006a8334277484819cb96c85f467b3733c",
+  "created_at": 1786983463.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0fac66697d583d66006a833427e940819cb3183287cebc30fa",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQtRIqsc_hHqi3AwkVT_FY5kxfZu0AzbuNn4CICLwvo1NEoQ0SnAOKP1aSpQC623qJUY44k9mIbyq8JBshqVE5UuiANiSBiSWkn1IExjGy-6WoiEWkhtOAv5duhIXdxf_YvZUGPS0Nbg0nR-VyL4qzRzyYHL04p_P2YFxlWFTeW78BXVh1mT-32ZmvWGQqojt7Fa4b6YCyQlLnKTxvLUAIsfOLBRagR9Ndp0oUTeNCeh1zgR2y0iL8mUt65GswrtxGejQ6pdbEtil3V6gZ-w4Kkfp4-JZ4N1rN_PvLuPoHduzjLVTG_4amiGGIvWZbjUnN2XpxLo8lax5AI_4_Y-7IS6zrVTL6v-UXdfXYqXGn9GInaDNIZG1aPkQMITXAWJvK2vX27e3NabKDAp0-kzsasg-s2_b2qq0orJtJlr2VdB7j6u-Q7UDsjvVmWtPAkQDwibZyBOJp_1y7zkPVT2_wsvRBdsEtz4GK7Anp2xyeUC0sheUhVJZV-vwo8zPMP5YwzWz7ADYeHg7XMn1EXlF-mQH7-nL6DHlqhEFsHoQzq_A6T6dQHaZHNw5rz2sEN20rHugDIOY9aLyeZaPeP64xWKZV93q8T2EtCvb_4GpcA5ZcAThDljMjHRJuJI2--UXzltUHWjpSXf7no3uIoKqZaX8nRwLzzYfzjn6eYgw4pr5JuHN3jGxZS8Q7a4s-TzG0J18diksbQOoPOJ2oYMHE9Mvpr4D8qtdGHC3V1OG2GnxJV5ZN2o8CqH0xLRTeAcbhhniKIqGAeUWj-1fw6Geufggr0rZIxuyzS4GocmkdXRFuBQQM3sNDzBPB_RlgEex5RoQB3h1bord0QNrhBiihFtA2pvuwveJQy0G0DHQ0Pd4-QdiugKBsA4weGP7eyXyR03Orcx5zYHmolBBdGuGRHN9L0LxO8OdAHN8vdwfXjNeCWl651TQ7l_-H32sqzmCufWIPwTrvXZFg8F0_eZmVN67489L1LiIu1c4Jc7O2QxtjJWnbJdEysE4tLQqlp15XViXhVAUC7TlxqcKTKzSnJ4mv5lupLNrkh6gT8pyR5Yp1n4bdB3vm5XBDsu75gc-dY_cK9MVmoVK6LG6Bjoz9AqkSV7RaWvAHI9XdNhaPcEzJNgSYPDi-6jkwnF2EpMsd8PPRrStgKnm2-aQuy5RTAdIlR34ivIKswvPH7WENibjNNBWb5k8BZ5eZ1LX3NjzFAT0k7C4ivHXp5hrvOC6rLiprU7kv9x6J82PsX5MQNyhqvxPRCjYHvRJboTYEGH6SeeADNHgsZB8W_T45F9TbySdGJ8cXtAxSeeJVXxXcuyvOiISl1myu5c3FGr_bxiBRRqWaSNmJmIYOrtLjHVeeTULUiT5lLEOf3msy0Byb1JBi-5a_4OiZHEpxybF0EPphDnJ6soGhaHDsYqzTtpJ6GPxzOltA_EKItJ45kpg5AbphhCbvW-bmSI0tT2wuCYToFPjB1SO-2kvwa7oul3n1KF2xM-ZN6gho-ZKP_NKOU-1NDe9c6cjb9euOHXjT-M9IPGDvYkcHJMczZrTo4cYfPUKjOZ8fIWvoFkBHDLu-lL4w-OT3PcT2HXmzmQ4ziFujPKKdpYd0K8rsay4oguH0QBaHziBRuES_DBnmXK29Y9tXMlcPO2isffN3-gLJPQSQ_m3Aves3mr_It-7l8ZSmIrCrPp3sLmE7yXPlAbQRjgrUVwBQKJpd_Rr3QuU3QfLKvgmTqQz_iUJn5u9hVkffmmuHctgkHz5vgH2ZtynpDq4OC0_MciaCKbCXXBUQncMidVH2oo-hTP5ApL6Usr4daUT1woRo_aGYQfqJk8m3delPGvVNpLRTHrTIhF2-mKNQXQoxzSUBScgiq4-L_oOPtEDmL43xOWnBurj_fSfKtO0AXnHHS-l1IixBZLuBWdIh9pvmjD3v0S8dRdAEwGu4a2J--tkqJQyi50JcvjUHDk5svv_gS0g_ACfsZbruaYO0HDV8SK1vvzAGaItScBvyWsPrOZKbaL2RtbrZJoPy9zYrjkjLrmVx_MS6_1s7zo_jBAD9l-oaOTMiqIFbhAw-bSqRR-womoqFTgq4mbB5q5F-KF7wiSdlhCorid0plakzbuAI1CJYxaBVOrbDHfB_lZ-FbBkFwYIrDHtG71eT2M4HhG68G7B5spzMbnfR-kDEk0t9LnzTPFP5_fozqFlcivZiHK9yUWVUhzelal0Lk-vMv5126xh602Y-9tGpAF-ot_jGH7nGmpogevPxZaTAQAfITOhOkbZ7yvT6-HTTiLyu9lSx2-IC_uNLxCFj4lBmrk0ofcG42tkKV8Euo2Wj-PVQpGyGxuAx1YZweA_I2NDkIVgSJarvvW9ezR8-3VrBqFp_FOCWq9oWgm-W6PZkDG8CrUhmqF-ZrLcUQyCTDvaJ_vSqBISHYJ8k01si8mRMXkuH1O4XRAafsNTDK5ObmVJjFHI_umEPtPKmKTOdh9k3cS3-VPGrp_JZH4S_0Z--N",
+      "status": null
+    },
+    {
+      "id": "msg_0fac66697d583d66006a83342a8224819c9840fc9ca3a69929",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"broken_PMT_base\",\"cause\":\"unknown; the concentration of anomalies in channels 32 and 33, including repeated missing-channel detections, is consistent with a coupled PMT-base/HV/LVDS-path failure seen in run 1640, but no HV or hardware measurements are provided.\",\"action\":\"Conditionally, check HV current draws and HV logs for channels 32 and 33, then inspect and reseat the associated HV/LVDS cables, connectors, and PMT bases. Keep affected HV off until the fault is isolated if currents are unstable or non-nominal.\",\"recovery\":\"unknown\",\"confidence\":0.82,\"supporting_historical_runs\":[1640,1637],\"reasoning_summary\":\"OBSERVED: all 202 subruns contain anomalies; channels 32 and 33 repeatedly show statistical/isolation-forest anomalies and missing-channel entries, with 532 anomalous channel-entries overall. INFERRED: this closely matches run 1640, where channels 32/33 first exhibited similar feature shifts and then became missing because of a documented PMT-base/HV/LVDS failure; run 1637 provides a partial similarity involving channels 32/33. UNKNOWN: HV currents, HV-trip timing, LVDS counts, VMax behavior, physical cabling, and whether the channels recover after intervention. Therefore the category is a strong analogical match, but the cause and recovery are not confirmed.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983469.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7287,
+    "input_tokens_details": {
+      "cache_write_tokens": 7284,
+      "cached_tokens": 0
+    },
+    "output_tokens": 520,
+    "output_tokens_details": {
+      "reasoning_tokens": 212
+    },
+    "total_tokens": 7807
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

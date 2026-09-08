@@ -1,0 +1,401 @@
+{
+  "summary": {
+    "completed": 6,
+    "total": 6,
+    "scoring_performed": false
+  },
+  "tests": [
+    {
+      "target_run": 1620,
+      "exclude_runs": [
+        1620
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "daq_auto_restart",
+        "cause": "unknown",
+        "action": "If a DAQ restart or transient DAQ state change is confirmed near the anomalous subruns, review the restart and run-control logs, verify configuration continuity, and restart or reinitialize the affected DAQ components before retaking data. If no restart is found, inspect LVDS/trigger matching and channel-level pulse-count behavior to distinguish a readout issue from detector hardware.",
+        "confidence": 0.68,
+        "supporting_historical_runs": [
+          1500,
+          1604
+        ],
+        "reasoning_summary": "OBSERVED: 35 of 259 subruns contain anomalies, with 42 anomalous channel-entries; the strongest statistical anomalies are repeated nPulses_median deviations, led by channels 38, 0, 5, and 12, while some channels also have isolation-forest flags. INFERRED: this sparse, pulse-count-dominated pattern is most similar to runs 1500 and 1604, both annotated daq_auto_restart, rather than the persistent widespread missing-channel patterns of the broken-PMT-base cases. UNKNOWN: no restart timestamps, trigger/rate history, CPU data, LVDS matching, or HV measurements are provided, so the category remains provisional and the cause is unsupported."
+      },
+      "prompt_sha256": "fc7333091a38cdf2a736e18577eb603d5f72fc33bf710adb33d75fb8ac568663",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 1620,
+        "excluded_runs": [
+          1620
+        ],
+        "timestamp": "2026-08-24T15:54:44.784352+00:00",
+        "sanitized_prompt_sha256": "fc7333091a38cdf2a736e18577eb603d5f72fc33bf710adb33d75fb8ac568663",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 13.569223647937179,
+        "token_usage": {
+          "input_tokens": 7979,
+          "input_tokens_details": {
+            "cache_write_tokens": 7976,
+            "cached_tokens": 0
+          },
+          "output_tokens": 499,
+          "output_tokens_details": {
+            "reasoning_tokens": 227
+          },
+          "total_tokens": 8478
+        },
+        "api_error_retry_count": 0
+      }
+    },
+    {
+      "target_run": 1640,
+      "exclude_runs": [
+        1640,
+        1642
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "broken_PMT_base",
+        "cause": "Unknown. The strongest hypothesis is a hardware/readout fault affecting the channel-32/33 region, possibly a broken PMT base or associated connection. This is an analogy rather than an exact historical match.",
+        "action": "Conditionally, inspect and reseat the PMT base, cabling, channel mapping, and readout connections for channels 32 and 33; check the anomaly onset by subrun and compare the affected channels with neighboring channels before replacing hardware. Also verify DAQ configuration because nearly every subrun is affected.",
+        "confidence": 0.78,
+        "supporting_historical_runs": [
+          1637
+        ],
+        "reasoning_summary": "OBSERVED: 740/741 subruns contain anomalies; channel 32 has repeated statistical+IF anomalies with max_z up to 54.2 and features [sideband_mean_median, nPulses_mean, nPulses_median, pulseHeight_max_std, occupancy]; channels 32 and 33 also have missing-channel entries. INFERRED: this closely resembles run 1637, where channel 32 and 33 showed a similar feature signature and the confirmed category was broken_PMT_base. The much larger anomaly scope and missing-channel flags also leave a DAQ/configuration or connection fault plausible. UNKNOWN: physical signal levels, HV, exact onset, channel mapping, and DAQ/log evidence needed to distinguish these causes."
+      },
+      "prompt_sha256": "2de08b9d2010a44cab734b4c6e5111cf38d88c52ace6f4890f5e1125d49b2890",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 1640,
+        "excluded_runs": [
+          1640,
+          1642
+        ],
+        "timestamp": "2026-08-24T15:54:58.388538+00:00",
+        "sanitized_prompt_sha256": "2de08b9d2010a44cab734b4c6e5111cf38d88c52ace6f4890f5e1125d49b2890",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 10.517687361920252,
+        "token_usage": {
+          "input_tokens": 6830,
+          "input_tokens_details": {
+            "cache_write_tokens": 6827,
+            "cached_tokens": 0
+          },
+          "output_tokens": 748,
+          "output_tokens_details": {
+            "reasoning_tokens": 446
+          },
+          "total_tokens": 7578
+        },
+        "api_error_retry_count": 0
+      }
+    },
+    {
+      "target_run": 1642,
+      "exclude_runs": [
+        1642,
+        1640
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "LVDS_noise",
+        "cause": "unknown; the repeated missing-channel flags for channels 32 and 33, together with persistent pulse-count and pulse-feature anomalies, are consistent with a possible intermittent LVDS, trigger-path, or related channel connection problem. A broader DAQ/data-path fault remains possible.",
+        "action": "Conditional on confirming a connection or trigger-path fault: stop data taking, inspect and reseat the LVDS pins, jumper wires, MCX cables, and channel mapping for channels 32 and 33, then run trigger-mask/isolation tests while monitoring missing-channel counts, board matching, queue occupancy, and trigger rates. If those checks are normal, investigate DAQ restart or configuration/software state instead.",
+        "confidence": 0.64,
+        "supporting_historical_runs": [
+          1637,
+          2068,
+          2126
+        ],
+        "reasoning_summary": "Observed: all 202 subruns contain anomalies; channels 32 and 33 repeatedly appear as missing, while channels 25, 42, 31, 32, and 33 show strong nPulses-related deviations and channels 32/33 also show sideband and pulse-height deviations. Inferred: this favors a persistent or intermittent channel/trigger-data path issue over an isolated sensor failure, with LVDS connectivity as the leading hypothesis. Historical cases 2068 and 2126 show missing-channel and broad pulse-count anomalies associated with LVDS problems, while 1637 provides the closest channel/feature similarity for channels 32 and 33 but was attributed to a broken PMT base. No exact historical match exists, and board-matching, trigger-rate, queue, timing, and hardware measurements are unavailable."
+      },
+      "prompt_sha256": "aea9c3d71b1eee1c15b75464dfe8a74f17e514cd8da99134d7fabff1929c0dd3",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 1642,
+        "excluded_runs": [
+          1642,
+          1640
+        ],
+        "timestamp": "2026-08-24T15:55:08.934645+00:00",
+        "sanitized_prompt_sha256": "aea9c3d71b1eee1c15b75464dfe8a74f17e514cd8da99134d7fabff1929c0dd3",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 8.50272814091295,
+        "token_usage": {
+          "input_tokens": 6682,
+          "input_tokens_details": {
+            "cache_write_tokens": 6679,
+            "cached_tokens": 0
+          },
+          "output_tokens": 810,
+          "output_tokens_details": {
+            "reasoning_tokens": 458
+          },
+          "total_tokens": 7492
+        },
+        "api_error_retry_count": 0
+      }
+    },
+    {
+      "target_run": 1702,
+      "exclude_runs": [
+        1702,
+        1703
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "systemic_DAQ_or_digitizer_data_integrity_failure",
+        "cause": "unknown; the anomaly is persistent across all 129 subruns and affects a very large fraction of channel-entries, with extreme capped statistical scores concentrated in pulse-count, pulse-height, and pulse-area features. This is more consistent with a run-wide acquisition or data-integrity problem than an isolated detector channel fault, but the supplied evidence does not establish whether the mechanism was a DAQ restart/state fault, digitizer lockup, high CPU condition, or LVDS/trigger-path issue.",
+        "action": "Inspect DAQ and digitizer logs for restarts, lockups, CPU or queue alarms, board-matching efficiency, trigger rates, and missing-channel status around the run. Verify digitizer and LVDS/trigger connections and compare raw pulse distributions with a known-good run. If a DAQ or digitizer state fault is confirmed, perform the corresponding controlled process/PC restart; if an LVDS or trigger-path fault is localized, reseat or temporarily mask the affected path before retaking data.",
+        "confidence": 0.62,
+        "supporting_historical_runs": [
+          1500,
+          1604,
+          1605,
+          1620,
+          2126
+        ],
+        "reasoning_summary": "OBSERVED: all subruns contain anomalies; 10,816 channel-entries are anomalous; several channels have max_z values of 1,000,000–2,000,000 and pulse-count/height/area features are affected, with many additional isolation-forest anomalies. INFERRED: the breadth and persistence favor a systemic acquisition or digitizer/data-integrity problem. Partial analogies exist with run 1500 (anomalies in every subrun and DAQ auto-restart), runs 1604–1605 (DAQ/CPU-related anomalies), run 1620 (digitizer lockup), and run 2126 (widespread acquisition anomalies from an LVDS path). No exact historical match exists, and restart, CPU, queue, trigger, missing-channel, and LVDS measurements are UNKNOWN."
+      },
+      "prompt_sha256": "ae29a832665b415525c77577a38b2cfc7a2421ecd849f3afaa17aacd88792a7d",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 1702,
+        "excluded_runs": [
+          1702,
+          1703
+        ],
+        "timestamp": "2026-08-24T15:55:17.475294+00:00",
+        "sanitized_prompt_sha256": "ae29a832665b415525c77577a38b2cfc7a2421ecd849f3afaa17aacd88792a7d",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 10.18361786310561,
+        "token_usage": {
+          "input_tokens": 7353,
+          "input_tokens_details": {
+            "cache_write_tokens": 7350,
+            "cached_tokens": 0
+          },
+          "output_tokens": 948,
+          "output_tokens_details": {
+            "reasoning_tokens": 516
+          },
+          "total_tokens": 8301
+        },
+        "api_error_retry_count": 0
+      }
+    },
+    {
+      "target_run": 1703,
+      "exclude_runs": [
+        1703,
+        1702
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "daq_systemic_or_data_integrity_anomaly",
+        "cause": "unknown",
+        "action": "Conditionally, if raw-data and operational checks confirm a DAQ or configuration fault, inspect DAQ restart/error logs, trigger and digitizer rates, board-matching efficiency, queue occupancy, channel completeness, firmware/configuration consistency, and representative raw waveforms; then reinitialize or restart the affected DAQ component and validate a new run.",
+        "confidence": 0.62,
+        "supporting_historical_runs": [
+          1500,
+          1604,
+          1642,
+          2068,
+          2126
+        ],
+        "reasoning_summary": "No historical case is an exact match. OBSERVED: anomalies occur in all 627 subruns, affect 52,957 channel-entries, span many channels, and include extreme multi-feature statistical flags plus broad isolation-forest flags. INFERRED: the run-wide scale is more consistent with a systemic DAQ, trigger/data-integrity, or processing/configuration problem than a localized PMT fault; the extreme z-scores may also reflect a distribution or reference-data artifact. Partial similarities include all-subrun DAQ anomalies in runs 1500 and 1604, and broad data-integrity/LVDS issues in runs 1642, 2068, and 2126. UNKNOWN: trigger rates, board matching, queue state, missing-channel extent, raw waveforms, timing, DAQ logs, and firmware/configuration changes are unavailable. These checks discriminate a DAQ-wide fault from a detector-wide physical or analysis artifact."
+      },
+      "prompt_sha256": "22bc1212b177e54813c5621b3612b58a89bf2a3642b69a5efa2b7ff02c475953",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 1703,
+        "excluded_runs": [
+          1703,
+          1702
+        ],
+        "timestamp": "2026-08-24T15:55:27.687296+00:00",
+        "sanitized_prompt_sha256": "22bc1212b177e54813c5621b3612b58a89bf2a3642b69a5efa2b7ff02c475953",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 8.26112511800602,
+        "token_usage": {
+          "input_tokens": 7358,
+          "input_tokens_details": {
+            "cache_write_tokens": 7355,
+            "cached_tokens": 0
+          },
+          "output_tokens": 805,
+          "output_tokens_details": {
+            "reasoning_tokens": 481
+          },
+          "total_tokens": 8163
+        },
+        "api_error_retry_count": 0
+      }
+    },
+    {
+      "target_run": 2126,
+      "exclude_runs": [
+        2126
+      ],
+      "status": "completed",
+      "prediction": {
+        "category": "DAQ-wide acquisition interruption or restart",
+        "cause": "Unknown; the broad missing-channel pattern and repeated extreme nPulses_median anomalies suggest a DAQ/data-stream or configuration problem more than an isolated detector channel fault.",
+        "action": "Check DAQ and digitizer logs for an automatic restart, lockup, firmware/configuration change, or acquisition interruption near the affected subruns; compare channel presence and pulse counts before and after the onset. If a DAQ lockup or restart is confirmed, restart the affected DAQ component using the approved procedure and verify channel recovery.",
+        "confidence": 0.48,
+        "supporting_historical_runs": [
+          1500,
+          1604,
+          1605,
+          1620,
+          1702,
+          1703
+        ],
+        "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 anomalous channel-entries, many missing-channel flags, and repeated extreme statistical anomalies in nPulses_median, including channel 69. INFERRED: the breadth across channels is more consistent with a DAQ-wide acquisition interruption, restart, lockup, or configuration effect than a single PMT fault. PARTIAL ANALOGIES: runs 1500 and 1604 show broad anomalies associated with DAQ auto-restart; run 1620 shows nPulses anomalies from a digitizer lockup; runs 1702-1703 show broad pulse-distribution changes after configuration/software changes. UNKNOWN: restart timing, CPU/load state, trigger rate, firmware/configuration, and whether missing channels are simultaneous. No exact historical match is established."
+      },
+      "prompt_sha256": "e91337dba20887af9015f6349d466c36b226876ae55a968f9e4af3bee1c080d5",
+      "metadata": {
+        "model_id": "gpt-5.6-luna",
+        "model_alias": "luna",
+        "target_test_id": 2126,
+        "excluded_runs": [
+          2126
+        ],
+        "timestamp": "2026-08-24T15:55:35.978188+00:00",
+        "sanitized_prompt_sha256": "e91337dba20887af9015f6349d466c36b226876ae55a968f9e4af3bee1c080d5",
+        "kb_sha256": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+        "detector_evidence_source_files": [
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1500/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1604/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1605/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1620/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1637/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1640/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1642/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1702/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1703/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run1747/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2068/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2071/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2268/anomaly_log.csv",
+          "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2402/anomaly_log.csv"
+        ],
+        "benchmark_code_git_commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+        "git_dirty": true,
+        "response_latency_seconds": 7.254692654125392,
+        "token_usage": {
+          "input_tokens": 7800,
+          "input_tokens_details": {
+            "cache_write_tokens": 7797,
+            "cached_tokens": 0
+          },
+          "output_tokens": 704,
+          "output_tokens_details": {
+            "reasoning_tokens": 368
+          },
+          "total_tokens": 8504
+        },
+        "api_error_retry_count": 0
+      }
+    }
+  ]
+}

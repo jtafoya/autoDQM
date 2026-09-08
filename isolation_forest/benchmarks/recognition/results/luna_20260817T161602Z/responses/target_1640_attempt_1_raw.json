@@ -1,0 +1,158 @@
+{
+  "id": "resp_0a460c3f697964c3006a83341e0ff8819c9e42b480cd72d9ec",
+  "created_at": 1786983454.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0a460c3f697964c3006a83341f0ff4819c94f21a13c93e2845",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQnc3zp4lA2-QYUAL0hXDY-abV2Ija0u0njLhJ9uQSQE0CxuHYSPK8EsWAg6il7yD1DUioZuHcRcsgrak2v1TkAeOYCCxtYaxs9bmKc8joU5RU_FeomLHnwsjGGy-qf7pGzvrh-rUf4GYTBKRy-1W8Ei9EFFcBcCs02kfLGFNQdoDPjmzVT729WWClrR3zCrjX73qpADFepONp-OtNqsg99IZSFCuadgo5s-o0cM-hUpCXwPlluHr4nKWGjwJrGI0SIKavrhax4sV-_-O4IAffof3bgMO8jxC62UKWj7yry8h0xTvWGNWVflHJlE2YR8YtGfFAoy481JThgjVFGoNtkDwm1ADr6ZBtC_D4lp5V-zZqPA8zc8kmfEbhcJY3PajRademm7Vy128MpiJZtneMF62pJuGcf8MLL-9agHC17vsUytF4S9QlZSyAXSxq3wT-3ui2HrvZHOXrLcGnCK_DUqh9U2ZaJc1Hz39t6JHw1S2s_VlYdLgzxrJl2V0jEVnGiulCzfeoBq3ZO8-Wk2Ou1q0NJ5cbl8H7aupz0kHdcyrP-Tsa_yJ8HlhKgrC_kY0LHZnBuV59g-5JyF26spA39FLQthA5x66J1OPhp-f7RRj2nn9jrg5ZGKBwnuzQ1g9ton5UJObU3f1CRFgeUT0YK4pWaF_V0OkVyWynI3zUHKcFtx8eZ5JvbpueatQiia0EgeJV1AdWuxWvQx_FLtuI_5uodpMzFub5Dwt-FlRML2M2s82Ak-2day16isqla_aKOO8Ijfu53OJ1xaCwNstuk3-zqt1Lp0IFSDJ4l3z2SigXQaKvxfG9_EAuWBk7LIB_wj_FiXuLyrLQE0QAkkeY9-9AMs8ho4WDr6-Mq4s5pJQ6driNb2wooIZBvcYp_5PrEmA88lI6bzmAm3uof9QfFxhK0h5yWjFijV8Fx1V_yNcH2b8hvsHV71e9QCI_zFM_RZdFH0W65Y_T1rpy3-3ufF2L8CZARTxr0N3Yxt-TQP2JHerWKKPexoCB_56dg20JNZEdDdpHdURustrRAYhWrm1gnoiFQFNWtOHzF2NBf6-rjTgibLnntvhdnjz158KmjtLCYO6Pz9atcqTqSNvYI1kpkCW1S-1W4nT8qfc7ArPc72bMP9I9hp6PvznT_sAZ_7A8eWTIBxmFJdHiQ9JbJuUaq_MqzDjPBRxyD8H4qkCmgc1GN6kQxLvzK4eLwx6HlYMt3-S9dKA5HuR4ufhsa3KwtVv4RyIFTpUGT2VXP-jVzqfNKCGzKh3WJxikQy18HkXR3zDJF9IIa3has8xEr9FXkfrkp2tHfx-M4oQQ6FNK7iq3_MRF05YfAlq0afPpS2KwrkANm8i2tD0gsEq3v7JFruo2vz9-cn7ooC3-fRCuHFKgOxtDnfCuznqpJdOf0wDrpWx28ybYiMcjtP1XHIqukRTSXOePSLeU5KWGnObogev8So5-2SGA33L_0NwHE9JnrGOAaJo0I1NfDtFqStq-YMTPhbLGveUXEVJJTRJxkZcyVRvVH7yJnxxkJzFfIVn2nzxl0DD22YzvIvjzwKIqX6P_7ecWnbxLHW7pCBDePBXoFz2VEB9HlmEuXSrKc_NJJqJErRmrxiMag1PiUzX3R9E6OBzRrx6Ku3fjEm-R1J7hvy7HgaaBMmzc8y5tJnJ8P5XFEGsSBAlmGXvC5RStXk8ervFLZP-99jTDoUAyXGOr_oWFUFygUkYz5Jmn7TdrIcuDZR6safz1EZ3keeQrUDkp439sqZw3ARPVAPmayjCD3Rl9iDwG4Y_i1hysvI214JGyUkZoA9OFY78bMUZEgjDAmxh5tJIDu97wIXjF5YaeSoNJLxpPP7_99UfUAt40unDEx7uiFVoKEBsK54t0JfkLPC0IF83v7DZlAt-e-Q5Uw1jWvdvY9FPSMqoSckwAYKhZF44P1Jt6gprE0dFAX47lHpQxq_4M2YUM9MEja737716mOFpS3UpAekYu1f8iVPk-48mSM7VAPP62WjpW1s4-ZhC7siji4Wzt6QUlrznp-F0KQTNHOEm8OHD_iDIBTl51KH-a7N5LdzBr8bMAPkgRCT5HERVaQanCJpzNhXyKeforp41S-HKSz0vPbseHh-T3S4LEHVyEYwSsK5fgzH074SyuzC3gZK-vN5oRZqL47RWNR48KWvXOiF_TopBBusO4YVaLgdSRB0R1gn4VUI6aJJKjzt0xb4J5tgX5vC3qebALbLgJIEYgH0qmK6TUPzd0-_vdDF8yHUcRBWWObDizAWZPOYE4SW0FGw9sB1rWsskMM6TTPkPVg7EfGOUD3wuv3VnA9_Irn6VDghyz9ZKY8eclYLFo_znsmAFT5NPywkyMrldS0DCHos94cqR1ks9bYwOzCWytYBy6amUv2Se8ttkS2hE772v0a37_d9AbVPdHgO2VaDU3WBwSvSgkTTOZ3UlZrv-BVzlc3X6KQ8Lo2_ROt-JFVfWeO2P3RB5jqws-WS_1QqCfoGGxzFNusZkn-GWBriaOt_SEihPGtwoqFalTY61cHf3hnxc_DUh_odfHPeHWLPPCK9h40D30sVpj0zcimI-i6lz7ryfAJaUa2Iz20YiwWwvLuho6qBoA7qiL_okRC0bHA_uM4QzszvEW5WgbFiZJqZOIuEogseVrGldZIvdeijditPNnm0Ls8h6eSxZJZj1iITy6szD4_QyESHGhuvmr2uwtBtyL-PNGtHtZBaturuKS19Pk7xhk0s3tThTqcmE_Zo01P6PrBFf-A_I3YZsfaMm7M22_EGskCs00ayiY3xp4JfAw_O-PjR5tn1L8s4r0EGTeI9e4Gcx2XnZiKxiOa4vDiZBMz5ye6wqzPdMRAyDtWmN3Op1EfLy3nY1gnyZcJzRid6gyD5z5hpnvdeBkU1QcQcTEYPVC-OD7yEei9xR9Uelj96sVsJ9CDRHFmL-76-oIGv2qN6UtkZSLnkreOGbpKNXqM6kTkaptmEwPKqL_OxZv69UWcJl0krmztKR1LTH-VLtwReJTPXqkIYJCIXxscL_bMnbaWBBztqqQ6u94TAwD39tdLsNAcjNIxin_slS4PC5h6oa2x9ifSTcId9nCDBhG45lqHPsfbeHMEAfogGhpXgt6C61ASujTRVegreU65yKTEOzA9xY-6POlJFJlmI8j2VnYGvu8JKP6tA1MfpLy9Rb0bBlAbBNL1mi7WCb5fGMWxli3YAbe4AEJxohvHLp8T95kBfZVolmX2EReqkZiTa1eX6kFFoumJX-CuYpquQ3yqK8naAy3ZYFo2byT2Ow5EdD70GbRR5IvaNEkIuJeH_6fXcmol3lMGZxLvc5awUpgpXHqZR7BDBfPCMnJFFko3MjhlXrodcHDPrmY5rV1BniBAYvtflK_JDA932PRmEzHxU9mTyLIDjaqHp733RBqJ2vNqIhTYZtSp9Rqt6du9XzG-50L8lunVVKrIvZn_Eiwv2KIJDpshxufW924KI8cF4OgxKlBRrBj2JP2Re2qSYRgO15fT0iG2x_45OkbER1NOYf2btMIpNsF31ZGnH5sKH6LsMKkJtCrKJtu6RJfRyzxVrJC2I9dGYtozjMhIZoAWpdA3GubxBrrvtgIenKXivyP3rXBA7Feoz5DHw7eVkzTG7PIB6ObCftDsZ9WLXI9nqsyuO3HJvbpRJODl1hgU8z54mxIcbZukvuJb_pamabG1vIQMuXC60V-4gllIWMPZ0p2Cr49pK0rKA3SaFc2DpuW3hHXJ2rLfo9T9KVQt6Boaeu6Ty6nn0-RVMz9H5QzdnoRKJbYoDBw67HkSDJ93KXpK6opV4FK2Wo1-1_Why9qvK6INsOc1JXvp4FPk8il1B036YKMdcA177sH3AkmrvxBekRNvSrmkAfsv0rFKiFukIk1SYSBk01NIp2Dccl2LdeF4f8pzyrd2EVyryxlap2Jleh79mITtsub6n7WGbiHNciHtTatDwHqCylfF2VJS6HdwxZrO7Z_1EdiLT1AsUv2HLdTqGTaID-8ia9P8kfiOPQJA6ZbzEfPZaGAXaj2Xn5_LD1TC7TKgebbcLb69LXujFC-hQ9dF9w4T4W5o8O0ylJDIV_VQLxGWjaLCi7Ko5yB8rUmsjtDNjLu-OOa4taNp5oqpyQws0NRcFli4gtv5kq7R15rUy8TyBWK5JfpBWVI21g_r0YQyXD62iJjZgIWd5YuoNX13FAwaMeuiGRnLrTuqH7_R-3xA-oQT",
+      "status": null
+    },
+    {
+      "id": "msg_0a460c3f697964c3006a8334244a28819cbfe73cf3aeee0a6b",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"broken_PMT_base\",\"cause\":\"unknown\",\"action\":\"Conditional on confirming a PMT/HV fault: check HV current draw and HV logs for trips or unstable currents on the affected channels, then inspect HV cables, connectors, and PMT bases. Also verify LVDS connections because channels 32 and 33 are reported missing.\",\"recovery\":\"unknown\",\"confidence\":0.88,\"supporting_historical_runs\":[1637,1642],\"reasoning_summary\":\"OBSERVED: nearly all subruns contain anomalies; channel 32 has repeated statistical+isolation-forest anomalies with the same sideband_mean_median, nPulses, pulseHeight_max_std, and occupancy pattern seen in run 1637, and channels 32/33 repeatedly appear as missing. INFERRED: this strongly resembles the broken-PMT-base family, with run 1642 providing an additional similarity through missing channels 32/33. UNKNOWN: HV currents, HV trips, timing of onset, physical inspection results, and whether the missing channels are caused by hardware or DAQ readout. The broad anomaly coverage leaves DAQ/LVDS-related alternatives possible, so the proposed hardware diagnosis remains conditional.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983462.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7264,
+    "input_tokens_details": {
+      "cache_write_tokens": 7261,
+      "cached_tokens": 0
+    },
+    "output_tokens": 724,
+    "output_tokens_details": {
+      "reasoning_tokens": 466
+    },
+    "total_tokens": 7988
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

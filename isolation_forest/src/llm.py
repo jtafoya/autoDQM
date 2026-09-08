@@ -33,6 +33,8 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
+from .kb_schema import KB_DIAGNOSTIC_KEYS, parse_kb_run, validate_kb_entries
+
 
 # ── Provider dispatch ─────────────────────────────────────────────────────────
 
@@ -218,6 +220,23 @@ def _historical_snapshot(log_path: str, run: int) -> str:
         return f"  (error loading snapshot for run {run}: {exc})"
 
 
+def _snapshot_for_kb_run(log_path: str, run: object) -> str:
+    """Load a singleton snapshot; deliberately do not invent range matching."""
+    start, end = parse_kb_run(run)
+    if start != end:
+        return f"  (range {run} is valid; no singleton historical snapshot was inferred)"
+    return _historical_snapshot(log_path, start)
+
+
+def _load_human_kb(path: Path) -> list[dict]:
+    """Validate the KB and exclude blank auto templates from LLM evidence."""
+    entries = validate_kb_entries(yaml.safe_load(path.read_text()) or [])
+    return [
+        entry for entry in entries
+        if all(entry[key] is not None and str(entry[key]).strip() for key in KB_DIAGNOSTIC_KEYS)
+    ]
+
+
 # ── Prompt assembly ───────────────────────────────────────────────────────────
 
 def _format_current_alert(
@@ -290,9 +309,18 @@ def query_llm(
         _append_suggestion(suggestions_path, result)
         return result
 
-    knowledge_base: list[dict] = yaml.safe_load(kb_path.read_text()) or []
+    try:
+        knowledge_base = _load_human_kb(kb_path)
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        result = {"error": f"invalid knowledge base: {exc}", "run": run, "subrun": subrun}
+        _append_suggestion(suggestions_path, result)
+        return result
     if not knowledge_base:
-        result = {"error": "knowledge base is empty", "run": run, "subrun": subrun}
+        result = {
+            "error": "knowledge base has no human-annotated entries",
+            "run": run,
+            "subrun": subrun,
+        }
         _append_suggestion(suggestions_path, result)
         return result
 
@@ -300,7 +328,7 @@ def query_llm(
     case_blocks = [
         _format_historical_case(
             entry,
-            _historical_snapshot(historical_log_path, entry["run"]),
+            _snapshot_for_kb_run(historical_log_path, entry["run"]),
         )
         for entry in knowledge_base
     ]

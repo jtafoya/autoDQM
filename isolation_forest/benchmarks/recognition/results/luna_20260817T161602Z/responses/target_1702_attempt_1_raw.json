@@ -1,0 +1,158 @@
+{
+  "id": "resp_0a6cb71fbfef26b5006a83342dd3e881a1b912ed565cbd61fe",
+  "created_at": 1786983469.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-luna",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0a6cb71fbfef26b5006a83342e414081a1ad78fd82d2aba8b8",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqgzQydLU95mAp1tj3XMaSzWEnHy_qM9w8obqAOujb6ZrVfj2cqEbtvOx04WIed_hThG_7Z0-8b8kUZgvJpV7VmHeE1fxPQUk6J4sjg_2NtdjrzxKsU5KSPgWxB7VetuoF_HTYfOviQiD2mwdl-WFqgcsxSN4jymea5O3eFkdVzagWxLc-HHXoZ-femjcEGFjptweGH5QgrTCtSlqX0Vwn0QoWkN3G0xfRbuPoZC9-bD2lbUVTJAGmIBTz0WpR1iZC7GIbocqmDPsHiJ_6Tjj-zBMgzkK7omSguMk3A8usesINO0fZezUgi1W0AF9It4a0vZO96oHGmDF0SUlR0LOP7P1yVQhJYLqOgEqiYAF9iKxyOWV6UXmg2jPgs3f6w0dRHazZk4KcJrc9PUP_UjuEe1Lw7P12quupAVhqtToQ2EKorSs4XHs5uprJ7tbuq0noiHVU1Nav0CYElrHTkeVpKUPrs7rbJG3l2dgxHZGVt8gFuceyQp_CdCGxbpyS0gN0iQKL8F2dypQwwnnur04lLA69yLbwhinzQoeiU6PlQuAAx02X8SqPMcJiOJ99sVL-ZC9GgJ2cDItCMaVqgc9R9tgMLL4w1z6KBk8XWE6B7Dgh9eg5PbIst-7xEHwv0XLKeVzTgyU2G9TQ96hRv2rKE0XE2lW34t0kRzezENJhQE1sLENnZ7QrJ-hqF107PxK3km9AWFuwn666_iFxUBbN4u4j-tUM92COIYBNyoymRN64NnztrBK481vVDI0G4uKUQHg-ai4ZRMgtHRvQzdFFwq4q1Fgn-tJvbvLLKUxbnhONMEA_S-SDNRrD0hFTF0cR8cYgJcNncYB6QXsdU2Hr9A3YlRxtcTiXFmQ8p3x6Hz4bKciIN6ewZQyuToE5E3TPWrZKqVCdr3p7kEBK4gZ3mZGkSj4adcDhduIwhD_kQ6CblTIi7D2Fx-WoPEg6RKkxAX5GKGrPiv5E6i0i8OxZsqK3-VCFynwJP4dnk74pCATdt7Q9grsgjk0gCYHT-SL1RbhxBj3dP107Bja5WmlgnW1xAVgauxX2saqOpp3R-6sI7gDI5vVRRuzBPlMLxScm9pTxEQq2rBzw4ZT41wURd2_VCovbj8FbvVmrRBd9JogQn0n6HlGcpnej89Bn_qEVP-mYIcgP9r_J34fUG1lYSvg_avklhlcsfOSVHBiSEoKV1rcTPrblv9QLPJa5F5CfFBejGeYL07kIAaBdHtY9qSKYbhByv8jkXZi_modDHWWXr8NJmN04iI0lIdGpG5eSFMiV1HfeldhC6HASnGh1uWtEhn7JW-KNuOyAD7_JtLZA9gM9rh8pkgEG9Z6__bVxJ80N4oM7QYhgoT9ztWKi0neu7jDhjKTuLlV2sa8Tge0hKvib8mynAT5SdqgiV4Q-tcnF4pB4Wwfcy_OY_lxBxglh871olYpdNgVfhf2ijRWVkTOmqYSN-uOY9XUqcQkhbJ-wkHr7rZIeqWrdTXL5t84XX57z_oop4lP3Lj-Jw5NIlaNIsZvbxZKol0vkM6mPAH7i26-EtjOI2bRfYK7hbz7x56REeZY42Z4zM-olReRWDsIn1wiap0XYYAGac4DtsWWWrTLZxMd0Y1wEldVH5YIL7G0csrtbmvv9XQa_UKwjx1-oZ9PSVbT2zDLCxzoClRwghq4Z63tRgqlS8EIAdXNHTabZIwOqsbcVVDosP9TqJe8tF2fTFwaTyLEw_k5kBuJMpP00QoFJ6Kh4kPmo_v25Vd-HLGCsAG5ka9x0v3ocfRZ7k5ZUsXEDtX-KgsprL0l_Bk9eJX_LVhVqVf3bAAn6AN7y4vruro5t32xiyV5tiPs8A82gJHN2qhC-Dap8k5_1QBzFii8uvl3Rj9gQ5DNgKw_BhFduZ50syoIvzeQ7Ow6fWLjT_SblU0THXlHhnDwzM82qlUKvKV3ndDiUgJk000YWuegKib3XkYZCCcqI4sBu_ngMxesbOCnY1akxjZc86JkgdOGUQY-YE-FwCUhWv3MazYdSz-4NU_O6R2PTiwOnlcPAqLWevJiKuNgMInvWW8l7-ch4Gf8xBnB0IQyMaO49J-vWwHeyKv12hkS7KNcmT2a6u2g8NbE9Fe4HrYfZZqgQwR1w6mWms5tHgKumua0oB3PNJ3uMGpVm92n1k1yzyMbx70uuWk1OA63bx68x",
+      "status": null
+    },
+    {
+      "id": "msg_0a6cb71fbfef26b5006a833430481881a1b5596a367e63567c",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"vmax_distribution_shift\",\"cause\":\"unknown\",\"action\":\"If confirmed to be associated with a zero-suppression or software configuration change, revert to running without zero suppression.\",\"recovery\":\"unknown\",\"confidence\":0.86,\"supporting_historical_runs\":[1703],\"reasoning_summary\":\"Observed: all 129 subruns contain anomalies, with 10,816 anomalous channel-entries and dominant statistical+IF flags on channels 50, 57, and 25 involving pulse counts, pulse heights, and pulse areas; several max_z values are clipped at very large values. Inferred: this closely matches run 1703, which had the same dominant channels and feature family with anomalies in every subrun, supporting a Vmax/pulse-distribution shift. No direct Vmax measurement, configuration-change record, or recovery result is supplied, so the specific cause and confirmed corrective outcome remain unknown.\"}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1786983474.0,
+  "conversation": null,
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_recognition_response",
+      "schema_": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "recovery": {
+            "title": "Recovery",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "recovery",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary"
+        ],
+        "title": "RecognitionResponse",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 7557,
+    "input_tokens_details": {
+      "cache_write_tokens": 7554,
+      "cached_tokens": 0
+    },
+    "output_tokens": 363,
+    "output_tokens_details": {
+      "reasoning_tokens": 163
+    },
+    "total_tokens": 7920
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": true,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

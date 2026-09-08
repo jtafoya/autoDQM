@@ -1,0 +1,13 @@
+{
+  "category": "LVDS_noise",
+  "cause": "unknown",
+  "action": "First verify whether channel 2 belongs to an affected LVDS/trigger path. Check board-matching efficiency, digitizer versus trigger-board rates, DAQ queue occupancy, and raw channel-presence data. Inspect and reseat the corresponding LVDS pins, jumper wires, and signal cables; use trigger-mask tests to isolate the path. If HV current or trip logs are abnormal instead, investigate the channel's HV cable and PMT base rather than assuming LVDS noise.",
+  "recovery": "If the LVDS-path hypothesis is confirmed, recovery is indicated by channel 2 remaining present, board matching returning to normal, stable queue occupancy and trigger rates, and no recurrence after the path is re-enabled. Otherwise unknown.",
+  "confidence": 0.45,
+  "supporting_historical_runs": [
+    2126,
+    1640,
+    1642
+  ],
+  "reasoning_summary": "OBSERVED: all 5 subruns are anomalous; channel 2 is missing in every subrun; channels 47 and 4 have extreme nPulses_median deviations; other channels show mixed waveform and isolation-forest anomalies. INFERRED: persistent channel loss plus extreme pulse-count anomalies is partially similar to LVDS_noise run 2126. Persistent missing channels also resemble broken-PMT-base runs 1640/1642, but the target lacks their paired-channel pattern and HV/VMax evidence. No exact historical match exists. UNKNOWN: board matching, queue behavior, trigger rates, channel mapping, HV current/trips, and raw waveform presence; these checks discriminate an LVDS/DAQ path fault from an HV/PMT-base fault."
+}

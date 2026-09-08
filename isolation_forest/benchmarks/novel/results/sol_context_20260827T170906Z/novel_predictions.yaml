@@ -1,0 +1,60 @@
+- run: 1620
+  category: suspected_daq_auto_restart
+  cause: unknown; a transient DAQ/processing interruption, potentially associated with high CPU load,
+    is plausible but unconfirmed
+  action: Check DAQ and MilliDAQ logs at the anomalous subruns for automatic restarts, process crashes,
+    file boundaries, high CPU usage, synchronization loss, board-matching degradation, or queue buildup.
+    If a restart or stalled process is confirmed, restart or stabilize the affected DAQ service and address
+    the identified resource issue; otherwise inspect channel-level nPulses time series before making hardware
+    changes.
+- run: 1640
+  category: trigger_mask_configuration_mismatch
+  cause: Channels 32 and 33 are configured as masked physical pins, but AutoDQM appears to evaluate them
+    as normally active channels; this likely produces repeated missing-channel alerts and abnormal low-statistics
+    pulse/occupancy features. Whether the masking itself is intentional is unknown.
+  action: Verify that physical pins/channels 32 and 33 are intentionally masked and compare the mask active
+    in each subrun with the static snapshot. If intentional, exclude masked channels from missing-channel
+    and occupancy-based anomaly checks. If unintended, restore the correct mask configuration and start
+    a validation run. If channel 32 remains anomalous when enabled, inspect its digitizer input and compare
+    channels 32/33 waveforms, rates, and board matching before considering cable or hardware intervention.
+- run: 1642
+  category: localized LVDS signal loss
+  cause: Suspected open, disconnected, or failed LVDS pin-16 signal path serving detector channels 32/33;
+    intentional masking or a mapping/configuration effect remains a plausible alternative.
+  action: First verify whether the configured masks for physical channels 32/33 are expected to suppress
+    LVDS pin-16 counts and confirm the channel mapping. If not expected, stop the run and inspect/reseat
+    the pin-16 LVDS jumper and connectors at both digitizer and trigger-board ends; use a known-good cable
+    or input swap to isolate cable versus board hardware. Start a new run after each change and monitor
+    pin-16 counts, channels 32/33, board matching, queue occupancy, and digitizer-versus-trigger-board
+    rates.
+- run: 1702
+  category: global waveform-feature or AutoDQM reference mismatch
+  cause: unknown
+  action: First verify that CASE_TARGET used the correct detector configuration, channel map, calibration,
+    feature definitions, and AutoDQM reference population. Compare raw waveforms and pulse-feature distributions
+    with a known-good run. If the raw data are normal, correct the reference/configuration and rerun AutoDQM.
+    If the raw data show a genuine detector-wide shift, inspect CPU load, event completeness, board matching,
+    synchronization, queue occupancy, and digitizer firmware/configuration before restarting or reconfiguring
+    the affected DAQ component.
+- run: 1703
+  category: AutoDQM reference or feature-normalization mismatch
+  cause: Unknown; the leading hypothesis is a detector-wide mismatch between the run's pulse-feature distributions
+    and the AutoDQM reference, potentially amplified by zero or near-zero reference dispersion and producing
+    million-scale z-scores. A genuine DAQ or detector-wide waveform change is not excluded.
+  action: First validate several flagged and unflagged channels against raw waveforms and per-subrun feature
+    values, and inspect the z-score denominator/reference distributions. Compare the run configuration,
+    thresholds, firmware, and feature-extraction version with the reference sample. Also obtain digitizer
+    rates, board-matching, synchronization, queue occupancy, and within-run configuration telemetry. If
+    raw data are nominal and only normalization is pathological, rebuild or correct the AutoDQM reference;
+    if raw pulse distributions are genuinely shifted, isolate the responsible digitizer/configuration
+    before restarting or changing hardware.
+- run: 2126
+  category: digitizer_readout_dropout
+  cause: Unknown; the leading hypothesis is intermittent digitizer or DAQ readout loss downstream of otherwise
+    active LVDS signals.
+  action: First map missing channels by subrun to digitizer boards and inspect raw event/channel presence,
+    digitizer status, synchronization, DAQ restart/error, CPU, and queue logs. Compare digitizer event
+    rates with trigger-board rates. If the missing channels form a board-aligned group and a lockup or
+    synchronization failure is confirmed, stop the run and restart/resynchronize the affected digitizer/DAQ
+    process; reboot the associated DAQ PC only if standard restart does not clear it. Do not replace PMT/HV
+    or LVDS hardware without corresponding HV or pin-level evidence.
