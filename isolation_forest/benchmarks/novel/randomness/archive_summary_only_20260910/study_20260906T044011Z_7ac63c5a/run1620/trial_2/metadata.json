@@ -1,0 +1,101 @@
+{
+  "run": 1620,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "trial": 2,
+  "timestamp": "2026-09-06T04:41:30.027094+00:00",
+  "status": "completed",
+  "prompt_sha256": "d39d3b830b2f1b43d1d130ceaa8e025cb3d7e94f151863f00d3b924e89b4da9c",
+  "filtered_kb_sha256": "bdc6a1d272b981d08d5dd46485c05cb49562a457d109a7d02544719e9e89be2d",
+  "context_sha256": "6cf1a5ea72caf6a878610d74899e8c2aec259a63d67dd904da755d31bb6e87bd",
+  "anomaly_sha256": "a090188c325f395d46b6dfd20715f03c3aacee623b59a569cf0a04a4b16864dd",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 1,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "f6d470665690588bbd23dbde3bdfb8e5cc91cdb90729b5e70b8de5254e9ad3fb",
+  "request_body_sha256": "1722bb8aecda34fb59dca83a730c8b61011083e0f4ac55c08963a7232834c562",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_3e67b008388444359861b41edd0ffb5e",
+  "prediction": {
+    "category": "transient_DAQ_readout_disruption",
+    "cause": "unknown; a DAQ auto-restart or high-CPU processing interruption is a plausible but unconfirmed cause",
+    "action": "If a DAQ-side interruption is confirmed, inspect MilliDAQ, process-restart, CPU/load, file-boundary, and digitizer synchronization logs at the anomalous subruns; then restart the affected DAQ process only if it is stalled or desynchronized. Also compare digitizer rates with trigger-board rates and check board matching and queue occupancy before attributing the anomaly to hardware.",
+    "confidence": 0.58,
+    "supporting_historical_runs": [
+      1604,
+      1605
+    ],
+    "reasoning_summary": "OBSERVED: 35/259 subruns contain only 42 anomalous channel-entries, dominated by large nPulses_median deviations; trigger rate remains near 4.88 Hz and persistent, while LVDS has no persistently zero, missing, high, or low signal pins. INFERRED: This favors intermittent downstream DAQ/readout disturbance over a persistent PMT-base, LVDS, or trigger-rate fault. Run 1604 is a close partial analogy, including the identical channel-0 nPulses z-score and normal ~4.85 Hz operation; run 1605 provides a weaker high-CPU analogy. No exact historical match exists. CONTRADICTING: No restart, CPU, synchronization, or queue evidence is supplied, and several channels are involved. UNKNOWN/DISCRIMINATING CHECKS: DAQ restart timestamps, CPU load, digitizer/trigger-board rate agreement, board matching, queue occupancy, anomaly timing relative to file boundaries, and per-channel pulse-count direction."
+  },
+  "response_model_id": "gpt-5.6-sol",
+  "response_id": "resp_081351af0f32bf55006a9ceefa2f9887d2a622c9f97dbff8ba",
+  "token_usage": {
+    "input_tokens": 9316,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 9313
+    },
+    "output_tokens": 1099,
+    "output_tokens_details": {
+      "reasoning_tokens": 739
+    },
+    "total_tokens": 10415
+  },
+  "latency_seconds": 14.290463941171765
+}

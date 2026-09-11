@@ -1,0 +1,12 @@
+{
+  "category": "transient_DAQ_processing_or_restart_anomaly",
+  "cause": "unknown",
+  "action": "Check DAQ and MilliDAQ logs at the anomalous subruns for automatic restarts, file boundaries, CPU saturation, synchronization loss, board-matching degradation, or queue buildup. Compare processed digitizer rates with trigger-board rates. If a DAQ process is confirmed stalled or desynchronized, restart/resynchronize it; otherwise do not alter detector hardware based on this evidence alone.",
+  "confidence": 0.68,
+  "supporting_historical_runs": [
+    1604,
+    1605,
+    1500
+  ],
+  "reasoning_summary": "OBSERVED: Only 35/259 subruns are anomalous, chiefly through nPulses_median on scattered channels; the trigger rate remains near 4.88 Hz, and LVDS pins show no persistent zero, missing, high, or low state. INFERRED: This resembles the sparse nPulses pattern in run 1604, which was associated with a DAQ auto-restart, and is more consistent with a transient DAQ/processing disturbance than a persistent PMT-base, LVDS, or trigger-rate fault. CONTRADICTING/UNKNOWN: No restart, CPU, board-matching, synchronization, queue, or digitizer-rate telemetry is provided, so the diagnosis is unconfirmed and no exact historical match is established."
+}

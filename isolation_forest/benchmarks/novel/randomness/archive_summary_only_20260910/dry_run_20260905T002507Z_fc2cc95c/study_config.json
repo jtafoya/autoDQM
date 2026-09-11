@@ -1,0 +1,39 @@
+{
+  "mode": "dry-run",
+  "model_alias": "sol",
+  "model_id": "gpt-5.6-sol",
+  "created_at": "2026-09-05T00:25:07.624809+00:00",
+  "trials": 5,
+  "target_runs": [
+    1620,
+    1640,
+    1642,
+    1702,
+    1703,
+    2126
+  ],
+  "planned_api_calls": 0,
+  "reference": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/results/sol_context_20260827T170906Z/run_config.json",
+  "reference_sha256": "6479c5f70db21deb5d788b419446d0d336e694f58e62ba34735ad186e1cfe694",
+  "source_sha256": {
+    "benchmarks/novel/novel_test.py": "a4300475d2a9780b0b009e5d18fad991ebea2bd8277c211555f97bc209409013",
+    "benchmarks/novel/context_builders.py": "47985860273d95bf1d7240bd71f4d0c1448117055166f2d7451c3a36df59939c",
+    "benchmarks/novel/novel_manifest.yaml": "ad9e18cfb8f0c4a8122e4c1285a2c408c5ec1f4dca98033e23e653fe51749062",
+    "benchmarks/novel/context_manifest.yaml": "782f7ab94d1869c9d70ce23d0ccc6d73dacb205a509bac2ccd9c3d36156bccb3",
+    "benchmarks/recognition/recognition_test.py": "76f85fea89991188d48e862a32aed24d146f8aa3187f0a2ac405ab529b73fe89",
+    "src/llm.py": "7811cca61eaada54923e5b38c37340cb4464e224ce6f0fa7fb6fe50992c5a033",
+    "src/features.py": "b502636c4a21e3ed90832e5f896987c66317151848c281641246f9a000e95513",
+    "src/run_config.py": "0102ddf3857bdf0dc7f3acda9e0d80ae7b8d38fd1987ae74832019d21ff21b81",
+    "src/kb_schema.py": "80a3da863eb1cb4415a17502f8aa00c1066ba3282962ade49b848a5221ce4904",
+    "src/run_list.py": "6f999fd30b27a4f12fac274b6c19dadfa549a836678bfe4c37283dd93141e283"
+  },
+  "git": {
+    "commit": "ebaabb72c7cf26a38a6cd196703023b8c99caa4b",
+    "dirty": true
+  },
+  "input_cache": "in-memory anomaly summaries keyed by source-file SHA256; no response cache",
+  "retry_policy": "one attempt per trial; no SDK or benchmark retries",
+  "status": "dry_run_passed",
+  "finished_at": "2026-09-05T00:25:48.411506+00:00",
+  "network_attempts": 0
+}

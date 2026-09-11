@@ -1,0 +1,62 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-PIN16-MAPPED-ZERO",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-CHANNEL32-ABSENCE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-CHANNEL33-ABSENCE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-PAIR-RECOVERY-201",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-NOT-STATICALLY-MASKED",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-RECOVERY-CONTRADICTS-PERMANENT-FAILURE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-NO-HIGH-RATE-PRESENTATION",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-CONFIG-DAQ-TELEMETRY-GAP",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-ENDPOINT-GLOBAL-TRANSITION",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGY",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-INDEPENDENT-TDC-IRREGULARITIES",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

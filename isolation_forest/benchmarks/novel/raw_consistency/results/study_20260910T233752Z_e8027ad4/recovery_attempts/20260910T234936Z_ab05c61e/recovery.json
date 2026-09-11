@@ -1,0 +1,149 @@
+{
+  "protocol": "Manual transport-error recovery. Failed HTTP attempts are retained and excluded from the three successful diagnoses. No selection by diagnosis content.",
+  "resume_code_sha256": "03e8cc1cd0a35d5232763a387091abacb3d01e7f03339c854ad912b5ab9cb588",
+  "planned": [
+    {
+      "run": 1640,
+      "trial": 2,
+      "state": "retry_transport_failure"
+    },
+    {
+      "run": 1640,
+      "trial": 3,
+      "state": "not_started"
+    },
+    {
+      "run": 1642,
+      "trial": 1,
+      "state": "not_started"
+    },
+    {
+      "run": 1642,
+      "trial": 2,
+      "state": "not_started"
+    },
+    {
+      "run": 1642,
+      "trial": 3,
+      "state": "not_started"
+    },
+    {
+      "run": 1702,
+      "trial": 1,
+      "state": "not_started"
+    },
+    {
+      "run": 1702,
+      "trial": 2,
+      "state": "not_started"
+    },
+    {
+      "run": 1702,
+      "trial": 3,
+      "state": "not_started"
+    },
+    {
+      "run": 1703,
+      "trial": 1,
+      "state": "not_started"
+    },
+    {
+      "run": 1703,
+      "trial": 2,
+      "state": "not_started"
+    },
+    {
+      "run": 1703,
+      "trial": 3,
+      "state": "not_started"
+    },
+    {
+      "run": 2126,
+      "trial": 1,
+      "state": "not_started"
+    },
+    {
+      "run": 2126,
+      "trial": 2,
+      "state": "not_started"
+    },
+    {
+      "run": 2126,
+      "trial": 3,
+      "state": "not_started"
+    }
+  ],
+  "archived_failures": [
+    {
+      "original": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_2",
+      "archived": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/recovery_attempts/20260910T234936Z_ab05c61e/run1640/trial_2",
+      "sha256": {
+        "request_body.json": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+        "raw_response_body.bin": "19f5b51c28fd66ee9a10253c682d57eaa5f19a71c60995e2201f99464b8fe9d1",
+        "metadata.json": "6c25ff6a29dbf895dae18afe287878e86f5fa3fbfb133f518218f1a4767212d7"
+      }
+    }
+  ],
+  "new_attempts": [
+    {
+      "run": 1640,
+      "trial": 2,
+      "state": "retry_transport_failure",
+      "result": "completed"
+    },
+    {
+      "run": 1640,
+      "trial": 3,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1642,
+      "trial": 1,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1642,
+      "trial": 2,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1642,
+      "trial": 3,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1702,
+      "trial": 1,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1702,
+      "trial": 2,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1702,
+      "trial": 3,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1703,
+      "trial": 1,
+      "state": "not_started",
+      "result": "completed"
+    },
+    {
+      "run": 1703,
+      "trial": 2,
+      "state": "not_started",
+      "result": "failed"
+    }
+  ]
+}

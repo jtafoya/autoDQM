@@ -1,0 +1,354 @@
+{
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-CONSTANT-88-90",
+      "observation": "Channels 88 and 89 have TDC fixed at 149602000000000 with zero population standard deviation; this repeated value is also reported for channel 90. This supports a stuck or synthesized timing value rather than ordinary event timing variation.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-088-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-088-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-089-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        }
+      ],
+      "cause_link": "A common exact TDC value across multiple contiguous channels is consistent with a shared timing-counter readout or decoding failure.",
+      "action_link": "Check the raw encoded words, data type, units, sentinel handling, and board/channel association for channels 88-90."
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "observation": "Channels 91, 92, and 93 have TDC mean 0 and zero fraction 1.0 across all summarized values, while their rollover fields are large and nonzero. This is a second malformed timing pattern within the same contiguous channel block.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-091-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-092-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-093-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "mean",
+          "value_json": "8.81182e+18"
+        },
+        {
+          "evidence_id": "R-092-10",
+          "field": "mean",
+          "value_json": "9.35354e+18"
+        },
+        {
+          "evidence_id": "R-093-10",
+          "field": "mean",
+          "value_json": "8.8588e+18"
+        }
+      ],
+      "cause_link": "Zero TDC paired with enormous rollover values is internally inconsistent with the normal channel pattern and suggests field corruption, column/type misinterpretation, or failed counter readout.",
+      "action_link": "Decode representative TDC and rollover words independently and test for field swaps, integer-width/sign errors, invalid sentinels, and schema mismatch."
+    },
+    {
+      "signature_id": "SIG-TIMING-ANOMALY-94-95",
+      "observation": "Channels 94 and 95 have TDC subrun medians fixed at 438087000000 while their pooled maxima reach 211527000000000, and both have rollover means near 8.5e18. This extends the timing corruption through channel 95 but shows a different malformed representation than channels 88-93.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-094-09",
+          "field": "subrun_median_quantiles",
+          "value_json": "[438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0]"
+        },
+        {
+          "evidence_id": "R-094-09",
+          "field": "max",
+          "value_json": "211527000000000.0"
+        },
+        {
+          "evidence_id": "R-095-09",
+          "field": "subrun_median_quantiles",
+          "value_json": "[438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0]"
+        },
+        {
+          "evidence_id": "R-095-10",
+          "field": "mean",
+          "value_json": "8.59807e+18"
+        }
+      ],
+      "cause_link": "Several distinct pathological encodings inside one contiguous block favor a shared board-format, firmware, memory-layout, or decoder problem over independent detector failures.",
+      "action_link": "Determine the exact board and data-format boundary for channels 88-95 and compare its firmware/schema against unaffected channels."
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "observation": "Immediately preceding channel 87 has a varying TDC distribution and TDCRollovers identically zero, unlike channel 88 where both timing fields become constant, large nonzero values. This supports localization at the 87/88 channel boundary.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-087-09",
+          "field": "std_population",
+          "value_json": "321719000000.0"
+        },
+        {
+          "evidence_id": "R-087-10",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-088-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-088-10",
+          "field": "mean",
+          "value_json": "1103820000000.0"
+        }
+      ],
+      "cause_link": "The abrupt transition from normal timing behavior at channel 87 to malformed fields at channel 88 points to a shared electronics or software boundary rather than a run-wide timing condition.",
+      "action_link": "Verify board/module assignment and parser offsets specifically at the channel 87/88 boundary; do not infer a physical-pin identity from the digitizer channel number."
+    },
+    {
+      "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+      "observation": "Representative affected channels 88, 91, and 95 are present in all 259 subruns with stable time-bin occupancies. This contradicts a persistent dead-channel or tripped-HV explanation for the timing anomaly.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "P-088",
+          "field": "present_subruns",
+          "value_json": "259"
+        },
+        {
+          "evidence_id": "P-088",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.0865011,0.0848776,0.0838259,0.0851252,0.0867711,0.0854113,0.0835859,0.0867342]"
+        },
+        {
+          "evidence_id": "P-091",
+          "field": "present_subruns",
+          "value_json": "259"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "present_subruns",
+          "value_json": "259"
+        }
+      ],
+      "cause_link": "Continued event presence does not prove healthy timing electronics, but it argues against loss of PMT/HV signal as the primary mechanism.",
+      "action_link": "Prioritize timing-word and electronics diagnostics; inspect HV only if independent current or waveform evidence later indicates a PMT path problem."
+    },
+    {
+      "signature_id": "SIG-TRIGGER-LVDS-STABLE",
+      "observation": "The compact trigger summary describes a stable total trigger rate, and the LVDS summary reports no persistent zero or abnormally low/high signal pins. This contradicts the high-trigger-rate/LVDS-noise and complete LVDS-loss signatures in the supplied historical cases.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 4.88, range 4.485 to 5.342. Temporal behavior: stable/persistent.\""
+        },
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-005",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally low signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-006",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally high signal pins: none.\""
+        }
+      ],
+      "cause_link": "Stable global triggering and populated LVDS pins make trigger-noise or disconnected LVDS paths less likely as the primary cause, although compact summaries cannot exclude brief local effects.",
+      "action_link": "Do not reseat or mask LVDS connections solely from this evidence; first verify timing data integrity and board-local state."
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-MISSING",
+      "observation": "Digitizer-versus-trigger-board rate consistency, board matching, synchronization, queue occupancy, DAQ state, and within-run configuration changes are unavailable. Therefore the evidence cannot determine whether the corruption originates in hardware, firmware, synchronization, or offline decoding.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        },
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        }
+      ],
+      "cause_link": "The anomaly is strongly localized, but the missing diagnostics prevent assignment of a definitive hardware versus software root cause.",
+      "action_link": "Retrieve these diagnostics and original event words before applying irreversible hardware changes."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "SIG-TDC-CONSTANT-88-90",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TDC-ZERO-91-93",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TIMING-ANOMALY-94-95",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TRIGGER-LVDS-STABLE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-DISCRIMINATING-TELEMETRY-MISSING",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1620",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1620/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1620/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "SIG-TDC-CONSTANT-88-90",
+      "evidence_id": "R-088-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_01_R-088-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-CONSTANT-88-90",
+      "evidence_id": "R-089-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_01_R-089-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-CONSTANT-88-90",
+      "evidence_id": "R-090-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_01_R-090-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-091-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-091-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-092-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-092-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-093-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-093-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-091-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-091-10.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-092-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-092-10.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-093-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_02_R-093-10.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-ANOMALY-94-95",
+      "evidence_id": "R-094-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_03_R-094-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-ANOMALY-94-95",
+      "evidence_id": "R-095-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_03_R-095-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-ANOMALY-94-95",
+      "evidence_id": "R-095-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_03_R-095-10.png"
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "evidence_id": "R-087-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_04_R-087-09.png"
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "evidence_id": "R-087-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_04_R-087-10.png"
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "evidence_id": "R-088-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_04_R-088-09.png"
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "evidence_id": "R-088-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_04_R-088-10.png"
+    },
+    {
+      "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+      "evidence_id": "P-088",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_05_P-088.png"
+    },
+    {
+      "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+      "evidence_id": "P-091",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_05_P-091.png"
+    },
+    {
+      "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+      "evidence_id": "P-095",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1620/trial_3/signature_images/signature_05_P-095.png"
+    }
+  ]
+}

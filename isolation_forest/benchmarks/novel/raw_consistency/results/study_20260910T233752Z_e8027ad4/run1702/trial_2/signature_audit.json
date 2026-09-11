@@ -1,0 +1,47 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-STUCK-90",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-ROLLOVER-HUGE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-94-95-FIXED-MODE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-BOUNDARY-87-88",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-PULSES-CONTINUE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TRIGGER-LVDS-NOMINAL",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-MISSING",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-NO-EXACT-MATCH",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

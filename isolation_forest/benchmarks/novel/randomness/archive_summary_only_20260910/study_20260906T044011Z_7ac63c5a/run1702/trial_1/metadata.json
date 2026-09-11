@@ -1,0 +1,102 @@
+{
+  "run": 1702,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "trial": 1,
+  "timestamp": "2026-09-06T04:44:50.442786+00:00",
+  "status": "completed",
+  "prompt_sha256": "1c1c97105e9fde4f302cb41266c439a230318f0cced347456ed5e6bd42cfc30d",
+  "filtered_kb_sha256": "d78e9043ff809f055dc32a0dfd8dea1bc22e83052bb2d9c8bd45baf94b3931d4",
+  "context_sha256": "c07358eb4e91fbb88b840eda34a1ce21fd92b6af721916a39c59f3459ec707fb",
+  "anomaly_sha256": "5b40b3313cba23eefb557f7ec6ee90af12342226041e936f3e37ec6d3989aae7",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 1,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "8253939555ddb41db8524014831ff714e582b4ed31e0cdfe9be2753f47c705b8",
+  "request_body_sha256": "c393e8a7b805c435dc9eb0dd189cb9ec40e13397827f13fd2efc24415d0a5f86",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_d4a8aa531ffb47578d862b6366fb0736",
+  "prediction": {
+    "category": "widespread_digitizer_feature_anomaly",
+    "cause": "unknown; a common-mode digitizer/readout or AutoDQM reference/normalization problem is more plausible than a localized PMT, LVDS, or trigger-rate fault",
+    "action": "First verify subrun exposure normalization and inspect raw waveforms plus per-subrun pulse-count, pulse-height, and pulse-area distributions for representative flagged and unflagged channels. Compare digitizer configuration and software/reference versions with a known-good run, and obtain board-matching, synchronization, queue-occupancy, CPU, and digitizer-rate telemetry. If raw data confirm a common digitizer/readout failure, restart or resynchronize the affected DAQ component; if raw data are normal, correct the AutoDQM baseline or zero-variance z-score handling instead.",
+    "confidence": 0.35,
+    "supporting_historical_runs": [
+      1500,
+      1605,
+      2126
+    ],
+    "reasoning_summary": "OBSERVED: all 129 subruns are anomalous, with 10,816 channel-entries and several channels showing extreme pulse-feature z-scores. The recorded trigger rate remains stable near 4.857 Hz, and LVDS has no persistent zero, missing, high, or low signal pin. No missing detector channels are reported. INFERRED: the breadth and persistence favor a common-mode data-processing, digitizer, or DAQ-readout issue; they contradict the localized signatures of broken PMT bases and the elevated-rate signatures of LVDS noise. The final count transitions may reflect reduced exposure because rates remain stable. No exact historical match exists: runs 1605 and 2126 partially share million-scale nPulses anomalies on channels 47/69 or 50/69, while run 1500 was anomalous throughout, but their confirmed diagnoses are inconsistent or incomplete. UNKNOWN: raw waveform behavior, exposure normalization, board matching, queue state, synchronization, CPU load, digitizer rates, and within-run configuration. These checks discriminate a real common-mode readout fault from an AutoDQM baseline artifact."
+  },
+  "response_model_id": "gpt-5.6-sol",
+  "response_id": "resp_0bab39c26c95791a006a9cefc2930887d29545f2d63373be0c",
+  "token_usage": {
+    "input_tokens": 8743,
+    "input_tokens_details": {
+      "cache_write_tokens": 8740,
+      "cached_tokens": 0
+    },
+    "output_tokens": 948,
+    "output_tokens_details": {
+      "reasoning_tokens": 516
+    },
+    "total_tokens": 9691
+  },
+  "latency_seconds": 13.39143437705934
+}

@@ -1,0 +1,56 @@
+{
+  "all_references_valid": false,
+  "issues": [
+    "SIG-TDC-ALTERNATE-STUCK-94-95: R-095-09:subrun_median_quantiles: cited value does not equal supplied value"
+  ],
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-STUCK-HIGH-88",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-STUCK-HIGH-89-90",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-ALTERNATE-STUCK-94-95",
+      "references_valid": false,
+      "errors": [
+        "R-095-09:subrun_median_quantiles: cited value does not equal supplied value"
+      ]
+    },
+    {
+      "signature_id": "SIG-AFFECTED-CHANNELS-PRESENT",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-LVDS-NOT-DEAD-OR-EXTREME",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TRIGGER-RATE-STABLE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGY",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

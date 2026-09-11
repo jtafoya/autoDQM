@@ -1,0 +1,12 @@
+{
+  "category": "suspected_DAQ_transient_or_auto_restart",
+  "cause": "unknown",
+  "action": "Check DAQ and operating-system logs at the 35 anomalous subruns for process restarts, file boundaries, CPU saturation, dropped events, synchronization loss, or queue buildup. If a DAQ process stall or restart is confirmed, restart MilliDAQ cleanly and verify configuration consistency; do not alter LVDS or PMT hardware without corroborating evidence.",
+  "confidence": 0.62,
+  "supporting_historical_runs": [
+    1604,
+    1500,
+    1605
+  ],
+  "reasoning_summary": "OBSERVED: anomalies are sparse (35/259 subruns, 42 entries), dominated by nPulses_median, while the trigger rate remains near 4.88 Hz and LVDS pins show no persistent zero, missing, high, or low behavior. INFERRED: this is more consistent with a transient DAQ/processing disturbance than a persistent PMT-base, LVDS, or trigger-rate fault. Run 1604 is the closest partial analogy, including channel 0 at z=45.8 and similar sparse nPulses anomalies; runs 1500 and 1605 provide weaker DAQ/CPU analogies. No exact historical match exists. UNKNOWN: restart history, CPU load, board matching, synchronization, queue occupancy, digitizer-rate consistency, and within-run configuration changes; these telemetry checks are needed to distinguish auto-restart, CPU saturation, and other DAQ transients."
+}

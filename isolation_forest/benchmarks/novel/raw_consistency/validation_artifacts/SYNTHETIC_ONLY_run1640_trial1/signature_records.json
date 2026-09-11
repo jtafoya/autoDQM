@@ -1,0 +1,50 @@
+{
+  "signatures": [
+    {
+      "signature_id": "S1",
+      "observation": "SYNTHETIC TEST: display actual supplied numerical summaries without diagnosing the run.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-032-00",
+          "field": "mean",
+          "value_json": "-0.909692"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "present_subruns",
+          "value_json": "519"
+        }
+      ],
+      "cause_link": "Fixture only; does not support a real cause.",
+      "action_link": "Verify rendering; not a detector action."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "S1",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "S1",
+      "evidence_id": "R-032-00",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/validation_artifacts/SYNTHETIC_ONLY_run1640_trial1/signature_images/signature_01_R-032-00.png"
+    },
+    {
+      "signature_id": "S1",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/validation_artifacts/SYNTHETIC_ONLY_run1640_trial1/signature_images/signature_01_P-032.png"
+    }
+  ]
+}

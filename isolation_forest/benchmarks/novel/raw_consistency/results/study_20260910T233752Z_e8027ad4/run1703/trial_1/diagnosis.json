@@ -1,0 +1,271 @@
+{
+  "category": "digitizer_timing_metadata_corruption",
+  "cause": "The observed failure mechanism is corrupted, stuck, or sentinel-like TDC/TDCRollovers metadata in the contiguous channel block 88-95. The underlying root cause is unknown from the supplied telemetry; leading hypotheses are a digitizer timing-register/firmware/readout fault or a decoding/data-layout error affecting that block. Stable trigger telemetry, normal LVDS pin coverage, and persistent channel presence argue against a system-wide trigger failure, LVDS disconnection, PMT/HV loss, or complete digitizer lockup.",
+  "action": "First preserve the files and validate the TDC and TDCRollovers field layout, units, signedness, and rollover reconstruction for channels 88-95 against a known-good file or independent decoder. Identify which digitizer hardware/firmware serves this contiguous block, then inspect its firmware version, timing-register configuration, clock/synchronization state, and raw register words. Check board matching and DAQ-state telemetry during a controlled test run. If decoding is correct and the hardware timing fields remain stuck or impossible, conditionally restart/reinitialize the affected digitizer and DAQ process; reflash/recompile only after confirming a firmware mismatch. Quarantine timing values from channels 88-95 until validated, while retaining pulse/occupancy data separately if operationally acceptable.",
+  "confidence": 0.9,
+  "supporting_historical_runs": [],
+  "reasoning_summary": "OBSERVED: Channels 88-90 have TDC fixed at exactly 149602000000000 across all supplied events and time bins; channels 91-93 instead have TDC identically zero; channels 94-95 show another fixed median TDC value with extreme excursions. Multiple channels in 89-95 also contain sparse TDCRollovers values up to about 1.41672e19, while channel 88 has a different constant rollover value. All cited channels remain present in all 627 subruns, and trigger and LVDS summaries are stable without missing or persistently zero signal pins. INFERRED: The sharp contiguous timing-field pattern is much more consistent with timing metadata corruption, register/readout failure, or decoding misalignment than with detector pulses, PMT bases, or LVDS trigger noise. UNKNOWN: No exact resolved historical match is supplied, and firmware version, board mapping for channels 88-95, raw words, board matching, synchronization, DAQ state, and a known-good raw reference are unavailable; therefore the hardware-versus-decoder root cause cannot be resolved here.",
+  "semantic_description": {
+    "component": "Digitizer timing/readout path for channels 88-95",
+    "failure_mechanism": "TDC and rollover fields are stuck at zero or implausible constants and sometimes contain enormous rollover values, indicating corrupted timing metadata rather than a demonstrated loss of pulse acquisition.",
+    "action_intent": "Validate decoding and board mapping, inspect timing firmware/registers and synchronization, then conditionally reinitialize or repair the affected digitizer path."
+  },
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-STUCK-HIGH-88-90",
+      "observation": "Channels 88, 89, and 90 each report TDC mean, minimum, and maximum equal to 149602000000000 with zero population standard deviation, so their TDC fields are constant throughout the supplied data.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-088-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-088-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-089-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-089-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        }
+      ],
+      "cause_link": "A shared exact constant across three adjacent channels is sentinel-like and supports a common timing-register, firmware/readout, or decoding fault rather than physical event timing.",
+      "action_link": "Compare the encoded raw timing word and decoder layout for channels 88-90 with unaffected channels and a known-good file."
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "observation": "Channels 91, 92, and 93 have TDC equal to zero for every summarized event.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-091-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-092-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-093-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        }
+      ],
+      "cause_link": "The abrupt transition from an identical nonzero constant on channels 88-90 to all-zero TDC on channels 91-93 supports structured timing metadata corruption in a contiguous channel block.",
+      "action_link": "Inspect channel-to-board mapping and per-channel timing-register enable/configuration for channels 91-93, and verify that the decoder has not shifted or substituted fields."
+    },
+    {
+      "signature_id": "SIG-ROLLOVER-IMPOSSIBLE",
+      "observation": "TDCRollovers metadata is also abnormal: channel 88 is fixed at 1103820000000, while channels 89 and 91 contain mostly zero values but maxima of 1.41672e19.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-088-10",
+          "field": "mean",
+          "value_json": "1103820000000.0"
+        },
+        {
+          "evidence_id": "R-088-10",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-089-10",
+          "field": "max",
+          "value_json": "1.41672e+19"
+        },
+        {
+          "evidence_id": "R-089-10",
+          "field": "zero_fraction",
+          "value_json": "0.94103"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "max",
+          "value_json": "1.41672e+19"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "zero_fraction",
+          "value_json": "0.947262"
+        }
+      ],
+      "cause_link": "Independent corruption in both TDC and rollover fields makes a timing metadata/register or serialization problem more likely than a normal physical timing distribution.",
+      "action_link": "Validate rollover word width, signedness, byte alignment, and reconstruction logic before applying any hardware correction."
+    },
+    {
+      "signature_id": "SIG-TDC-94-95-DIFFERENT-SENTINEL",
+      "observation": "Channels 94 and 95 have TDC subrun medians fixed at 438087000000, but their pooled maxima reach approximately 2.116e14, extending the structured timing anomaly through channel 95.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-094-09",
+          "field": "subrun_median_quantiles",
+          "value_json": "[438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0]"
+        },
+        {
+          "evidence_id": "R-094-09",
+          "field": "max",
+          "value_json": "211600000000000.0"
+        },
+        {
+          "evidence_id": "R-095-09",
+          "field": "subrun_median_quantiles",
+          "value_json": "[438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0,438087000000.0]"
+        },
+        {
+          "evidence_id": "R-095-09",
+          "field": "max",
+          "value_json": "211527000000000.0"
+        }
+      ],
+      "cause_link": "A second exact sentinel-like level on the final adjacent channels indicates a block-structured representation or readout problem rather than random event outliers.",
+      "action_link": "Examine whether channels 94-95 use a different timing-word format, firmware lane, or decoder offset within the same hardware block."
+    },
+    {
+      "signature_id": "SIG-PULSE-ACQUISITION-PRESENT",
+      "observation": "Channels at both ends of the affected timing block, 88 and 95, are present in all 627 subruns with no absent ranges, and their occupancy remains nonzero across all eight time bins.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "P-088",
+          "field": "present_subruns",
+          "value_json": "627"
+        },
+        {
+          "evidence_id": "P-088",
+          "field": "absent_subrun_ranges",
+          "value_json": "[]"
+        },
+        {
+          "evidence_id": "P-088",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.0324927,0.0334828,0.0332267,0.0335581,0.0324276,0.0323042,0.0334039,0.0324899]"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "present_subruns",
+          "value_json": "627"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "absent_subrun_ranges",
+          "value_json": "[]"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.0256712,0.0250395,0.0255344,0.0243938,0.0246786,0.0250714,0.0240049,0.0243895]"
+        }
+      ],
+      "cause_link": "Persistent pulse-channel presence contradicts a complete digitizer lockup, dead PMT/HV path, or disconnected acquisition path, although it does not rule out failure limited to timing metadata.",
+      "action_link": "Avoid discarding pulse data solely because timing fields are corrupt; validate timing and pulse content independently."
+    },
+    {
+      "signature_id": "SIG-TRIGGER-LVDS-NOMINAL",
+      "observation": "The total trigger rate is summarized as stable/persistent, and LVDS telemetry reports no persistent zero or missing signal pins.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 4.799, range 4.415 to 5.369. Temporal behavior: stable/persistent.\""
+        },
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-004",
+          "field": "text",
+          "value_json": "\"- Persistent missing signal pins: none.\""
+        }
+      ],
+      "cause_link": "This argues against the high-rate LVDS-noise, disconnected-LVDS, or system-wide trigger-failure mechanisms in the historical cases; it does not test the digitizer timing registers or decoder.",
+      "action_link": "Prioritize timing-word, firmware, synchronization, and decoding checks over reseating all LVDS connections unless later board-specific evidence implicates a cable."
+    },
+    {
+      "signature_id": "SIG-BROAD-ANOMALY-LOG-LIMITATION",
+      "observation": "The frozen anomaly pipeline labels 52957 of 60192 channel-subrun rows anomalous, with 75-93 anomalous channels in each subrun, so its alerts are too broad to uniquely localize the timing fault.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "A-ALL",
+          "field": "anomalous_rows",
+          "value_json": "52957"
+        },
+        {
+          "evidence_id": "A-ALL",
+          "field": "logged_rows",
+          "value_json": "60192"
+        },
+        {
+          "evidence_id": "A-ALL",
+          "field": "anomalous_channel_count_by_subrun.0",
+          "value_json": "82"
+        },
+        {
+          "evidence_id": "A-ALL",
+          "field": "anomalous_channel_count_by_subrun.16",
+          "value_json": "93"
+        }
+      ],
+      "cause_link": "The broad anomaly rate may reflect missing good-reference calibration or many pulse-distribution differences and cannot by itself identify the primary mechanism; the direct TDC signatures are more discriminating.",
+      "action_link": "Use explicit timing-field validation rather than treating every anomaly-log channel as requiring hardware intervention."
+    },
+    {
+      "signature_id": "SIG-MISSING-DISCRIMINATORS",
+      "observation": "Digitizer-versus-trigger-board rate consistency, within-run configuration changes, board matching, synchronization, queue occupancy, and DAQ-state telemetry are unavailable.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        },
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        }
+      ],
+      "cause_link": "These missing diagnostics prevent distinguishing hardware timing-register failure, firmware/configuration mismatch, synchronization loss, and offline decoding error.",
+      "action_link": "Collect these discriminating telemetry sources in a controlled run before selecting restart, firmware, cabling, or parser remediation."
+    }
+  ],
+  "missing_information": [
+    "Digitizer/board mapping for channels 88-95 and confirmation that they share one timing/readout module",
+    "Firmware versions, build/recompile history, and timing-register configuration for the affected hardware",
+    "Original raw timing words or an independent decoder to test field alignment, units, signedness, and rollover reconstruction",
+    "Known-good raw reference from the same detector configuration",
+    "Board-matching efficiency, synchronization/clock-lock status, queue occupancy, and DAQ-state logs",
+    "Digitizer-side per-board rates for comparison with the stable trigger-board rates",
+    "Whether a controlled digitizer reinitialization changes the TDC/TDCRollovers constants"
+  ]
+}

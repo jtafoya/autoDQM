@@ -1,0 +1,35 @@
+{
+  "category": "SYNTHETIC PIPELINE TEST - NOT LLM OUTPUT",
+  "cause": "No real diagnostic inference; only renderer QA.",
+  "action": "No real action recommended",
+  "confidence": 0.0,
+  "supporting_historical_runs": [],
+  "reasoning_summary": "Synthetic fixture for offline rendering.",
+  "semantic_description": {
+    "component": "test",
+    "failure_mechanism": "test",
+    "action_intent": "test"
+  },
+  "signatures": [
+    {
+      "signature_id": "S1",
+      "observation": "SYNTHETIC TEST: display actual supplied numerical summaries without diagnosing the run.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-032-00",
+          "field": "mean",
+          "value_json": "-0.909692"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "present_subruns",
+          "value_json": "519"
+        }
+      ],
+      "cause_link": "Fixture only; does not support a real cause.",
+      "action_link": "Verify rendering; not a detector action."
+    }
+  ],
+  "missing_information": []
+}

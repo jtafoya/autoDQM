@@ -1,0 +1,362 @@
+{
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-STUCK-88-90",
+      "observation": "Channels 88 and 90 have TDC values concentrated at exactly 149602000000000; channel 90 is constant at that value for all 4169 finite entries. This supports a stuck or synthetic timing field rather than an ordinary event-time distribution.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-088-09",
+          "field": "subrun_median_quantiles",
+          "value_json": "[149602000000000.0,149602000000000.0,149602000000000.0,149602000000000.0,149602000000000.0,149602000000000.0,149602000000000.0]"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "min",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "max",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-090-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        }
+      ],
+      "cause_link": "A board-local timing word, sentinel value, or incorrectly decoded field can produce a repeated constant across every event.",
+      "action_link": "Inspect the encoded timing words and decoder/firmware definition for channels 88-90 before treating the value as a physical timestamp."
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "observation": "Immediately after the constant-TDC channels, channels 91-93 have TDC identically zero. The sharp contiguous-channel discontinuity supports a localized timing data-path or decoding boundary.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-091-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-091-09",
+          "field": "n",
+          "value_json": "3850"
+        },
+        {
+          "evidence_id": "R-092-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        },
+        {
+          "evidence_id": "R-093-09",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        }
+      ],
+      "cause_link": "Multiple adjacent channels switching from a fixed nonzero timestamp to all-zero timestamps is more consistent with structured readout/format corruption than independent detector failures.",
+      "action_link": "Compare board, firmware, and decoder boundaries for channels 88-95 and inspect the same raw event words across channels 87-95."
+    },
+    {
+      "signature_id": "SIG-ROLLOVER-IMPLAUSIBLE",
+      "observation": "Channels in the affected block contain sparse TDCRollovers values up to approximately 1.4e19, whereas most entries are zero. These values are incompatible with the zero-rollover pattern observed on earlier channels and support malformed or misdecoded rollover metadata.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-089-10",
+          "field": "max",
+          "value_json": "1.41672e+19"
+        },
+        {
+          "evidence_id": "R-089-10",
+          "field": "zero_fraction",
+          "value_json": "0.94196"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "max",
+          "value_json": "1.41305e+19"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "zero_fraction",
+          "value_json": "0.945974"
+        },
+        {
+          "evidence_id": "R-095-10",
+          "field": "max",
+          "value_json": "1.40209e+19"
+        },
+        {
+          "evidence_id": "R-095-10",
+          "field": "zero_fraction",
+          "value_json": "0.95453"
+        }
+      ],
+      "cause_link": "Rare enormous rollover words accompanying stuck or zero TDC fields indicate timing-word corruption, overflow misuse, or schema misinterpretation.",
+      "action_link": "Decode rollover words bit-by-bit using the installed firmware specification and check for signedness, width, endianness, sentinel, or column-offset errors."
+    },
+    {
+      "signature_id": "SIG-NEIGHBOR-TIMING-NORMAL",
+      "observation": "Channel 87, immediately before the affected block, has a broad finite TDC distribution up to about 1.099e12 and TDCRollovers identically zero. This localizes the abrupt timing failure to the subsequent channel block rather than the complete run clock.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-087-09",
+          "field": "max",
+          "value_json": "1098920000000.0"
+        },
+        {
+          "evidence_id": "R-087-09",
+          "field": "std_population",
+          "value_json": "309627000000.0"
+        },
+        {
+          "evidence_id": "R-087-10",
+          "field": "zero_fraction",
+          "value_json": "1.0"
+        }
+      ],
+      "cause_link": "Normal neighboring-channel timing argues against a global timestamp source failure and favors a board/channel-group-specific path.",
+      "action_link": "Use channels 80-87 as the local comparison when testing the affected board or decoder segment."
+    },
+    {
+      "signature_id": "SIG-PULSE-PRESENCE-CONTINUES",
+      "observation": "Affected endpoint channels 88 and 95 are present in every subrun with no absent ranges. Continuing pulse occupancy contradicts complete digitizer lockup, dead PMTs, or total loss of the signal path as the primary mechanism.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "P-088",
+          "field": "present_subruns",
+          "value_json": "129"
+        },
+        {
+          "evidence_id": "P-088",
+          "field": "absent_subrun_ranges",
+          "value_json": "[]"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "present_subruns",
+          "value_json": "129"
+        },
+        {
+          "evidence_id": "P-095",
+          "field": "absent_subrun_ranges",
+          "value_json": "[]"
+        }
+      ],
+      "cause_link": "A fully locked or powered-off digitizer/PMT path would ordinarily suppress or remove channel records, unlike the supplied continuous presence.",
+      "action_link": "Do not replace PMT bases or declare a complete digitizer lockup solely from the timing fields; first separate waveform acquisition from timing metadata generation."
+    },
+    {
+      "signature_id": "SIG-GLOBAL-TRIGGER-STABLE",
+      "observation": "The total recorded trigger rate is described as stable and persistent, with median 4.857 and range 4.462 to 5.209. This contradicts a global high-trigger-rate or trigger-rate-collapse explanation for the timing-field pathology.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 4.857, range 4.462 to 5.209. Temporal behavior: stable/persistent.\""
+        }
+      ],
+      "cause_link": "A localized malformed TDC block can coexist with a normal aggregate trigger rate; the observation does not support global trigger instability.",
+      "action_link": "Preserve the current trigger configuration while diagnosing the digitizer timing path unless board-level tests demonstrate a trigger coupling."
+    },
+    {
+      "signature_id": "SIG-LVDS-NO-PERSISTENT-PIN-FAULT",
+      "observation": "LVDS telemetry reports no persistent zero, missing, abnormally low, or abnormally high signal pins. This weakens LVDS disconnection/noise and broken-PMT-base hypotheses, although it cannot exclude intermittent or non-rate-visible faults.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-004",
+          "field": "text",
+          "value_json": "\"- Persistent missing signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-005",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally low signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-006",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally high signal pins: none.\""
+        }
+      ],
+      "cause_link": "The supplied LVDS count summaries do not show the persistent pin loss expected from a disconnected or powered-off channel pair.",
+      "action_link": "Prioritize timing-word and board diagnostics; inspect LVDS cabling only if synchronization tests implicate it, using the repository mapping rather than equating pin and channel indices."
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+      "observation": "Digitizer-versus-trigger-board rate consistency, board matching, synchronization, queue occupancy, and DAQ-state telemetry are unavailable. These missing measurements prevent discrimination among decoder error, firmware mismatch, and physical board synchronization/readout failure.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        },
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        }
+      ],
+      "cause_link": "Without board-state and synchronization evidence, the root cause cannot be assigned confidently to software or hardware.",
+      "action_link": "Collect board matching, synchronization/error counters, queue occupancy, firmware identity, and per-board rates in a controlled follow-up run."
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ONLY",
+      "observation": "Historical run 1620 involved a digitizer lockup, while run 1747 involved software not recompiled after firmware reflashing plus a faulty LVDS cable. They provide partial component/mechanism analogies but no exact match to the current combination of continuing occupancy and structured TDC/rollover corruption.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "H-1620",
+          "field": "entry.category",
+          "value_json": "\"digitizer_lockup\""
+        },
+        {
+          "evidence_id": "H-1620",
+          "field": "entry.cause",
+          "value_json": "\"Digi1 locked up on the slab detector. The report notes that run 1620 may have had an unknown firmware version, but does not establish this as the confirmed cause.\""
+        },
+        {
+          "evidence_id": "H-1747",
+          "field": "entry.cause",
+          "value_json": "\"The slab detector entered a high-rate state following a power trip. The trigger logic was not behaving as expected. During troubleshooting, it was found that MilliDAQ had not been recompiled after the firmware was reflashed, and a faulty LVDS cable was also identified.\""
+        }
+      ],
+      "cause_link": "The analogies make digitizer state and firmware/software compatibility reasonable checks, but they do not establish either as the current cause.",
+      "action_link": "Use restart or firmware/software correction only conditionally after live board and raw-word checks reproduce the corresponding failure mechanism."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "SIG-TDC-STUCK-88-90",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TDC-ZERO-91-93",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-ROLLOVER-IMPLAUSIBLE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-NEIGHBOR-TIMING-NORMAL",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-PULSE-PRESENCE-CONTINUES",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-GLOBAL-TRIGGER-STABLE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-LVDS-NO-PERSISTENT-PIN-FAULT",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-HISTORICAL-PARTIAL-ONLY",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1702",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1702/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1702/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "SIG-TDC-STUCK-88-90",
+      "evidence_id": "R-088-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_01_R-088-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-STUCK-88-90",
+      "evidence_id": "R-090-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_01_R-090-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-091-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_02_R-091-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-092-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_02_R-092-09.png"
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "evidence_id": "R-093-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_02_R-093-09.png"
+    },
+    {
+      "signature_id": "SIG-ROLLOVER-IMPLAUSIBLE",
+      "evidence_id": "R-089-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_03_R-089-10.png"
+    },
+    {
+      "signature_id": "SIG-ROLLOVER-IMPLAUSIBLE",
+      "evidence_id": "R-091-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_03_R-091-10.png"
+    },
+    {
+      "signature_id": "SIG-ROLLOVER-IMPLAUSIBLE",
+      "evidence_id": "R-095-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_03_R-095-10.png"
+    },
+    {
+      "signature_id": "SIG-NEIGHBOR-TIMING-NORMAL",
+      "evidence_id": "R-087-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_04_R-087-09.png"
+    },
+    {
+      "signature_id": "SIG-NEIGHBOR-TIMING-NORMAL",
+      "evidence_id": "R-087-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_04_R-087-10.png"
+    },
+    {
+      "signature_id": "SIG-PULSE-PRESENCE-CONTINUES",
+      "evidence_id": "P-088",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_05_P-088.png"
+    },
+    {
+      "signature_id": "SIG-PULSE-PRESENCE-CONTINUES",
+      "evidence_id": "P-095",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1702/trial_1/signature_images/signature_05_P-095.png"
+    }
+  ]
+}

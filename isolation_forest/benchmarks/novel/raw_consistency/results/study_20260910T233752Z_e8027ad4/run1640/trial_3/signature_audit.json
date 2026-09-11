@@ -1,0 +1,52 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-PAIR-ABSENCE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-FROZEN-ANOMALY-SEVERITY",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-LVDS-NOT-PERSISTENTLY-DEAD",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-NO-GLOBAL-TRIGGER-COLLAPSE-AT-520",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-MISSING-DISCRIMINATORS",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGY",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

@@ -1,0 +1,72 @@
+{
+  "run": 2126,
+  "status": "prepared",
+  "source_hashes": {
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/common.py": "4ff9d7abaa7d5110c51ebc8931b94ac4a259fc84fe0256ba4bccdc60907739c1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/prepare_inputs.py": "34c1ff09d7084a01af33a67e6a9361da1aeba948619822ba6726fe17401a1dc1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/run_study.py": "6034ff48240e343b76cc0ae37056da5f5fb90fb32d14fd91cafa72207618ca4e",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/render_signatures.py": "98131c90ff8ed0c95a4bddd511b4895cee6a8d4498e883395dd4c8218c298744",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/test_raw_consistency.py": "f8e9e7eb3db93b1aca9d137eddcda02f168804020421caca913cb72fc6414cc0",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_test.py": "a4300475d2a9780b0b009e5d18fad991ebea2bd8277c211555f97bc209409013",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_builders.py": "47985860273d95bf1d7240bd71f4d0c1448117055166f2d7451c3a36df59939c",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_manifest.yaml": "782f7ab94d1869c9d70ce23d0ccc6d73dacb205a509bac2ccd9c3d36156bccb3",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_manifest.yaml": "ad9e18cfb8f0c4a8122e4c1285a2c408c5ec1f4dca98033e23e653fe51749062",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/recognition/recognition_test.py": "76f85fea89991188d48e862a32aed24d146f8aa3187f0a2ac405ab529b73fe89",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/llm.py": "7811cca61eaada54923e5b38c37340cb4464e224ce6f0fa7fb6fe50992c5a033",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/features.py": "b502636c4a21e3ed90832e5f896987c66317151848c281641246f9a000e95513",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/run_config.py": "0102ddf3857bdf0dc7f3acda9e0d80ae7b8d38fd1987ae74832019d21ff21b81",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/postprocess/llm_knowledge_base_expanded.yaml": "46851b3ca14f78ec39ceee82abd1a2797b9ff4fe13719d3270f3717af9e7c156",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/kb_scan_campaigns/kb_task1_runs1500_3000_juan_v1/runs/run2126/anomaly_log.csv": "764df3d4508fd2f254d659c9470f2f478e1ec437b17dab399534a0e43ec9afe6",
+    "/eos/experiment/milliqan/run3_MilliMon/slab/2100/TriggerBoard_run2126.csv": "d9f7b446d82b83d530bdbdc75978f3d78e09e2b96bfe0b33c91a0d0104393551",
+    "/eos/experiment/milliqan/run3_MilliMon/slab/2100/TriggerBoardSlab_run2126_LVDSCounts.csv": "9fed6fdfee1b1ee916a4e402fa66908901b52b623c568b3ea473fea285f0fe95",
+    "/eos/experiment/milliqan/run3/slab/configs/Run2126TriggerDefault.py": "05eef7f5e95aaedd0f42fbf6cfd3b74001878bcd750cf1eaa69f86d07e6abe91",
+    "/eos/experiment/milliqan/run3/slab/configs/Run2126DAQDefault.py": "b27bb949b39f05b13b57fe3cb4a203684d9321db8d0217fadeee5de0b108b744",
+    "/eos/experiment/milliqan/run3/slab/configs/thresholds.json": "358adb98711beaa1ce70d106da9fc3719c0a5edf07601835221ebd4373b8577b"
+  },
+  "artifact_hashes": {
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/raw_detail.npz": "d6116f4b20df3e1d9d0705d16d782e6686afa60fcbf48d539368e57731d2a5b8",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/raw_inventory.json": "ee5f64167fbf7390aae2923110046620683ab1fb24e724dd987b6b725936e59f",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/anomaly_log.csv": "764df3d4508fd2f254d659c9470f2f478e1ec437b17dab399534a0e43ec9afe6",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/summary_header.json": "6a5a4c01d9967fcd59cea06e23e9ca91a4e0e837bc57003c2b25eaf0a59307fa",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/evidence.jsonl": "9d7c8a101da2bbbcc1631782d5416aea59c2daa4b11c12caef5ba818d6643d86",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/filtered_kb.json": "e3bac817413871cd82859baf2475bcf772fdffbd387f684158be6bf0627ea84a",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/context.json": "eb7cccaa5b0023f5d8459439104cd290c9f76808d2bc7bef1987006e56119626",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126/anomaly_summary.json": "ba621a050d50e5fb51c1c38bc1683789d7d340db44790f2faf7b8dc2c03c5b03"
+  },
+  "raw_file_set_sha256": "5815431aca16e904850dbf08b02e5e753d7e4e02a57010db5a269186ee32f5b0",
+  "excluded_runs": [
+    2126
+  ],
+  "visible_historical_runs": [
+    1500,
+    1604,
+    1605,
+    1620,
+    1637,
+    1640,
+    1642,
+    1702,
+    1703,
+    1747,
+    2068,
+    2071,
+    2268,
+    2402
+  ],
+  "production_system_prompt": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "input_method": {
+    "version": "raw_consistency_v1",
+    "raw_is_lossy_summary_not_original_rows": true,
+    "coverage": "Every matching CSV and every row. No top-channel, anomaly-only or random sampling.",
+    "numeric_columns": "All columns except event_id, channel and geometry; malformed numeric cells fail.",
+    "moments": "Finite-value pooled mean and population SD, weighted by finite row count.",
+    "histograms": "32 shared per-metric asinh-spaced bins spanning the observed finite min/max across all channels. Exact counts in these bins, from a second full pass.",
+    "subrun_distributions": "Quantiles of subrun medians, NOT pooled-event quantiles. Detailed within-subrun quantiles retained in raw_detail.npz.",
+    "time": "Eight consecutive equal-file-count bins ordered by numeric subrun. Not elapsed time. Bin means weighted by finite row count.",
+    "presence": "Observed channel events / observed events in that subrun; not external trigger efficiency. Absent-channel occupancy is zero, other measurements are unavailable.",
+    "missing": "Nonfinite numeric cells counted, never replaced by zero. Absent subrun/channel measurements stay NaN in detail and null in JSON.",
+    "precision": "Prompt numeric summaries rounded to 6 significant figures; detail arrays retain float64.",
+    "limitations": "Not waveforms. Compression loses exact event order, arbitrary cross-variable correlations, within-bin changes, fine distribution shape and individual outliers beyond stated extrema. No supplied good raw reference: absolute values alone do not prove a fault."
+  },
+  "ground_truth_in_model_input": false
+}

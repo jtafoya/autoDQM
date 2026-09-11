@@ -1,0 +1,73 @@
+{
+  "run": 1703,
+  "model_alias": "sol",
+  "context_mode": "full",
+  "timestamp": "2026-09-05T00:22:07.190503+00:00",
+  "status": "dry_run",
+  "prompt_sha256": "49735c47e30712f28eecb4d5403bffd5f3c8146c7b5c968eb7c00323efdc4c9d",
+  "filtered_kb_sha256": "d78e9043ff809f055dc32a0dfd8dea1bc22e83052bb2d9c8bd45baf94b3931d4",
+  "context_sha256": "1e22e2a79bd6aa96cd3b948df773cbfc34c71138010fbcade8be6069d4f01f12",
+  "anomaly_sha256": "6b2c00d2a679047c917fbdd040efdcd3140fa7b553b01ddbd05101b10e213ef9",
+  "model_id": "gpt-5.6-sol",
+  "model_id_sha256": "419255f2bb4c6801939e868fe2cdbbdc34d51742400939d1842d262a1fec749c",
+  "network_attempts": 0,
+  "automatic_retries": 0,
+  "sdk_version": "2.48.0",
+  "request_matches_reference": true,
+  "input_sha256": "06a126155954a471c435c1fcb221bb5a63080e144e825b8fd04a7f92a23992d2",
+  "request_body_sha256": "57a78b8b7c94a6d7b05b93147e2793031adf459dd580de2dbebbdd5045d9ff3a",
+  "sampling_parameters": {
+    "temperature": {
+      "sent": false,
+      "value": null
+    },
+    "top_p": {
+      "sent": false,
+      "value": null
+    },
+    "seed": {
+      "sent": false,
+      "value": null
+    },
+    "max_output_tokens": {
+      "sent": false,
+      "value": null
+    },
+    "reasoning": {
+      "sent": false,
+      "value": null
+    },
+    "frequency_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "presence_penalty": {
+      "sent": false,
+      "value": null
+    },
+    "service_tier": {
+      "sent": false,
+      "value": null
+    },
+    "truncation": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_key": {
+      "sent": false,
+      "value": null
+    },
+    "prompt_cache_retention": {
+      "sent": false,
+      "value": null
+    }
+  },
+  "request_keys": [
+    "input",
+    "instructions",
+    "model",
+    "text"
+  ],
+  "endpoint": "https://api.openai.com/v1/responses",
+  "latency_seconds": 0.012290084036067128
+}

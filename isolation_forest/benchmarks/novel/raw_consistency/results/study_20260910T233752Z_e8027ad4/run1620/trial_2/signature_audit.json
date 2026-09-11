@@ -1,0 +1,47 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-TIMING-BOUNDARY-87-88",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-CONSTANT-TDC-88-90",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-ZERO-TDC-HUGE-ROLLOVER-91-93",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-MALFORMED-TIMING-94-95",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-AFFECTED-CHANNELS-STILL-PRESENT",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TRIGGER-LVDS-NOMINAL",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-ANOMALY-PIPELINE-LIMITATION",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-MISSING-BOARD-DISCRIMINANTS",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

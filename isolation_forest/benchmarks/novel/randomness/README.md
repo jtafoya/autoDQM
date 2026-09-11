@@ -1,5 +1,14 @@
 # Phase 1 — Sol randomness / reproducibility
 
+> **Archived / superseded for the expanded-input study (2026-09-10).**
+> Use [../raw_consistency/README.md](../raw_consistency/README.md) for the new
+> all-file raw-summary, three-trial consistency experiment. Do not use the old
+> commands below for the new experiment. Legacy results, dry-runs and the
+> post-hoc feature-matrix supplement are preserved under
+> `archive_summary_only_20260910/`; `archive_manifest.json` records original
+> locations and verified SHA-256 values. They are not inputs to the new study.
+> The remainder of this document is historical documentation, not current status.
+
 Uses only the existing full-context novel test and its original six runs. Read
 [input_inventory.md](input_inventory.md) for exact inputs, request settings,
 exclusions, schema and caching audit.

@@ -1,0 +1,62 @@
+{
+  "status": "prepared",
+  "runs": [
+    {
+      "run": 1620,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1620",
+      "file_count": 259,
+      "total_rows": 2557872,
+      "manifest_sha256": "228342f575f9cf3505f912b262564ba7e4fe1bb3ce8407ff0fda14c4bb2277d6"
+    },
+    {
+      "run": 1640,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640",
+      "file_count": 741,
+      "total_rows": 7144357,
+      "manifest_sha256": "5443dfaccd05169bfb33cd84cf9d66a8796172b045676177c7a51e902549ccbc"
+    },
+    {
+      "run": 1642,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642",
+      "file_count": 202,
+      "total_rows": 1959578,
+      "manifest_sha256": "7938bc7cfd7643c113abc27edaa687150443531191eb483baed61dfd059a562f"
+    },
+    {
+      "run": 1702,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1702",
+      "file_count": 129,
+      "total_rows": 479078,
+      "manifest_sha256": "6b97cd582ec832d33c924265bcd8624541269fde01ecfaa7bae0d5029173dcb4"
+    },
+    {
+      "run": 1703,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1703",
+      "file_count": 627,
+      "total_rows": 2327600,
+      "manifest_sha256": "58d9c4bae09ca8598c4ae16419bd28470c920b9c007ae614648a412b3632a706"
+    },
+    {
+      "run": 2126,
+      "directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run2126",
+      "file_count": 86,
+      "total_rows": 422227,
+      "manifest_sha256": "8e018f3f2721cb79f8cc0051d5603b05994dcee0a3256117292559ef1f2c810c"
+    }
+  ],
+  "source_hashes": {
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/common.py": "4ff9d7abaa7d5110c51ebc8931b94ac4a259fc84fe0256ba4bccdc60907739c1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/prepare_inputs.py": "34c1ff09d7084a01af33a67e6a9361da1aeba948619822ba6726fe17401a1dc1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/run_study.py": "6034ff48240e343b76cc0ae37056da5f5fb90fb32d14fd91cafa72207618ca4e",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/render_signatures.py": "98131c90ff8ed0c95a4bddd511b4895cee6a8d4498e883395dd4c8218c298744",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/test_raw_consistency.py": "f8e9e7eb3db93b1aca9d137eddcda02f168804020421caca913cb72fc6414cc0",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_test.py": "a4300475d2a9780b0b009e5d18fad991ebea2bd8277c211555f97bc209409013",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_builders.py": "47985860273d95bf1d7240bd71f4d0c1448117055166f2d7451c3a36df59939c",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_manifest.yaml": "782f7ab94d1869c9d70ce23d0ccc6d73dacb205a509bac2ccd9c3d36156bccb3",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_manifest.yaml": "ad9e18cfb8f0c4a8122e4c1285a2c408c5ec1f4dca98033e23e653fe51749062",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/recognition/recognition_test.py": "76f85fea89991188d48e862a32aed24d146f8aa3187f0a2ac405ab529b73fe89",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/llm.py": "7811cca61eaada54923e5b38c37340cb4464e224ce6f0fa7fb6fe50992c5a033",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/features.py": "b502636c4a21e3ed90832e5f896987c66317151848c281641246f9a000e95513",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/run_config.py": "0102ddf3857bdf0dc7f3acda9e0d80ae7b8d38fd1987ae74832019d21ff21b81"
+  }
+}

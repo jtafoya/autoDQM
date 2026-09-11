@@ -1,0 +1,69 @@
+{
+  "inputs": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z",
+  "runs": [
+    1620,
+    1640,
+    1642,
+    1702,
+    1703,
+    2126
+  ],
+  "trials": 3,
+  "execute": false,
+  "model": "gpt-5.6-sol",
+  "preflight": {
+    "1620": {
+      "utf8_bytes_upper_bound_tokens": 857777,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "1640": {
+      "utf8_bytes_upper_bound_tokens": 875128,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "1642": {
+      "utf8_bytes_upper_bound_tokens": 853621,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "1702": {
+      "utf8_bytes_upper_bound_tokens": 869142,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "1703": {
+      "utf8_bytes_upper_bound_tokens": 938147,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "2126": {
+      "utf8_bytes_upper_bound_tokens": 858857,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    }
+  },
+  "bundle_sha256": "2867a9be4e0bcbda1aa75841ddd1217a29f55ec22c6f1e422fed2581946dd4c3",
+  "code_sha256": {
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/common.py": "4ff9d7abaa7d5110c51ebc8931b94ac4a259fc84fe0256ba4bccdc60907739c1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/prepare_inputs.py": "34c1ff09d7084a01af33a67e6a9361da1aeba948619822ba6726fe17401a1dc1",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/run_study.py": "6034ff48240e343b76cc0ae37056da5f5fb90fb32d14fd91cafa72207618ca4e",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/render_signatures.py": "bf192214041afc4fb8e44ae00b695d2bc6092dc3ca225f733a9c085b6d54e904",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/test_raw_consistency.py": "fcf9be5aa79fa610814f22c131e6b2e9a31e8d9d16cc963be220d248e9d4799a",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_test.py": "a4300475d2a9780b0b009e5d18fad991ebea2bd8277c211555f97bc209409013",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_builders.py": "47985860273d95bf1d7240bd71f4d0c1448117055166f2d7451c3a36df59939c",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/context_manifest.yaml": "782f7ab94d1869c9d70ce23d0ccc6d73dacb205a509bac2ccd9c3d36156bccb3",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/novel_manifest.yaml": "ad9e18cfb8f0c4a8122e4c1285a2c408c5ec1f4dca98033e23e653fe51749062",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/recognition/recognition_test.py": "76f85fea89991188d48e862a32aed24d146f8aa3187f0a2ac405ab529b73fe89",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/llm.py": "7811cca61eaada54923e5b38c37340cb4464e224ce6f0fa7fb6fe50992c5a033",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/features.py": "b502636c4a21e3ed90832e5f896987c66317151848c281641246f9a000e95513",
+    "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/src/run_config.py": "0102ddf3857bdf0dc7f3acda9e0d80ae7b8d38fd1987ae74832019d21ff21b81"
+  },
+  "semantic_review": "Human grouping of diagnosis meanings; no extra LLM judge calls."
+}

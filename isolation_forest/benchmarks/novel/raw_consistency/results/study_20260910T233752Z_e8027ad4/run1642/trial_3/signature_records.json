@@ -1,0 +1,243 @@
+{
+  "signatures": [
+    {
+      "signature_id": "sig-localized-pin16-zero",
+      "observation": "The LVDS summary identifies physical pin 16 as the persistent zero signal pin mapped to digitizer channels 32 and 33, with no other persistent missing signal pins.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: pin16->channels 32/33.\""
+        },
+        {
+          "evidence_id": "C-lvds-004",
+          "field": "text",
+          "value_json": "\"- Persistent missing signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-005",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally low signal pins: pin16->channels 32/33.\""
+        }
+      ],
+      "cause_link": "Supports a localized pin-16 signal-path loss rather than a broad LVDS-input failure.",
+      "action_link": "Prioritizes inspection and endpoint signal comparison on physical pin 16 and the mapped 32/33 pair."
+    },
+    {
+      "signature_id": "sig-ch32-ch33-missing-200",
+      "observation": "Channels 32 and 33 are each absent in subruns 1-200 and present in only two subruns.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "P-032",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "present_subruns",
+          "value_json": "2"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "present_subruns",
+          "value_json": "2"
+        }
+      ],
+      "cause_link": "The matching two-channel absence corroborates failure of their shared mapped LVDS path.",
+      "action_link": "Recovery testing must require sustained presence of both channels, not merely isolated events."
+    },
+    {
+      "signature_id": "sig-sparse-late-reappearance",
+      "observation": "Pin 16 has its strongest transition near subrun 201, while the two recovered channels contain only 14 and 13 supplied rows respectively.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-007",
+          "field": "text",
+          "value_json": "\"- Strongest pin transitions: pin16->channels 32/33 near subrun 201 (relative change 1580).\""
+        },
+        {
+          "evidence_id": "R-032-02",
+          "field": "n",
+          "value_json": "14"
+        },
+        {
+          "evidence_id": "R-033-02",
+          "field": "n",
+          "value_json": "13"
+        }
+      ],
+      "cause_link": "Sparse reappearance supports intermittency or restoration, but does not distinguish a mechanical connection from an electronics or configuration transition.",
+      "action_link": "Inspect change logs and endpoint signals around subrun 201 and require a new-run persistence test after intervention."
+    },
+    {
+      "signature_id": "sig-static-mask-does-not-explain-pin16",
+      "observation": "The supplied static trigger mask lists physical pins 32-39, 43, and 57-61 as masked; physical pin 16 is not listed.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-daq_config-004",
+          "field": "text",
+          "value_json": "\"- Masked physical pins: 32, 33, 34, 35, 36, 37, 38, 39, 43, 57, 58, 59, 60, 61.\""
+        }
+      ],
+      "cause_link": "Contradicts an explanation based solely on the supplied static mask, while not excluding an unrecorded within-run configuration state.",
+      "action_link": "Verify live configuration and mapping before attributing the loss to hardware."
+    },
+    {
+      "signature_id": "sig-no-high-rate-state",
+      "observation": "The total trigger rate is described as stable and persistent, with a median of 4.454 and range 4.132 to 5.262.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 4.454, range 4.132 to 5.262. Temporal behavior: stable/persistent.\""
+        }
+      ],
+      "cause_link": "Argues against the high-trigger-rate manifestation reported in the historical LVDS-noise cases; those cases are not exact matches.",
+      "action_link": "Do not mask channels or treat this as a high-rate noise condition unless live rate or board-matching checks establish that diagnosis."
+    },
+    {
+      "signature_id": "sig-end-run-global-count-confound",
+      "observation": "Both total trigger counts and total LVDS counts have large reductions near subrun 202.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-002",
+          "field": "text",
+          "value_json": "\"- Total trigger counts: median 1003, range 82 to 1008. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.9184).\""
+        },
+        {
+          "evidence_id": "C-lvds-001",
+          "field": "text",
+          "value_json": "\"- Total LVDS counts: median 1.54e+07, range 1.68e+06 to 1.62e+07. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.8911).\""
+        }
+      ],
+      "cause_link": "The global end-run reduction can contribute to widespread subrun-202 statistical anomalies, but cannot explain why only channels 32/33 were absent for the preceding 200 subruns.",
+      "action_link": "Evaluate subruns 201-202 separately from the persistent loss and compare normalized rates or a new full-length run."
+    },
+    {
+      "signature_id": "sig-discriminating-telemetry-unavailable",
+      "observation": "Within-run configuration changes, board matching, synchronization, queue occupancy, and DAQ-state telemetry are unavailable.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        },
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        }
+      ],
+      "cause_link": "Prevents distinguishing a physical LVDS connection failure from source-electronics, matching, or unlogged configuration causes.",
+      "action_link": "Acquire these telemetry streams and compare signal/rate behavior at both endpoints before choosing a component-level fix."
+    },
+    {
+      "signature_id": "sig-historical-analogy-only",
+      "observation": "The closest historical cases concern LVDS connection problems, but the detailed run-2126 case included abnormal apparent digitizer rate, queue filling, empty unmatched events, and degraded board matching—measurements unavailable or not observed in the current case.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "H-2126",
+          "field": "entry.category",
+          "value_json": "\"LVDS_noise\""
+        },
+        {
+          "evidence_id": "H-2126",
+          "field": "entry.cause",
+          "value_json": "\"DAQ board-matching efficiency dropped below 100% beginning in run 2126, file 26, around event 700. The DAQ queue filled with mostly empty, unmatched digitizer events and the apparent digitizer trigger rate became abnormally high while the trigger-board files remained normal. Trigger-mask tests localized the problem to digitizer 0 LVDS channel 0, corresponding to detector channels 0 and 1. The subsequent intervention indicated an intermittent or degraded LVDS-pin, jumper-wire, or MCX signal connection.\""
+        }
+      ],
+      "cause_link": "Provides only a partial mechanical-connection analogy and does not establish the same root cause in CASE_TARGET.",
+      "action_link": "Supports cautious connector and cable checks while requiring current-case localization before repair or masking."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "sig-localized-pin16-zero",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-ch32-ch33-missing-200",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-sparse-late-reappearance",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-static-mask-does-not-explain-pin16",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-no-high-rate-state",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-end-run-global-count-confound",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-discriminating-telemetry-unavailable",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "sig-historical-analogy-only",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "sig-ch32-ch33-missing-200",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_3/signature_images/signature_02_P-032.png"
+    },
+    {
+      "signature_id": "sig-ch32-ch33-missing-200",
+      "evidence_id": "P-033",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_3/signature_images/signature_02_P-033.png"
+    },
+    {
+      "signature_id": "sig-sparse-late-reappearance",
+      "evidence_id": "R-032-02",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_3/signature_images/signature_03_R-032-02.png"
+    },
+    {
+      "signature_id": "sig-sparse-late-reappearance",
+      "evidence_id": "R-033-02",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_3/signature_images/signature_03_R-033-02.png"
+    }
+  ]
+}

@@ -1,0 +1,387 @@
+{
+  "signatures": [
+    {
+      "signature_id": "SIG-PAIR-ABSENCE",
+      "observation": "Digitizer channels 32 and 33 are both absent for every supplied subrun from 520 through 741, while each is present in 519 subruns.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "P-032",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[520,741]]"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "present_subruns",
+          "value_json": "519"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[520,741]]"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "present_subruns",
+          "value_json": "519"
+        }
+      ],
+      "cause_link": "The simultaneous, persistent boundary localizes the symptom to a shared channel-pair acquisition path or a coordinated configuration change; it does not by itself identify the mechanism.",
+      "action_link": "Inspect the effective configuration and digitizer state at the 519-to-520 boundary before applying a restart or physical intervention."
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "observation": "Before the disappearance, channels 32 and 33 had substantial occupancy; their final two time bins contain no valid channel measurements because the channels are absent.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "P-032",
+          "field": "event_weighted_occupancy",
+          "value_json": "0.415581"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.695848,0.594798,0.633326,0.532006,0.536425,0.313187,0.0,0.0]"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "event_weighted_occupancy",
+          "value_json": "0.272787"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.4989,0.385677,0.421703,0.331669,0.342898,0.18863,0.0,0.0]"
+        },
+        {
+          "evidence_id": "R-032-02",
+          "field": "time_bin_valid_count",
+          "value_json": "[64519,55108,58696,49226,49652,28604,0,0]"
+        },
+        {
+          "evidence_id": "R-033-02",
+          "field": "time_bin_valid_count",
+          "value_json": "[46258,35733,39083,30689,31739,17228,0,0]"
+        }
+      ],
+      "cause_link": "This is loss of observed channel data rather than merely a small statistical fluctuation in pulse multiplicity.",
+      "action_link": "Verify raw channel inventory and per-board event counts across subruns 519 and 520."
+    },
+    {
+      "signature_id": "SIG-FROZEN-ANOMALY-SEVERITY",
+      "observation": "The frozen detector monitor marks channel 32 anomalous in 740 of 741 subruns and channel 33 in 650, with 222 missing-channel classifications for each.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "A-032",
+          "field": "anomalous_subruns",
+          "value_json": "740"
+        },
+        {
+          "evidence_id": "A-032",
+          "field": "method_counts",
+          "value_json": "{\"missing_channel\":222,\"statistical\":226,\"statistical+IF\":292}"
+        },
+        {
+          "evidence_id": "A-033",
+          "field": "anomalous_subruns",
+          "value_json": "650"
+        },
+        {
+          "evidence_id": "A-033",
+          "field": "method_counts",
+          "value_json": "{\"missing_channel\":222,\"statistical\":356,\"statistical+IF\":72}"
+        }
+      ],
+      "cause_link": "The paired loss is the dominant persistent detector-channel anomaly rather than an isolated outlier.",
+      "action_link": "Prioritize channels 32/33 and their shared acquisition path in diagnostic triage."
+    },
+    {
+      "signature_id": "SIG-LVDS-NOT-PERSISTENTLY-DEAD",
+      "observation": "The LVDS telemetry reports no persistent zero, missing, abnormally low or abnormally high signal pin.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-004",
+          "field": "text",
+          "value_json": "\"- Persistent missing signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-005",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally low signal pins: none.\""
+        },
+        {
+          "evidence_id": "C-lvds-006",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally high signal pins: none.\""
+        }
+      ],
+      "cause_link": "This weighs against a persistent trigger-board LVDS counter failure as the sole explanation, although aggregate LVDS summaries cannot exclude a short transition or a digitizer-side connection problem.",
+      "action_link": "Check the mapped digitizer-side path and time-resolved pin behavior rather than assuming LVDS noise from channel numbering alone."
+    },
+    {
+      "signature_id": "SIG-NO-GLOBAL-TRIGGER-COLLAPSE-AT-520",
+      "observation": "The supplied trigger summary reports its largest total-rate transition near subrun 211 and its largest total-count transition near subrun 741, not at the channel-pair loss boundary.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 6.092, range 4.079 to 15.13. Temporal behavior: large transition near subrun 211 (largest adjacent relative change 1.044).\""
+        },
+        {
+          "evidence_id": "C-trigger-002",
+          "field": "text",
+          "value_json": "\"- Total trigger counts: median 1003, range 350 to 1009. Temporal behavior: large transition near subrun 741 (largest adjacent relative change 0.651).\""
+        }
+      ],
+      "cause_link": "A run-wide trigger-rate collapse is not supported as the mechanism for the subrun-520 loss, though compact trigger telemetry cannot exclude path-specific changes.",
+      "action_link": "Compare per-board and per-channel data flow at subrun 520 instead of treating the issue as a global trigger failure."
+    },
+    {
+      "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+      "observation": "Other channels at the same column/row location in different layers—8, 56 and 80—also show decreasing occupancy over the run but remain nonzero.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "P-008",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.193141,0.170157,0.179663,0.157205,0.160618,0.117352,0.062753,0.0614817]"
+        },
+        {
+          "evidence_id": "P-056",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.428085,0.390405,0.402853,0.368231,0.368298,0.299873,0.210214,0.208885]"
+        },
+        {
+          "evidence_id": "P-080",
+          "field": "time_bin_occupancy",
+          "value_json": "[0.329767,0.301619,0.30938,0.283544,0.2862,0.237551,0.176654,0.174353]"
+        }
+      ],
+      "cause_link": "Changing illumination, geometry or trigger acceptance may explain part of the pre-drop occupancy evolution, but it does not explain why only channels 32/33 become exactly absent for 222 consecutive subruns.",
+      "action_link": "Use matched-geometry channels as controls when testing whether the loss is detector exposure or electronics/readout related."
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "observation": "Timing fields on the final channel group are inconsistent with ordinary channels: channel 89 has a constant TDC of 149602000000000 with enormous nonzero rollovers, while channel 91 has TDC identically zero with enormous rollovers.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "R-089-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-089-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-089-10",
+          "field": "mean",
+          "value_json": "8.4779e+18"
+        },
+        {
+          "evidence_id": "R-091-09",
+          "field": "mean",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "mean",
+          "value_json": "8.74662e+18"
+        },
+        {
+          "evidence_id": "R-000-10",
+          "field": "mean",
+          "value_json": "0.0"
+        }
+      ],
+      "cause_link": "This supports an additional digitizer-timing or schema/decoder integrity problem, but the summaries do not establish that it caused the channels 32/33 dropout.",
+      "action_link": "Validate firmware, field layout and decoder logic for channels 88-95 independently before using timing measurements."
+    },
+    {
+      "signature_id": "SIG-MISSING-DISCRIMINATORS",
+      "observation": "Board matching, synchronization, queue occupancy and DAQ-state telemetry are unavailable, as is within-run configuration history and processed digitizer-rate consistency.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        },
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        }
+      ],
+      "cause_link": "Without these discriminators, intentional reconfiguration, lockup, synchronization loss and downstream filtering cannot be separated.",
+      "action_link": "Retrieve these telemetry and logs before selecting a definitive corrective action."
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGY",
+      "observation": "The historical knowledge contains a digitizer-lockup case resolved by rebooting the DAQ PC, but its report does not establish the same paired-channel symptom or confirmed root cause.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "H-1620",
+          "field": "entry.category",
+          "value_json": "\"digitizer_lockup\""
+        },
+        {
+          "evidence_id": "H-1620",
+          "field": "entry.cause",
+          "value_json": "\"Digi1 locked up on the slab detector. The report notes that run 1620 may have had an unknown firmware version, but does not establish this as the confirmed cause.\""
+        },
+        {
+          "evidence_id": "H-1620",
+          "field": "entry.action",
+          "value_json": "\"Restart the slab DAQ PC while the VME was powered off.\""
+        }
+      ],
+      "cause_link": "This is only a mechanism-level analogy; there is no exact historical match for the current channel-pair dropout plus timing corruption.",
+      "action_link": "Treat restart as conditional on confirming an unresponsive digitizer, not as an evidence-proven fix."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "SIG-PAIR-ABSENCE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-FROZEN-ANOMALY-SEVERITY",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-LVDS-NOT-PERSISTENTLY-DEAD",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-NO-GLOBAL-TRIGGER-COLLAPSE-AT-520",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-MISSING-DISCRIMINATORS",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGY",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1640/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "SIG-PAIR-ABSENCE",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_01_P-032.png"
+    },
+    {
+      "signature_id": "SIG-PAIR-ABSENCE",
+      "evidence_id": "P-033",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_01_P-033.png"
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_02_P-032.png"
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "evidence_id": "P-033",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_02_P-033.png"
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "evidence_id": "R-032-02",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_02_R-032-02.png"
+    },
+    {
+      "signature_id": "SIG-PAIR-OCCUPANCY-COLLAPSE",
+      "evidence_id": "R-033-02",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_02_R-033-02.png"
+    },
+    {
+      "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+      "evidence_id": "P-008",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_06_P-008.png"
+    },
+    {
+      "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+      "evidence_id": "P-056",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_06_P-056.png"
+    },
+    {
+      "signature_id": "SIG-COHERENT-GEOMETRIC-RATE-CHANGE",
+      "evidence_id": "P-080",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_06_P-080.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "evidence_id": "R-089-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_07_R-089-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "evidence_id": "R-089-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_07_R-089-10.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "evidence_id": "R-091-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_07_R-091-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "evidence_id": "R-091-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_07_R-091-10.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-DATA-INTEGRITY",
+      "evidence_id": "R-000-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1640/trial_3/signature_images/signature_07_R-000-10.png"
+    }
+  ]
+}

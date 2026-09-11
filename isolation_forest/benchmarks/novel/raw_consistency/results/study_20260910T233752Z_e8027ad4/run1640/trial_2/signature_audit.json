@@ -1,0 +1,52 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-PAIR-DROPOUT-520",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-MISSING-CHANNEL-CLASSIFICATION",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-PAIR-PRECURSOR-BEHAVIOR",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-LVDS-NO-PERSISTENT-PIN-FAULT",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-NO-GLOBAL-BOUNDARY-520",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-STATIC-MASK-NOT-DIAGNOSTIC",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-DAQ-TELEMETRY-MISSING",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-SEPARATE-TDC-FORMAT-CONCERN",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-PARTIAL-ANALOGIES",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

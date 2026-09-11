@@ -1,0 +1,11 @@
+{
+  "category": "trigger_mask_or_configuration_mismatch",
+  "cause": "Channel 32/33 suppression or inconsistent behavior is most plausibly associated with the configured physical-pin mask, potentially combined with an unrecorded within-run configuration change. An exact historical match is unavailable.",
+  "action": "Verify the effective trigger mask and threshold configuration for every subrun, especially around subrun 211, and correlate channel 32/33 presence, occupancy, and pulse statistics with mask state. If masking is intentional, configure AutoDQM to treat those channels as expected missing/suppressed. If their behavior does not follow the effective mask, inspect the shared LVDS path and digitizer inputs for channels 32/33 and reseat or repair connections only if direct telemetry confirms an intermittent hardware path.",
+  "confidence": 0.72,
+  "supporting_historical_runs": [
+    2068,
+    2126
+  ],
+  "reasoning_summary": "OBSERVED: anomalies occur in 740/741 subruns; channel 32 has repeated extreme deviations in occupancy, pulse count, pulse-height, and sideband features, while channels 32/33 are repeatedly missing. Both are explicitly masked physical pins. No LVDS pin is persistently missing, zero, high, or low, although only aggregate pin telemetry is available. A trigger-rate transition occurs near subrun 211, but within-run configuration history, board matching, queue state, synchronization, and digitizer-rate telemetry are unavailable. INFERRED: alignment of the dominant channels with the configured mask favors intentional suppression, a mask/readout inconsistency, or a DQM baseline mismatch over confirmed LVDS noise or digitizer lockup. Runs 2068 and 2126 provide only partial analogies through missing channels and possible LVDS-path faults; unlike run 2126, the current evidence does not show a localized abnormal LVDS pin or board-matching failure. UNKNOWN: whether channel anomalies begin at subrun 211, whether the effective mask changed, and whether channels 32/33 share an intermittent hardware failure."
+}

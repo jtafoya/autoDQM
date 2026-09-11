@@ -1,0 +1,119 @@
+{
+  "instructions": "Human semantic review only. Give trials with the same meaning the same group label for each field. Ignore wording/order; distinguish different primary mechanisms and incompatible actions. No ground truth or accuracy scoring. Populate reviewer and rationale. Do not overwrite diagnosis text.",
+  "runs": {
+    "1620": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "1640": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "1642": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "1702": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "1703": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "2126": {
+      "reviewer": "",
+      "rationale": "",
+      "category_groups": [
+        "",
+        "",
+        ""
+      ],
+      "cause_groups": [
+        "",
+        "",
+        ""
+      ],
+      "action_groups": [
+        "",
+        "",
+        ""
+      ]
+    }
+  }
+}

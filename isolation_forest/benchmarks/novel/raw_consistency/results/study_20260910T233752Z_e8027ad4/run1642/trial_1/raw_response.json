@@ -1,0 +1,294 @@
+{
+  "id": "resp_0c860b9f373705fb016aa342ad0ef087d2a6b7c448b17ad790",
+  "created_at": 1789084333.0,
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "You diagnose detector anomalies using current alert evidence and a non-exhaustive set of resolved historical cases. Historical cases are evidence and analogical references, not a complete taxonomy of possible failures. If no exact match exists, state that explicitly, identify any partial similarities, and still propose cautious, evidence-grounded diagnostic hypotheses. Separate OBSERVED facts supplied in the current alert from INFERRED interpretations and UNKNOWN information needed to test them. Never present an unprovided measurement as an observation, and never convert a recommended diagnostic check into an alleged fact. For each hypothesis, identify supporting and contradicting evidence, missing information, discriminating checks, and a possible corrective action that is clearly conditional on the diagnosis. Do not force a target into a category merely because that category appears in the historical knowledge. Confidence must reflect evidence quality and use only low, medium, or high.",
+  "metadata": {},
+  "model": "gpt-5.6-sol",
+  "object": "response",
+  "output": [
+    {
+      "id": "rs_0c860b9f373705fb016aa342b1f6b487d2b5d710569c725ae1",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqo0LsTKPKrm6f991nH_mprykV77jLc2P4CgZeW52cENVaam33KthHfSeY2wjt_0KTIe1eV054-dT1zarLxwyRhOpQ0ghhxcEdMsVrSTPT-jmXxm53rgTmveBkeFtYei3i7zywSmaEz74EuuY1w6pA2S_t9gxT2gz6jjyPPDt7DK8Y_HBxGhdKRgEEtMxS5GXVAUmIzMN4rOP3mf8D_YGYucmwt62eCUg7PzkLzwqTelEV7dAz6Vs6VyOIGYnVh7-yCx9ZSGCGH6lLKXo_zNOZwBFf722p0EVhVym8sZ-9KqwB9_YkHcJbMclPIgMULN_eLDfjvg01Sk7LkURmGkKfGkyc238lFXofv_FyMajtETIflKICRN0txAkTAg19yrk-bv9Z2p-fhDRxD0QCk8uvQK2cQM3QzrlWB7z-mfojXqpkKnJ3g17LggLTj8QqMY19GcjxRQ6v7acWpqKhYputUOE1lPHz0_WjfOPJUl_AYs5Gr8dH49TvyQOh7qJDbl0osISZKr6Px5FVGQZhwnJOghYqHdGpCQ-qNIrvivEqjiDKeeHbipi2qojDTRzOuqyq6MCEVPY1OqpUlCaGn5nYG9S--_rPM505Qd5XYRVwTJ3JpgbLB_MIQwph4oMJkTGJzxrb5jG6mLoTbVoMICv9dso9sjHZAELjM8xkhTt14yTfipRIdRgwzkTxr2cqOIigzqrBf-oNw1g5gDU7r6B0dUN76hOXzuR3faFh-tQKaYO-3mQfo2ymGOUhyig8kj9yk48Tb02VaPjziCtWXvNkboLLkXuhOQrJ7euf-v3QkY0EdwLQ61PHgGXNTLA9LBXx15fUj8tZDqAJGvaurlGxZ_-tCv67pSQaB7V097NV2i5FsUBYsAbQfuu8qL5WLWwdWnW5f6iELM3TVRWBNAyIpx6_jBsOk_-RRL8R4Ujy3UgQlsWa38UenRA2VfAedRnE5-9d7BkcRia6O3A8PULCyWAjWdcPE8No0jYKqvFpEru89Xr4b2pc1FzvjhIBr9FDiVpN7y04sEezDbazH4yONk5Mx6PAGeRGycsXLJCm0XkNa3m8zsOMQPP7Zbvt99r4ASYJKOLohY0PKQRIdIt190hvNIAjf_ZQVLIC3_kTT7ciEkFHoIlEwHvWoWVYaW256FxJnDmdHL-YwFdhoFVZhq402ZHRF9Dd3mLAYBynX0rkTxk3yVDpcGz4fIeJMVZTFbX9My-fcLX3fd-AwzFWSIOPEkKYgD3FF-jpqZJOFXgbFZLQmxGBrCDFOlS3X6DuFM_nyiefMzWkYyE3h1iqjReoWpVD9884DoK4eO3dRRBuF2103wiKH2pD0cftG3JbMJ7idNxWEUkshH3GnPncBkYrsG0NKgHlkaR376yAwThFcMgOWhy3_qOCeYtexfPq_iEShhVtZTzMc0rWLx8uYy5TZEtQ8fhLnr1EDXCx_sfb6CBtTWQ9XifZ_UInuEsVQdFeGaTNY2wBPWCIRG1Lc9PzRvNHY7iDujgiebIU4ogQiSgMYhS_8tL0gd_8IC55kOoqePxx-SQAZFyxesmV5xVmNy9GsqDF0WBu-s-Gx_rCDGEymHBPTmLDIn3QGssC8EfrrlnzwhPcDHhoT_nPEKKq0ULTAUQ56yVmUjee9sD-zHGesDhECHOwjYs5fOP4uinaQSY3zZEHk1unscL2qOnDKjKL5pIwYIX3sRHqiQnNvvYk1J6xlLVr5j6wyeipyZsupnyl7w8ur1DWujcA-u_djd2ABK6u42kWTsv3V78k2eC-c1D24D86XsliFf_dSY3XEOlFI1O9fauHlIxTQmCM2qJTCsR2RBseHWTrARcrCWvhXTKLR3c49XvJ8mOOFFfqYx4WoxXnQw8K5G2k2qHw8NRvmFOq2YBTuqce2e5_GtsqlRYMwgpZ3vgU8Nmqtwsy6ohSlcf1ZAlUSW0Ja9pFoF9_RqZWKiDOt1UxaoeGjF44HQM-iyiN9Jvcf8o2bBqN3CtxhRwGrdGlNAgJJcMASG7arIyHpM5_-S_kovw8C3vSlgJaYahImcTudto6Dm2jy-kYkZBoPmBApsg2N6l3dNbjJvU9gIJQmkbMy7NCHt2g_ywgs74WRVP528eQqTxr9U8luP139T7l_jBr_-wxj72Tzn5NBUM28pWEdes2Wmf752EwPAO7ux09Z3La0Lt0Dl7l-9Uw_M-xMft3NAxeLgsx3AnKvoU_sZWK4Vq9g_X07KhA7ELMyYr9bwNHh8Dj-ic7b52EXZ8jcHkeIRGNSXdmexishYcLT22Rr2ZwVHO0jP_rWJ7HYeN08A7Te_ybWQEXmaHZ7kTDrj-pwjfGu81u9BcT5BCJivZF7x6SYNK32sYg3KcF76fuDEUgOxI7NNub1FYGm-mZuxydHxGx8s-UWHENZvGCtv-2-J-XrLqOCY1i7Hefq5968czSqsMqTzd9ENXyKbRSRE8G2AoqWZr1bKo5Qg61Cv-d1KJb4pW2RnpoO2wONflx8jIz8egcJvp6dKAT3q5bmcgjO4IiQdMM5fdeQP-8-uiD-UwF0wogvEXjG9pPo2n59D4XxUgxirTkV88dA9nH4oDl42c8GN_nxgS7ZrGgX5wf95ZagDimSA-Q7XBDRSupgkECS56IYCAVqGqXveolg5J0Xuz8RnJRoNkuuFfWhxP0zkdcO-zzWYNxMSoCqb9yiP-G6SVrqrajnqqC-TKQudgUVA0rFQTMqXY5ZdW7o-oG9DSp8vxNjuTZfQbX8FnbRxpDKiqvJ8O71Iql6U-mFfubnSLvxLjdTQ-VYmvEeIKF9nro6zOeBjqZVSZoD9yQYbBfdy7augJeInMXZEQKbJAvTbmzmytjSkEqLvEtE_0omKatZCtJhPJTgyw-xOw_a5dqsGoPJ8M9k4CnGtS-l74WzDjlyDlJrV9QHCUSpK8KxIS_dsC3Zakf_HZ-mpVlvrY0Y_nFdVeSkERolFW3OmH50k3DQ30At7NGwxuFDAdwIUvWuQFCLakXFNM952awFKzPt7kxt1GXXp2Xqode_v_T8ypow4VIogFxBoGU-snWkx1fr63Zql8DDrXPsvdvQnQ1K23Q5-ZnezUovxPpe4OGtqCdxldlyN7LiiAuX4MfveVuF5PN1vKkg4j1zIbmMj5qBzLXKNLrtk8L5Py_LnD_PETQa6ttkT_AStRqTcs9I3wA9zSUARokmRhtcBkJSYHYCcmgIvXAlliHBi9AYwbk8-46W2rZwur7mFGAg7YtMrr0wClE7LkcN_PuuC3i6a1ntcYCkAFUwKd5wGmvhmElJ0DBSfQv4w1z3dGC4XVCTuLPIPVYqVplrFBO_hRMdic7dRWxG-zCDDp9woElP8LMfMI2ahOEIpplydUGuiljlCbWUy0HnXkg9UeyoM6fmiNUtdp9ZhXLF-LDM68MSMp1N1tELeeE0XwFjMaton9l61VwcSnCnjVfAQJbfyO5ix8JXLvOXWnrEzIkd7au3U_nW4DVEjDRqjAuI4NyhVkQ4YIkxptwaJnCiELc81iixX0FSKMQ6gT4r2Mvls1uxqzuFHXC1YYeBoipjugg8tnKddF_Mu6YYoULvg4sM2eO6blXuwflRVB_CVowui_1zgwvD_y73zZr5qwM58J89gCeU-hQeMbEKJPw3dvMSQ061nLpovO2e87GC0IeS53mmAp9ljwfxaqIceNzjbiZ8nt1IjEMr9D4_z0_D-aoidNuC_o7HWPX5nINJNj_GhFZt7KLJ32Q7sS64BCw9S2wxhPNgtN-aqo74Va4q7qEarADhYK3KQvoohG3Gg3lXdt4D-0KKofF_4ABO8aYGjXzqyz5jO7djBeW4JvogjL_ZW_apC_YEdE97ub0hVuXpct49RsriFKbamNijJiqKC9vfTS8oAJgrS3JeTSCGWlHI1gePyFJqSIbx5n5o421x5KCDvVvD4BfXoT0OUHnyVH6Xm-sQaALZDh_8Nik9YFOrDABjjOc_m96IY0MzuW8FeQVOkxTHJRQak1kle6fI3YvkJhJfuNk6YH5LcuZQuQwKvGjUmIJ-7SnTQo7zlw74y4rZb7ey16ptJ1GHH5dlGrSHvntJ-NDEtFRPC_xUn45W2MhyCr6n22A0DhvEnJtHNFv8q8MU0BlarBvs5nx8xUAePGWVcWeGI3zeCOkQTeQrGEZJ6CiYqATv0Ckb97X39935-SOAx-6GraeawgozlHMAcZrWO9EfwI3i6RnNicXro0NE6lV8Rp5gFLuQy3GsO7DdHfix1jaXx2TVAHQLv6j8N3eM6op__u0HGcwQsDwov-pG7ZKwntN",
+      "status": null
+    },
+    {
+      "id": "rs_0c860b9f373705fb016aa342b8eb6087d2bbbc4f97dddec798",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqo0LsVNHC7Gn4CItSKhxwxa0nIeQlVvRlREmHT86ZpZG_TM1rPNCoW4_crVPh3hpJkXJZNNDAd8sScqGMtW28J5mWwJxMw4XmIeBJVMwJnkjovpukpQxLx901QfRovvzg2kfKkTSpYR3i82cwt3FeAWtUsQqA5HMefdqsVvBx-WlGtm6m2Aw_Rjc0hx5VTZoQLlkhD7nnYwzgLW00ZxtqWDQn9dGQda2XZXqKPx5HJnQCKx4JMRl3kBLGssPvh_Hylgim2aUVEV5FCQrLk6sQP0apT6YDc1d0zBWrPdBstbVKVS-d9JldmcSXSxnMF6mHj4H_gZvb8a6MxLMmZgJtHkVgHh6bFrDsrnfKKIVqN2bhfoAl_Dx-drr30JwLjw72qeWVHO2nRAWde1G_-14AI-62Jf37o6UObSgWnk0zw2IaAD5Yk94lJnDkk3m1eQ3IObnJ3Xa79RefNRgoqqH9_0GLhyv8lrGThi2lhP5lt9Hm8-0f5tuiymW8P5kHbPf0n5uU0bwPBve4lNSLPqlRX2DAJF5X2ai45EsGlrfGPCC3U02aC7tu_fETAwsQd8Q53UqamFPbF3dKAtsDSyRMH3LjTtaeM_XosrTMwQb5T01f8cYYLOyzdZeKlH_7aah1F8EeX84qCd3lmmvQq6KW8lmI0fl1pn2SDphupkYf2PSTBp4iueakenvJ_P1PMEtTkM-XE791kDSawdSn3UyeJg3YU9QCQ-PrU-rRSd_npxE-HMaKOWNHoEeEFC3xRYk5oyh7uWsfUCTRv2uFHu9pp33-VBRsVS3KlXk_-z4XVnJpz9LYHEeFYznBDk4qCGcILocf5uzeUosLhLMacDlOX4BsJtu1cJdD8wN5ewm9L4kZ3TzREGPejGejpm-n9GMBGx6WlK4uUxszCTJ70PbdByao6t9-9U-bR1sYUswkf70bh1cilrK3ULKSN4mgTJrs12rZBnXJEsD9R_818B6EkGSalBbMjxtP49hnv-K8dBQjJs9RUwKG_xCrTCPB-zHB4OyiIFLYoI33fK6CF8RRaf1mfhge9L9-RR3626c5KMqdwN_MsJLQqs0id9ScBowUdovpnBpJjmLJ7y1xa8HD5r8elvbg7GbFLQRQcNCWIzpKUySK5tkilXPjmOjycYTWEukTYiFmhUWEjRKr57rKLk4WjSzJCNisvjTUc62eK6acOWbJO829Nzw779gK2dbZQNCvwcfwygOVfr2oUzrnF97yCbsylnFqtKDiJrJVnQtSErxjS6_Q1d3f9epmD22oP6LeC-mPbOBwA0UxOc3pCRLEc-ElEkr7_8BLOHKiyU5StXcSqHeIe3waddE_3jD1sEJmi31D5vipHDaSQq2uGb4GRYP67F5qEzI46k5rGKblYWnm5AtI2yjTMq_QWCsnQlCakklJG5C1Py9oN7wf0gfJXPy5jjkwRAjiwuyauuHzG-rxreGVB_5KdgX0RyxQevjF2Cum7OCPyqvsRTp0o6Dn29Qi7_gML4gM5q6xVTffsL4BNCncYGzdxlq2w1Asgm1EZgZyfwF7vnQ4cTTPDHTUAzEzD3Qi---AqVe_0miipaACcKe1y0dThoDijS0WQn918FbDHMAmCi742Zu_gzfc82IMarADiJUn6Arqp6TMwb4E4dvtSrzWxre_jU5WrMlgsC7Q8xPUL85iNjm8zQONnGNyl52OPnal61PzCIzE7yKMCzZIoL-MBJ0FPR2jps7XfuQj0WrOif57NVH0tepWRYkNhp91rMJ99tfKIvPRb_khsM0wpRzI3LE6h2GkY4AXCVwx8wZ69DkFuvkSQ9Ib9y8QcskS_XtYnuAOK8Gqb_ULSb_friRzlzIOBbZFE1SZ84meRbdwViS1Cez5uwT6JNfKiE_xHJYwMxp7XbDayncowMMFbcZ5gh-xF4Zq1Wg6zeJESlsVTWNMvRuP8MepCJM04s8DYdHGcGrTe5x9siSbxeJnEzBJTUC3RjOnR3M2Zf858AHKlDnoepwPvOwLrUqrb0eSWiiECKHUNipvO4z_C--faaAu9OZRWtcmLiuLH2jCtxNDiveZ_-Fk8MaCAAmx2Pbx_1rr19nQNLDTTXQ0FPESTKvXcPwvorx3ctUIWE_FbHs2q8H0aIcdCf0tl-Uqlj_jN6Qh-2XrbmoPqg21CBymgzDIf_LyFSSTitVBE_6mOf6harwvLqBe7ByzTbuUC3D2OfBEAQfElEs9qUfjbIEhqfTJgOEndaTkherekG6bkoHmPvoRoyTiziGRT77fwL42ydwCEEdQK-pFtX73irmoUse0r1t9S2eED1xGDaJqiYjQKl421dCLcN3-8irRU_sXK7S-JeGMmUcHoD3CvXOhlAcMordt_HlGzXVE-YW43QEsmD_FvtkDfCT1HnaZT2CLJf4stnAwg_A1vChT_X4ijj9IqXgnYZM12X8hd954NjRuKRYnl8uAQeRJOM3JNELoJcG37HC1bZyUPipQWCF98d4Rn2-zgRVIiJBL8dCNE0_3swCnKBvtM1GW4ULRy--Mbui1kTNnQ75_dxaiiU_lw1k_eB_WLCSOejqMYo53U76Vh-TXHGi1d6eT4ajAy-iA5j0juJon67Wze05NZXZZQqSNSpgvnIJqqX234FcQQjBo7gKGXIOxbuwFEimbycWlF1IRh9ajNmSpGQHoQhD-hqJNM2rx2Z_0l8ygQ19AnJHgDKer4R9cqqr5Xx0L1eolPAl8K1HQkP-av9nYyk6-8F70WceW8_LljOS4ZZTutQy7BeQuevE0hxRHsvXzGG8FZkY4VzUbqJRqtczqBcmSJR4VY7vOeaW7-bJLrOox0USp9WtfR3U5WgI3TBGpi8RNUkkajL7Aw0vmjeKXClh2InStfPABTLAdKZccUiR7KdLHjbElFY4f3hTs5AyYWIpvOh_1jf520q0q8Sv1xDk8PUeiwirBiSq4FhDNrj2i8UgudIWNzzC3ECOqeZdqAwedorc5uVdsg3wzoqOO0aayLkvTpOx1hLLcRAfQt3GZiELnoxPMlcm6MTI79vJwQyF_mqOCF4jNL7MlYvIVO5zujslIGtWM_3pZa-jL9jB_ifaCb8Cw900noR42Y6kagU5GG1W9cVAECqaVmV-YmBrQnKtSbcP7AmzDaoSPeFgpkPjaDLo34_gNPsdHK_cPX7-A6jeL486GAJANX2QiUi5-QywqCYm9luHycBmQAqVOww7mL3kS2uACLs-xQG8R3XCe33qFcPsFUJYpX8Af1BS16D_feQIEL6OEN_qKL-TW9lmsFr-COySOygPjD1EAl40u3iirpXmvd-GL6HF5lFlBjEComwNrPI_22FuK_nbXrQSGqRzwMPwnbQPNydDU4af9sjKIQm01HmvibXdaAwS-lTvsooKyQNO6JfUt1jTXL2kZirXsbQqtJXIfVDZNBEqb5WszgWE2U4XF8YiLxIGpdcYF_CUd8j0vIhw65lYJlKHw4zapdyGI583l2K7zgf94LHaIAOkwHvJijEeOlZ_mhOTGh-522amwrV_4vdrBVVK6EZ4KKz3xXzkn6FcVMpbGpdrGgOkIRt-wBzCAs58-zrruonZ2xEasj99V0TBBjNyiS9nq-l0KSNKA8Sm_4QyrXp8DEznKfn9A9jCtnGqBCa2LAfen6RgUaRs7UoHIP7QH2Q0fnm_B79jrn6zXPEQ8vgBC1urpnWtgtAbLY9gycGbgSZyMWU3Vl4QJ0fe4d0Vil-pP4OvmogJ9Nk6Kzyf7S_ZZ7luyFvEzP-mD1zYifDAWSVa1cy4FyQuGAryRVOjGV9TiXbGieeldBJr7ytKYLQHhwSh8ZytmMIqqVhvdTqnUfJVZcLxVJU61H521EWQrSOY-t0W0ziN281vV36sj91TiVcNtnO_MMnPxeGMBHOF55ogc14WrTrDi0xl0lE-I72_a5fLkIkKk0yDN8Xs4XAfG-aUrgmpgqHWY2sgX5rpoNrxpoeXZgdj1YsJQHxoyXXV6leyAsvytoPYAuFzqPZjH9piTHLE9VTUzqbc0BjTAiELabttX7EAgF_O9sbTFjMgfydsP8nlMkPBt_fdIlCVE4kvZDOwnOlmpYGuyBJzEOwkzpyvY1HRRIX-BIWB7HdVaOPCAaMvJU2Fq0Abr_jwTx1WyvPls9N3y7-5XyD0ueSVmcy6RkTzc37b3A6XgdedrYYoCGGnn4XEFsq_UnGzvu7ahPPbsnyi8DdjAtCBK0keHPpcWILW00Zi7TFeRC_kIE-3nBXlLtdd3QeaNbhG7eQkkU--xb0JU6_3-FirtkGOsUSGCyNFpzGsKM-OWKCEyNuJ3LAdZwGS47_bXx7s7o_G4DHcN-HT96zkADofz2N1aYtNQwhR5y0QqrcTUVP8NoKtVO3EaALYV2MdWtViYnNOKZhEnFZoNq0HJv0qJssQvdc4QCkVPMmcuJOIQuXMugPyuDfTmjscHcWxFVyuXgmIPJyVDnhMfl3LS6Ane9lKWWF7o4DrrMl7IS1wpy80RckVEFesKtNYNLXqh8kRObs-xJyWTq_5RDpWvmP-y-1rfw5TEUHP8IN_32c756-Bzo2ssXCwKhKHoufQ9s6jGcg0nkzZl1Ww=",
+      "status": null
+    },
+    {
+      "id": "rs_0c860b9f373705fb016aa342c06ca087d2b7dfb4a110cd9288",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqo0LsutXAHvGjCb09KoRQLfcDtaNM-HTlG_WD2H2es4K8_cyfxOGny1pjyFLKN6zvbk9KCrnidmWcOP53F4RsGCH5S5tBA4SiMPcAPRQya8brRrzt6RrWozujSpqkanu_X0Zuew9rhZCB2G3Fy460DQdotAJdwqsNn2vvGVH02alLnE9qbnbXKuXRXtb_xUyocPbrqRxk29MgObvliKM12KKJkzmNaArQQ5xOMn25WJPCBhvgZeNXa0qxu7TUmZ0kLYxgIYR50mfrSh9CfvGGPhJRFKtiaQH4wODE7gbu8a2a3zkBajGjz9NgWcAKxE6dZb2jNM9R4F1Q2QMeOtFYGhmLfM6g90cgPqlYQn17h6CpiJIjsm38BYQ12BlRgcMdptNWlnv-eaX1wpw2cFK41Q3grLZwcFyrPjTvYcf1NPTiSi1jaFl2qnpxw2VfA4oJPjJP2XDLN1u4pbanCdqNzVvKXWE-rJpG7_5APQoCPGyH7H-SIckWkphmqm1l5zqUpyJW0ABUIvSc6pXLg5IhxVOawJ9U_oYL3PeYpP8NN-qTPbI13WEaf9RvS9SI7n3p8a6j6JETr90eu-2Q71O_IxctvLZ0a4BsdKOlbFSBeEzOqGbuEpNxfWhD6d1aJRbxJzj6s-ZCOAEDZThEjurK5KigDU-AJ-sDhl4GSwboci82-7VAf82JdPhZuyDm08eNYWeseV68rOw772GYrvEwqr_kza-6WUbjZ1KprN-qW_3hawzvnp58-A91D3T-FBtuH4LBv8G6V9RSMJaZ2bHsfdvEl6UH6MbvCC7zPokkGd8CCTc3SaB7EZWW8PwDBA6KYV-_PsW4qWFZz3wUk8E_lCu15aV1dCm7LFABS6Gn8jlp2bWQQwy6M-9QyBDwaU51HuEksCRjbfOBAD5MOb2slyA616nIDZtcOwGKBSa0LWZmI8DVD2ng_I3v-am-RhoGEbFM6626S8ZTQxCjeho9yx_M9BRcCLMDpyzh9AnUi6eBiVAqhwkZaoAOv6DzY4dfHPNeyKcj4nsYNIkdEaKhth9YqXaQxr1gK60t0NYUy1p2sXW-bcCq4DE0uFn5rAtQlfH--cJXYOQjyIi8_qzHwxPFvNcoNZ5G-iDpSJInNIo1NQ2BipL7AkGGFHKAI0olZ2hVO9nFkNJawFrn0TQM2zo1SMKbhdrW7QwGPKJXYDVVZgIvXuMJ5x1C2y2JqBV9GIWv_EFCKu1tUX2kJ5TTRTY7UYXbLVB410iTjpmH9HmSXK3oMVH3gbAvjZcq15oEY6QuzyPNCkUBL1k-upKakiXPDWOSQFBTRF2iZMxTo53-TQ-DFx_7ZoL76MgkrqX92qD5Df6vhfgMjrMrJb07Fe0mmqrzOwhYzv8WgMqb7LOeHNVsmJEWVZmx1TCsRxDM9uYRKvWVmkGu5WtvDlGEWvqJJ46GVi7zPxLC5SSDV0zy81hZW_IGH3cSmTOEcc-aTDpEzPiOl-5SxevcwxIaQ9KCLe5wmz4Sh-FuMCzsnWk5Dx2aJNYutSYGY1ED3NzdH4oNY59NzfwcLlu6-8s0XBHNK0IPFKW8b0K3T0kXnLJCnUiY71gmnhnVIHHYWe2pT450VIQLk7WR1F7Z2nXlbxzfEu2MZ4Bqf6jfSxx3IWQVO45kKA5uekkrlG22DPmF03YByb4tE4LtWlexl5J9_SWLlUIsZFFoajHcvk5ssTExNVSkCl89Wu5Fv4d8ecvaWeRFWZQTmxHvVDJ8oKMgwlQHQrO2zGlrdjUgUWjXIRIRc1cVSZt_GTFqXacTq-VKTgvTnAqQrTCEW5WTEHTZIziJz9TTO1qkRpbE8yJbMj88mpdSuLsQnGsg_UhSVW2fbmlJZXK1IKGtHd7UFcMQnXWwJy42lIpb5Wxj4goAxKgQLjAV2NUxSJSIspKvzOMu5IbxUH_1VNu9qo49DU5TGJJnevUjDvjJC0Sot4pwQifFnMt5Prb2PkrQd872EpPmUtPhEZOFYffU8rhuOhdTtxZbeOOQWNsBR3moDWc4PmdtZdNfjg5miy-bm01OeGc4w4loHlKOwMSTJKobJfMMAP_pc5p4xPWBiDbim8cK-dBoW0TvbX9GihwWth7ui3KeQXU8gSNhtYDruMy8Lbn794yWin_7nWQXNuebmH_UCua-RI_p2hY7rGB01mJGYJvyuEzmeKFUrBHhseScxT41D-B2GbXMH80pF8vtTw7_nU4ct_FrOT_3BvBnxaKCZADOnbsE-Z5tqS6F3m1-wqZ0JI7Re_ZTzkOg5lZFTA5kPKITWovIDK2VyaZicuNEpcRphIGNyXMrzjYug0n7KrORRyAKS7y46o3idqi5HNAXfASMywpROCvPBQjDbKSmmGwXkvU3wjelqIzwVNSEjFlbEJXtYSE9U3MVsPV0o9EHPHpmPTNVBzWfHt_i8EsKQb-NXUs-ZjuVEFiE3QOd75sJ1426TfwmZDLti2sdZHH2oQqzXv1B27WLcJIk6lM8luJsw0e4OTjMHN_y0vhOW8t32DUHr9J45oKqcmlLN2w0tXvg7jOTcQq2Hsbf2FY2D2vs8lyPuliYaltumJZ3AJTsysVGrN-IQtsuiCaHEKBcm15_8RlV0HgB7a2XKUJFnz5o41WZD2Le8D6cjbctkAYTYeTc81v3fpDlslYD6a2QDDHHWe6ToFJu8u16F2oNQMf2s3F4C7-kLEwZj-1yFeA2P8r9S1A7JcZ_ie4Il9yp1nWdFGPu9cl1nH0AOmyCVpNg6GJs-ZlA9vUPd98fAaORJvyUfRbB_ctnEclbSyjPKQN51VX4cDbJm0ikurcd2HXCfsqHiX0ew9wSy_jxT8vD-4PAZjBUJAmfKhVixPIXmkVMBz7sggpBcCw-V5swY_2tR8kdotlTf6p4wiViyINvs4xOV2rTNB1lo2w-hrp_guiBv9FCt42xKdQVKdEi1sfQVYyFtLiZ1rha77JbxyHNgBU9WbjfHeeNsxArv3As7e2SXbhM_LhObzj7b_psYm7YWR3IBSNv_GdZkNBvaqwcQj_uqd_05kPHgWm4NPSPGEsCq6vpd1hdTNiFKK_lAZf0xLCAuHuO1-pRkkXMpl4QaQY4IE3iX7z8bbhtSmbLUvdNow4Du9t0Xosq0HNQitN4kqRgQanoMJois88g9SiLA003BFqQ7G1VT7xf-behKqT8f0AxYrpAhfRttFf4iu1v9h6hAdeRlFMn17UDQRR7fM8AEouDbNcB8lcVItEkQdEf0uT0NmJ240Q4yAu6-75OOrsKx41vJKGU8q2RUNpOQQiuXgg4KFa5eWQEBa7DE_zbappx03DUL7hpndROM6-XzHPUtFll7evsRRQR0bzDWSZRGJGLJO_fEtOJuTZOACkAwv3AkAmbrJ7lmDGyCjv1W8a0pPQyC46dfX6rKToqqtlq5u_34fxBXeGjkAd18OhVL2xm8zv7x0B0TfWMU_oUtPiJNo9BCYuoey5cusBf0eiphJ2l0LddZ56O1WYPgfPHpSFnQo1S0JCaDPHMC89lVfoxdhxwO1bJ3PbL0L8vZDmvEGK_o0fCOUbgpHYpQgDDInnK5X4ZMBWVOGW9AvTssFtlrBeAm5CbshuwRwELS5nY1u1xI1bwP_axQNJC0rFjZ7gDmCD8ZqESEm8YGLePgMcCfReNw2hNc0K_6Btchs_KG4ySl23M2gXEEX2Vp22spn8LLlNZS-Ynmw7kqF1F0rxzj2xCSNDUSZo10QJd4hW76XxQNf7ilPrvr4kkn9T3YlVpOFXZgBq40zuUzCqsaH4gM-jvgFYuK5rSlL-deNRSzIsPnZwFvK_oFomAR0bZul7ts8dCQ5aLGUr1A883JspxWbH6SLBcrny-MyNQ9eorEZP8woDv5Ylnmi6QVh3vEY7qepKeAj3qzTyFKFJ3kavezScARiyDmDjgMNfFLIh75L0Od82yPUu2aUOxh-UBdnYLw1SzcVB2qFJNLJYFh7vIkWdY7oS4leBDotlluXgf-VA7Q-cEn8pBskLlQsCY_8JLiecbOuLDezdBKnBA6nUqcPEFEfFTx6UDeJv6h4TEb40cltC9E1ZXxv96jzt72NxTV614W2rhtf4j2-xgkDDhrNdWlrG6bOzaPLky2_mHKybxDkW--LJdgvdG0RXVCJcifjMUnfvFSNY2Dr1l_v1jqlk9ZVHUYajmQRgPdMI664eLaNDc6VtTIgejQiZ7LiPE9iBRKwsxykvgDfaYv54c",
+      "status": null
+    },
+    {
+      "id": "rs_0c860b9f373705fb016aa342c7f17087d282c0273f6e5179c0",
+      "summary": [],
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqo0Lsv3kGofHDJrCmRIlzwuAFwLoUTWen1BnUiXLBnGfor7T2FUe3gHMcjerxfsDYgCTYfY9Uy3zulzrUZz4pS0h4P7Vwh_KxghiZQUesxnAowbBgtB_U2IZFSmwnWAvMCW2s_6xdVsucuw2bEycLcG4wJ6fPDgiSS7T8gttO0MhGJKJF78YxHj3IxZ5n_PaMmQR7XRLE2EdcIGqv0op2kKc-L_MLRhKq4aeURgNXFzp35OKKrYiqRaODiE-6Qnq8cCTEHJhQB3hlQJsHRZOHEsSxddEd19DNIUCVsAuc7VOSOqRcmCQHifJaFeW3ajcrI_6w1MGngE508f2gxoL159veAMmS42gt7beOBwr2LNbyvNsBGvqGTd0bdbOazWlJQ8yMlVThZRUK9LosnduYd1WS5c8101GFwGg7qXiE7a84iwrgZCPkuOUZw9xETWDiVu4fFmgKeA8wWlvAgOW_diFyfrb94Tm8TUhYAsHsIw91yue3ehU6R_ZATl17yDH3gM68HWtPs-PQ-974ZlXapkkgrrc5hobWoXmGLFzJDSgmbihZnrc3TL_BuurDaluy8XDgiLB27gQlr0Dk2xd_dZxKcNiaSAg65pG-m1Cq4SRSE3ev5cRPyqQUHxV8v-VyO0Avf9HDszTQksz9CczDpFU_c5Zzd4Ft6Sv5z4mi7G03IgOWntR-iZ-o3QGPRImoF6FrEt3SANIftF5ta6s3rHJp0hLiu5rbuXhWiXw4Wwbu7pGzh1N4j_eEIr8Ny_wP2wASCJ-RK-nz5iV-NsFJstqwVPQpu212f25owZ7YaUpigLx-T9byowPaUCMF6EvdtSd73DscQheVPy6FWQq7XIZlaDrbxPw48XBV9ErIsETgFmM3m8cK_-IJoAKw71OOHFG09ClUBFV-7J_nVBC_a8HMMZsxAaQ8pAQ7_OIsxlHQBMG8pGORUk-_NNwLtjJrYLKlCDxEmiZSB89sPHvZNBy_yEio2b4o3bQAtaHFjXudquZrp8FciWMRVow99_41KDetormGDoinDtG6UGtfvj61-XsPUL-0zzWzfjZuBrqVTFDIUUF3XpgNwYgBC0zqvoxmRdFjufJ21P5oupeMWs77vj_hs0Cs-cxUiNYcU4QwNVX5-5sNkvcaggPYYNtusZLq0DEMOsdmQ1kfpBJNzcHnTLtV38UV6h7sQ754wC7_sxNzGhqIjcW8rttNcumrx0RsMq2xyihQ73s09asYgtGpm8wfdSxUBxXH_ZSk6ret4DtyIiPYaB_Bduyt86LSWedpEpzJh5c0XPcX9zYJnaIJ4hgGtjLdjGTXjSmPsVMR0pxYm-ILBcv8J2VwIIgfXUzcd0X06yi6GCP0ikRwshtwjMDnVzcbv2jG0pEbpulPE7-frOzVK2ZrbOJnrUyGb9CpFuKyuhvtaM0jwPjiK9buh6iGWhJw7e8wmF7htdkFqoFWhrzSTPmq8O9KX0Wumo4s2vUTzanz9KrBKtxeRUiL-WfeiC3lObFeLqusKOa5_WdZmw9EAtdE85AzEaFw9bftEbOl10MPCgt2HM-Z6rB2bL1o8eD7hzlBCVzr_wYmPX_xFJqpzOnRl8pMbFqB2nPPv8wWcTebW4JxLrMTTBrxMiXE-gHYQbDW3m8aYAHORrQMMGya9rDUnAcjC3r7ZBIXaV-4LYZ9lCMWMl0ZUkChxLrQJjMmBJyz0VYUtYD1R3kkZFs1iOBEqY3ApL9hdNMYKlKHgUdk8M9v9d__a0-U0DG4RWulxqf3jml1CyYWhmwWgGQ4H3qEw3gWG9uMy2K0soVWN7s393nX1tcioTIg0Q==",
+      "status": null
+    },
+    {
+      "id": "msg_0c860b9f373705fb016aa342c932b087d2b7e925f54b3134b0",
+      "content": [
+        {
+          "annotations": [],
+          "text": "{\"category\":\"LVDS_signal_loss\",\"cause\":\"Loss of the LVDS signal on physical signal pin 16, which maps to digitizer channels 32 and 33. The evidence localizes the failure to that shared LVDS path, but does not establish whether the underlying cause was an unseated/degraded connector or jumper, an upstream driver fault, or a transient configuration/state change. The reappearance of both channels in subruns 201-202 indicates recovery or intermittency rather than a permanently dead digitizer pair.\",\"action\":\"Conditionally treat physical LVDS pin 16 and its shared path to digitizer channels 32/33 as the primary fault location: while the run is stopped, verify the repository mapping, inspect and reseat the pin, jumper, and associated connectors at both ends, and check continuity or swap the path with a known-good LVDS input. Start a new run after each change and confirm nonzero pin-16 counts and normal occupancy on both channels. Before physical intervention, compare subrun 200-201 configuration and DAQ-state logs to exclude an intentional enable/configuration change. Restart or service a digitizer only if board-matching, synchronization, or readout diagnostics specifically show a digitizer-state failure.\",\"confidence\":0.9,\"supporting_historical_runs\":[2126],\"reasoning_summary\":\"OBSERVED: channels 32 and 33 are absent in subruns 1-200 and appear only in 201-202; LVDS signal pin 16 is reported persistently zero/abnormally low, mapped to exactly those two channels, with its strongest transition near subrun 201. The static trigger-mask list does not include physical pin 16. INFERRED primary mechanism: a shared pin-16 LVDS signal-path outage suppressed both mapped channels. The exact physical or electronic root cause remains unknown. The simultaneous recovery of the pair favors an intermittent/restored shared path or a state/configuration change over two independent channel failures. ALTERNATIVES: an intentional within-run configuration change cannot be excluded because only a static snapshot is available; a digitizer lockup is less favored because the LVDS-board telemetry itself reports the mapped pin as zero, but board matching and synchronization telemetry are unavailable. The stable total trigger rate contradicts a high-rate LVDS-noise presentation. Broad anomalies and count transitions in subruns 201-202 may reflect a separate endpoint condition and do not identify the pin-16 root cause. No historical case is an exact match; run 2126 is only a partial connection-level analogy because it involved noisy/unmatched LVDS behavior rather than a persistently zero signal.\",\"semantic_description\":{\"component\":\"LVDS signal path on physical pin 16 serving digitizer channels 32 and 33\",\"failure_mechanism\":\"Shared LVDS signal was absent for subruns 1-200 and returned near subrun 201; exact connector, driver, or configuration cause is unresolved\",\"action_intent\":\"Localize the shared path, exclude intentional configuration changes, then conditionally reseat, continuity-test, swap, or repair the affected LVDS connection\"},\"signatures\":[{\"signature_id\":\"SIG-PIN16-MAPPED-ZERO\",\"observation\":\"The LVDS summary identifies signal pin 16 as persistently zero and maps it to digitizer channels 32/33.\",\"role\":\"supports\",\"citations\":[{\"evidence_id\":\"C-lvds-003\",\"field\":\"text\",\"value_json\":\"\\\"- Persistent zero signal pins: pin16->channels 32/33.\\\"\"},{\"evidence_id\":\"C-lvds-005\",\"field\":\"text\",\"value_json\":\"\\\"- Persistently abnormally low signal pins: pin16->channels 32/33.\\\"\"}],\"cause_link\":\"Directly localizes the observable signal loss to the one shared LVDS input serving the affected pair.\",\"action_link\":\"Prioritizes inspection and electrical testing of physical signal pin 16 and its associated connection path.\"},{\"signature_id\":\"SIG-CHANNEL32-ABSENCE\",\"observation\":\"Channel 32 is absent in subruns 1-200, is present in only two subruns, and has extremely low event-weighted occupancy.\",\"role\":\"supports\",\"citations\":[{\"evidence_id\":\"P-032\",\"field\":\"absent_subrun_ranges\",\"value_json\":\"[[1,200]]\"},{\"evidence_id\":\"P-032\",\"field\":\"present_subruns\",\"value_json\":\"2\"},{\"evidence_id\":\"P-032\",\"field\":\"event_weighted_occupancy\",\"value_json\":\"7.04456e-05\"}],\"cause_link\":\"Matches the expected digitizer-side symptom of losing the shared pin-16 LVDS signal.\",\"action_link\":\"Requires confirming restored occupancy on channel 32 after any pin-16 intervention.\"},{\"signature_id\":\"SIG-CHANNEL33-ABSENCE\",\"observation\":\"Channel 33 independently shows the same subrun absence pattern and similarly negligible occupancy.\",\"role\":\"supports\",\"citations\":[{\"evidence_id\":\"P-033\",\"field\":\"absent_subrun_ranges\",\"value_json\":\"[[1,200]]\"},{\"evidence_id\":\"P-033\",\"field\":\"present_subruns\",\"value_json\":\"2\"},{\"evidence_id\":\"P-033\",\"field\":\"event_weighted_occupancy\",\"value_json\":\"6.54137e-05\"}],\"cause_link\":\"The paired behavior supports one shared LVDS-path failure rather than two unrelated channel faults.\",\"action_link\":\"Requires verifying both members of the mapped pair after repair; recovery of only one would argue for an additional digitizer-channel issue.\"},{\"signature_id\":\"SIG-PAIR-RECOVERY-201\",\"observation\":\"Pin 16 has its strongest transition near subrun 201, coincident with channels 32 and 33 becoming present.\",\"role\":\"supports\",\"citations\":[{\"evidence_id\":\"C-lvds-007\",\"field\":\"text\",\"value_json\":\"\\\"- Strongest pin transitions: pin16->channels 32/33 near subrun 201 (relative change 1580).\\\"\"},{\"evidence_id\":\"R-032-02\",\"field\":\"largest_adjacent_mean_change\",\"value_json\":\"{\\\"means\\\":[4.66667,14.5],\\\"subruns\\\":[201,202]}\"},{\"evidence_id\":\"R-033-02\",\"field\":\"largest_adjacent_mean_change\",\"value_json\":\"{\\\"means\\\":[1.09091,8.0],\\\"subruns\\\":[201,202]}\"}],\"cause_link\":\"Temporal coincidence reinforces the shared-path localization, while the recovery indicates intermittency or a state change rather than permanent hardware death.\",\"action_link\":\"Motivates comparing subrun 200-201 configuration/state records and reproducing the transition through controlled connection tests.\"},{\"signature_id\":\"SIG-NOT-STATICALLY-MASKED\",\"observation\":\"The static trigger-mask snapshot lists 14 masked physical pins, but physical pin 16 is not among them.\",\"role\":\"supports\",\"citations\":[{\"evidence_id\":\"C-daq_config-003\",\"field\":\"text\",\"value_json\":\"\\\"- Trigger mask: 50 unmasked, 14 masked physical pins.\\\"\"},{\"evidence_id\":\"C-daq_config-004\",\"field\":\"text\",\"value_json\":\"\\\"- Masked physical pins: 32, 33, 34, 35, 36, 37, 38, 39, 43, 57, 58, 59, 60, 61.\\\"\"}],\"cause_link\":\"Makes an intentional static mask of physical pin 16 less likely; mask indices are physical pins and must not be equated with digitizer channel numbers.\",\"action_link\":\"Check the physical-pin mapping and dynamic configuration logs before changing any mask or cable.\"},{\"signature_id\":\"SIG-RECOVERY-CONTRADICTS-PERMANENT-FAILURE\",\"observation\":\"Both affected channels contain finite measurements in subruns 201-202 rather than remaining absent through the entire run.\",\"role\":\"contradicts\",\"citations\":[{\"evidence_id\":\"P-032\",\"field\":\"present_subruns\",\"value_json\":\"2\"},{\"evidence_id\":\"P-033\",\"field\":\"present_subruns\",\"value_json\":\"2\"},{\"evidence_id\":\"R-032-09\",\"field\":\"n\",\"value_json\":\"14\"},{\"evidence_id\":\"R-033-09\",\"field\":\"n\",\"value_json\":\"13\"}],\"cause_link\":\"Contradicts a permanently dead channel pair or irreversible digitizer failure, but does not distinguish intermittent contact, restored electronics, or a configuration change.\",\"action_link\":\"Use continuity tests, controlled swaps, and subrun-boundary logs rather than immediately replacing the digitizer.\"},{\"signature_id\":\"SIG-NO-HIGH-RATE-PRESENTATION\",\"observation\":\"The total trigger rate is summarized as stable/persistent rather than exhibiting a high-rate transition.\",\"role\":\"contradicts\",\"citations\":[{\"evidence_id\":\"C-trigger-001\",\"field\":\"text\",\"value_json\":\"\\\"- Total trigger rate: median 4.454, range 4.132 to 5.262. Temporal behavior: stable/persistent.\\\"\"}],\"cause_link\":\"Argues against directly classifying this case as the high-rate LVDS-noise mechanism seen in historical cases; a zero-signal outage is the observed symptom here.\",\"action_link\":\"Do not apply trigger masking merely as a high-rate mitigation unless direct rate or queue diagnostics establish that separate condition.\"},{\"signature_id\":\"SIG-CONFIG-DAQ-TELEMETRY-GAP\",\"observation\":\"Within-run configuration changes, board matching, synchronization, queue occupancy, and DAQ-state telemetry are unavailable.\",\"role\":\"limitation\",\"citations\":[{\"evidence_id\":\"C-daq_config-007\",\"field\":\"text\",\"value_json\":\"\\\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\\\"\"},{\"evidence_id\":\"C-daq_config-008\",\"field\":\"text\",\"value_json\":\"\\\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\\\"\"}],\"cause_link\":\"Prevents distinguishing a physical LVDS interruption from a dynamic enable/state change or a readout synchronization failure with certainty.\",\"action_link\":\"Retrieve these logs around the subrun 200-201 boundary before escalating to component replacement or restart.\"},{\"signature_id\":\"SIG-ENDPOINT-GLOBAL-TRANSITION\",\"observation\":\"Many channels become anomalous at the endpoint, while trigger and total LVDS counts both have large transitions near subrun 202.\",\"role\":\"limitation\",\"citations\":[{\"evidence_id\":\"A-ALL\",\"field\":\"anomalous_channel_count_by_subrun.200\",\"value_json\":\"33\"},{\"evidence_id\":\"A-ALL\",\"field\":\"anomalous_channel_count_by_subrun.201\",\"value_json\":\"63\"},{\"evidence_id\":\"C-trigger-002\",\"field\":\"text\",\"value_json\":\"\\\"- Total trigger counts: median 1003, range 82 to 1008. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.9184).\\\"\"},{\"evidence_id\":\"C-lvds-001\",\"field\":\"text\",\"value_json\":\"\\\"- Total LVDS counts: median 1.54e+07, range 1.68e+06 to 1.62e+07. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.8911).\\\"\"}],\"cause_link\":\"Shows a broader endpoint condition that may affect subrun-level statistics, but it does not explain the pin-16 zero state and channel absence over subruns 1-200.\",\"action_link\":\"Analyze endpoint exposure and DAQ-state information separately so the global final-subrun transition is not mistaken for the long-lived pin-16 fault.\"},{\"signature_id\":\"SIG-HISTORICAL-PARTIAL-ANALOGY\",\"observation\":\"Historical run 2126 linked a mapped digitizer channel pair to an intermittent or degraded LVDS-pin, jumper-wire, or signal connection, but its symptom was noisy unmatched events rather than a zero signal.\",\"role\":\"limitation\",\"citations\":[{\"evidence_id\":\"H-2126\",\"field\":\"entry.category\",\"value_json\":\"\\\"LVDS_noise\\\"\"},{\"evidence_id\":\"H-2126\",\"field\":\"entry.cause\",\"value_json\":\"\\\"DAQ board-matching efficiency dropped below 100% beginning in run 2126, file 26, around event 700. The DAQ queue filled with mostly empty, unmatched digitizer events and the apparent digitizer trigger rate became abnormally high while the trigger-board files remained normal. Trigger-mask tests localized the problem to digitizer 0 LVDS channel 0, corresponding to detector channels 0 and 1. The subsequent intervention indicated an intermittent or degraded LVDS-pin, jumper-wire, or MCX signal connection.\\\"\"}],\"cause_link\":\"Provides only a connection-level analogy and is not an exact diagnostic match for the current zero-pin observation.\",\"action_link\":\"Supports cautious use of mapping verification, reseating, and isolation tests, while requiring current-case confirmation before applying historical fixes.\"},{\"signature_id\":\"SIG-INDEPENDENT-TDC-IRREGULARITIES\",\"observation\":\"Several upper channels have persistent, mutually inconsistent TDC/rollover summaries, including a constant very large TDC on channel 88 and zero TDC with huge rollovers on channel 91.\",\"role\":\"limitation\",\"citations\":[{\"evidence_id\":\"R-088-09\",\"field\":\"mean\",\"value_json\":\"149602000000000.0\"},{\"evidence_id\":\"R-088-09\",\"field\":\"std_population\",\"value_json\":\"0.0\"},{\"evidence_id\":\"R-091-09\",\"field\":\"mean\",\"value_json\":\"0.0\"},{\"evidence_id\":\"R-091-10\",\"field\":\"mean\",\"value_json\":\"8.77255e+18\"}],\"cause_link\":\"These appear to be a separate timing-field interpretation, sentinel, or data-integrity issue and are not explained by the pin-16 outage; no good raw reference is supplied to classify them.\",\"action_link\":\"Validate TDC/rollover decoding and channel-specific firmware semantics independently rather than folding those observations into the LVDS pin-16 repair.\"}],\"missing_information\":[\"Direct per-subrun pin-16 counts and waveforms around the subrun 200-201 transition.\",\"Within-run trigger/LVDS configuration and enable-state changes, especially at the subrun 200-201 boundary.\",\"Board-matching efficiency, digitizer synchronization, queue occupancy, and DAQ-state/error logs.\",\"Physical inspection, continuity measurements, connector seating status, and controlled cable or input-swap results for pin 16.\",\"A known-good reference run using the same firmware, mapping, thresholds, and data format.\",\"Interpretation or sentinel conventions for the anomalous TDC and TDCRollovers values on upper channels.\",\"Subrun exposure or elapsed-duration information needed to interpret the broad count drops near subrun 202.\"]}",
+          "type": "output_text",
+          "logprobs": []
+        }
+      ],
+      "role": "assistant",
+      "status": "completed",
+      "type": "message",
+      "phase": "final_answer"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "temperature": 1.0,
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 0.98,
+  "background": false,
+  "completed_at": 1789084396.0,
+  "conversation": null,
+  "max_output_tokens": 24000,
+  "max_tool_calls": null,
+  "moderation": null,
+  "previous_response_id": null,
+  "prompt": null,
+  "prompt_cache_key": null,
+  "prompt_cache_options": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "generate_summary": null,
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "text": {
+    "format": {
+      "name": "autoflame_raw_consistency",
+      "schema_": {
+        "$defs": {
+          "Citation": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_id": {
+                "title": "Evidence Id",
+                "type": "string"
+              },
+              "field": {
+                "title": "Field",
+                "type": "string"
+              },
+              "value_json": {
+                "title": "Value Json",
+                "type": "string"
+              }
+            },
+            "required": [
+              "evidence_id",
+              "field",
+              "value_json"
+            ],
+            "title": "Citation",
+            "type": "object"
+          },
+          "SemanticDescription": {
+            "additionalProperties": false,
+            "properties": {
+              "component": {
+                "title": "Component",
+                "type": "string"
+              },
+              "failure_mechanism": {
+                "title": "Failure Mechanism",
+                "type": "string"
+              },
+              "action_intent": {
+                "title": "Action Intent",
+                "type": "string"
+              }
+            },
+            "required": [
+              "component",
+              "failure_mechanism",
+              "action_intent"
+            ],
+            "title": "SemanticDescription",
+            "type": "object"
+          },
+          "Signature": {
+            "additionalProperties": false,
+            "properties": {
+              "signature_id": {
+                "title": "Signature Id",
+                "type": "string"
+              },
+              "observation": {
+                "title": "Observation",
+                "type": "string"
+              },
+              "role": {
+                "enum": [
+                  "supports",
+                  "contradicts",
+                  "limitation"
+                ],
+                "title": "Role",
+                "type": "string"
+              },
+              "citations": {
+                "items": {
+                  "$ref": "#/$defs/Citation"
+                },
+                "title": "Citations",
+                "type": "array"
+              },
+              "cause_link": {
+                "title": "Cause Link",
+                "type": "string"
+              },
+              "action_link": {
+                "title": "Action Link",
+                "type": "string"
+              }
+            },
+            "required": [
+              "signature_id",
+              "observation",
+              "role",
+              "citations",
+              "cause_link",
+              "action_link"
+            ],
+            "title": "Signature",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "supporting_historical_runs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Supporting Historical Runs",
+            "type": "array"
+          },
+          "reasoning_summary": {
+            "title": "Reasoning Summary",
+            "type": "string"
+          },
+          "semantic_description": {
+            "$ref": "#/$defs/SemanticDescription"
+          },
+          "signatures": {
+            "items": {
+              "$ref": "#/$defs/Signature"
+            },
+            "title": "Signatures",
+            "type": "array"
+          },
+          "missing_information": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          }
+        },
+        "required": [
+          "category",
+          "cause",
+          "action",
+          "confidence",
+          "supporting_historical_runs",
+          "reasoning_summary",
+          "semantic_description",
+          "signatures",
+          "missing_information"
+        ],
+        "title": "Diagnosis",
+        "type": "object"
+      },
+      "type": "json_schema",
+      "description": null,
+      "strict": true
+    },
+    "verbosity": "medium"
+  },
+  "top_logprobs": 0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 343740,
+    "input_tokens_details": {
+      "cache_write_tokens": 343737,
+      "cached_tokens": 0
+    },
+    "output_tokens": 4708,
+    "output_tokens_details": {
+      "reasoning_tokens": 1648
+    },
+    "total_tokens": 348448
+  },
+  "user": null,
+  "billing": {
+    "payer": "developer"
+  },
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "store": false,
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  }
+}

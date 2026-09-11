@@ -1,0 +1,327 @@
+{
+  "signatures": [
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-32",
+      "observation": "Channel 32 is absent in subruns 1-200, is present in only 2 of 202 subruns, and has event-weighted occupancy 7.04456e-05.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "P-032",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "present_subruns",
+          "value_json": "2"
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "event_weighted_occupancy",
+          "value_json": "7.04456e-05"
+        }
+      ],
+      "cause_link": "Directly supports a persistent localized loss of channel-32 data rather than an isolated statistical outlier.",
+      "action_link": "Requires checking the shared LVDS path and intended enablement before applying a hardware fix."
+    },
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-33",
+      "observation": "Channel 33 independently shows the same paired behavior: absent in subruns 1-200, present in only 2 subruns, with event-weighted occupancy 6.54137e-05.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "P-033",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "present_subruns",
+          "value_json": "2"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "event_weighted_occupancy",
+          "value_json": "6.54137e-05"
+        }
+      ],
+      "cause_link": "The coincidence on both channels of a mapped pair strongly favors a shared LVDS-path mechanism over two unrelated channel faults.",
+      "action_link": "Inspect and test the common pin-16 connection before troubleshooting channels 32 and 33 separately."
+    },
+    {
+      "signature_id": "SIG-LVDS-PIN16-ZERO-MAPPING",
+      "observation": "The supplied LVDS classification identifies pin 16 as the persistent zero and abnormally low signal pin and maps it to channels 32/33.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-003",
+          "field": "text",
+          "value_json": "\"- Persistent zero signal pins: pin16->channels 32/33.\""
+        },
+        {
+          "evidence_id": "C-lvds-005",
+          "field": "text",
+          "value_json": "\"- Persistently abnormally low signal pins: pin16->channels 32/33.\""
+        },
+        {
+          "evidence_id": "C-lvds-008",
+          "field": "text",
+          "value_json": "\"- Mapping basis: repository mapping for 48 signal pins; non-signal LVDS columns are omitted from abnormal-pin classification.\""
+        }
+      ],
+      "cause_link": "Links the channel-pair absence to a specific localized LVDS signal path; it establishes the mechanism but not whether the root cause is hardware or configuration.",
+      "action_link": "Use this explicit mapping for cable and board inspection; do not infer the affected digitizer channels from similarly numbered mask indices."
+    },
+    {
+      "signature_id": "SIG-PIN16-LATE-TRANSITION",
+      "observation": "Pin 16 has the strongest LVDS transition near subrun 201, while channels 32 and 33 contain measurements only in subruns 201-202.",
+      "role": "supports",
+      "citations": [
+        {
+          "evidence_id": "C-lvds-007",
+          "field": "text",
+          "value_json": "\"- Strongest pin transitions: pin16->channels 32/33 near subrun 201 (relative change 1580).\""
+        },
+        {
+          "evidence_id": "P-032",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        },
+        {
+          "evidence_id": "P-033",
+          "field": "absent_subrun_ranges",
+          "value_json": "[[1,200]]"
+        }
+      ],
+      "cause_link": "The late reappearance favors an intermittent path or state change over a permanently uninstrumented channel pair, but it does not identify what changed.",
+      "action_link": "Reproduce the transition with controlled connector/cable changes and inspect configuration or DAQ state around subrun 201."
+    },
+    {
+      "signature_id": "SIG-TRIGGER-NOT-GLOBALLY-FAILED",
+      "observation": "The total trigger rate is described as stable and persistent, with median 4.454 and range 4.132 to 5.262.",
+      "role": "contradicts",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-001",
+          "field": "text",
+          "value_json": "\"- Total trigger rate: median 4.454, range 4.132 to 5.262. Temporal behavior: stable/persistent.\""
+        }
+      ],
+      "cause_link": "Contradicts a sustained detector-wide trigger outage as the primary explanation, while remaining compatible with one inactive LVDS input pair.",
+      "action_link": "Prioritize localized pin/cable/source checks rather than a broad trigger restart unless board-state telemetry reveals a wider problem."
+    },
+    {
+      "signature_id": "SIG-END-OF-RUN-EXPOSURE-CONFOUND",
+      "observation": "Trigger and LVDS total counts both undergo large reductions near subrun 202, and the anomaly overview rises to 33 anomalous channels at subrun 201 and 63 at subrun 202.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-trigger-002",
+          "field": "text",
+          "value_json": "\"- Total trigger counts: median 1003, range 82 to 1008. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.9184).\""
+        },
+        {
+          "evidence_id": "C-lvds-001",
+          "field": "text",
+          "value_json": "\"- Total LVDS counts: median 1.54e+07, range 1.68e+06 to 1.62e+07. Temporal behavior: large transition near subrun 202 (largest adjacent relative change 0.8911).\""
+        },
+        {
+          "evidence_id": "A-ALL",
+          "field": "anomalous_channel_count_by_subrun.200",
+          "value_json": "33"
+        },
+        {
+          "evidence_id": "A-ALL",
+          "field": "anomalous_channel_count_by_subrun.201",
+          "value_json": "63"
+        }
+      ],
+      "cause_link": "The final-subrun count reduction can generate broad nPulses anomalies and limits interpretation of the late measurements, but it cannot explain why channels 32/33 were absent for subruns 1-200.",
+      "action_link": "Normalize validation comparisons for subrun exposure and confirm the pin-16 recovery in a new full-length run."
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+      "observation": "Within-run configuration changes, board matching, synchronization, queue occupancy, and DAQ-state telemetry are unavailable.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "C-daq_config-007",
+          "field": "text",
+          "value_json": "\"- Within-run configuration changes: unavailable; only the static per-run configuration snapshot is parsed.\""
+        },
+        {
+          "evidence_id": "C-daq_config-008",
+          "field": "text",
+          "value_json": "\"- Board matching, synchronization, queue occupancy, and DAQ-state telemetry: unavailable.\""
+        },
+        {
+          "evidence_id": "C-trigger-007",
+          "field": "text",
+          "value_json": "\"- Digitizer-vs-trigger-board rate consistency: unavailable; no compact processed digitizer-rate telemetry was used.\""
+        }
+      ],
+      "cause_link": "Prevents distinguishing a physical LVDS interruption from source disablement, configuration change, or unmatched-board behavior.",
+      "action_link": "Collect these telemetry sources during a controlled retest before declaring the cable or board defective."
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "observation": "There are separate persistent timing-field discontinuities outside channels 32/33: channel 88 has constant TDC 149602000000000 and constant TDCRollovers 1103820000000, while channel 91 has TDC fixed at zero and extremely large nonzero TDCRollovers.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "R-088-09",
+          "field": "mean",
+          "value_json": "149602000000000.0"
+        },
+        {
+          "evidence_id": "R-088-09",
+          "field": "std_population",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-088-10",
+          "field": "mean",
+          "value_json": "1103820000000.0"
+        },
+        {
+          "evidence_id": "R-091-09",
+          "field": "mean",
+          "value_json": "0.0"
+        },
+        {
+          "evidence_id": "R-091-10",
+          "field": "mean",
+          "value_json": "8.77255e+18"
+        }
+      ],
+      "cause_link": "These values are not explained by the pin-16 signal loss and indicate a potentially independent timing-decoding, schema, or data-field problem; without a good raw reference they are not assigned as the primary cause.",
+      "action_link": "Validate timing-field types, units, firmware/schema compatibility, and raw decoding for channels 88-95 separately."
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-ANALOGY-NOT-EXACT",
+      "observation": "Historical runs 2068, 2071, and 2126 concern LVDS connection problems, but their recorded category is LVDS_noise and run 2126 specifically involved abnormal rates, unmatched events, and board-matching loss rather than a persistently zero pin.",
+      "role": "limitation",
+      "citations": [
+        {
+          "evidence_id": "H-2068",
+          "field": "entry.category",
+          "value_json": "\"LVDS_noise\""
+        },
+        {
+          "evidence_id": "H-2071",
+          "field": "entry.category",
+          "value_json": "\"LVDS_noise\""
+        },
+        {
+          "evidence_id": "H-2126",
+          "field": "entry.category",
+          "value_json": "\"LVDS_noise\""
+        },
+        {
+          "evidence_id": "H-2126",
+          "field": "entry.cause",
+          "value_json": "\"DAQ board-matching efficiency dropped below 100% beginning in run 2126, file 26, around event 700. The DAQ queue filled with mostly empty, unmatched digitizer events and the apparent digitizer trigger rate became abnormally high while the trigger-board files remained normal. Trigger-mask tests localized the problem to digitizer 0 LVDS channel 0, corresponding to detector channels 0 and 1. The subsequent intervention indicated an intermittent or degraded LVDS-pin, jumper-wire, or MCX signal connection.\""
+        }
+      ],
+      "cause_link": "Provides only a partial analogy supporting inspection of LVDS connections; it does not prove that the current zero pin has the same physical cause.",
+      "action_link": "Borrow the controlled reseat/isolation procedure, but require current-case confirmation before replacement or masking."
+    }
+  ],
+  "reference_audit": {
+    "all_references_valid": true,
+    "issues": [],
+    "signatures": [
+      {
+        "signature_id": "SIG-LOCAL-PAIR-ABSENT-32",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-LOCAL-PAIR-ABSENT-33",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-LVDS-PIN16-ZERO-MAPPING",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-PIN16-LATE-TRANSITION",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TRIGGER-NOT-GLOBALLY-FAILED",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-END-OF-RUN-EXPOSURE-CONFOUND",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+        "references_valid": true,
+        "errors": []
+      },
+      {
+        "signature_id": "SIG-HISTORICAL-ANALOGY-NOT-EXACT",
+        "references_valid": true,
+        "errors": []
+      }
+    ],
+    "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+  },
+  "input_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642",
+  "evidence_file": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642/evidence.jsonl",
+  "raw_detail": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642/raw_detail.npz",
+  "plots": [
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-32",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_01_P-032.png"
+    },
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-33",
+      "evidence_id": "P-033",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_02_P-033.png"
+    },
+    {
+      "signature_id": "SIG-PIN16-LATE-TRANSITION",
+      "evidence_id": "P-032",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_04_P-032.png"
+    },
+    {
+      "signature_id": "SIG-PIN16-LATE-TRANSITION",
+      "evidence_id": "P-033",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_04_P-033.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "evidence_id": "R-088-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_08_R-088-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "evidence_id": "R-088-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_08_R-088-10.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "evidence_id": "R-091-09",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_08_R-091-09.png"
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "evidence_id": "R-091-10",
+      "image": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/results/study_20260910T233752Z_e8027ad4/run1642/trial_2/signature_images/signature_08_R-091-10.png"
+    }
+  ]
+}

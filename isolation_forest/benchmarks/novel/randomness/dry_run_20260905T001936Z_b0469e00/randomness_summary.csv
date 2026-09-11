@@ -1,7 +1,0 @@
-run,completed_trials,planned_trials,n_unique_exact_diagnoses,n_unique_exact_actions,n_unique_exact_categories,n_unique_exact_outputs,all_input_hashes_match,model_id,sampling_parameters,dominant_diagnosis,dominant_count,consistency_rate,trial_1_status,trial_1_input_sha256,trial_1_category,trial_1_cause,trial_1_action,trial_2_status,trial_2_input_sha256,trial_2_category,trial_2_cause,trial_2_action,trial_3_status,trial_3_input_sha256,trial_3_category,trial_3_cause,trial_3_action,trial_4_status,trial_4_input_sha256,trial_4_category,trial_4_cause,trial_4_action,trial_5_status,trial_5_input_sha256,trial_5_category,trial_5_cause,trial_5_action
-1620,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,
-1640,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,
-1642,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,
-1702,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,
-1703,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,
-2126,0,5,,,,,False,gpt-5.6-sol,{},,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,,not run,,,,

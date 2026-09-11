@@ -1,0 +1,104 @@
+[
+  {
+    "run": 1620,
+    "files": 259,
+    "rows": 2557872,
+    "raw_bytes": 243040837,
+    "channels32_33_present_subruns": [
+      259,
+      259
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 857777,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  },
+  {
+    "run": 1640,
+    "files": 741,
+    "rows": 7144357,
+    "raw_bytes": 677281288,
+    "channels32_33_present_subruns": [
+      519,
+      519
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 875128,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  },
+  {
+    "run": 1642,
+    "files": 202,
+    "rows": 1959578,
+    "raw_bytes": 186154439,
+    "channels32_33_present_subruns": [
+      2,
+      2
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 853621,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  },
+  {
+    "run": 1702,
+    "files": 129,
+    "rows": 479078,
+    "raw_bytes": 45473363,
+    "channels32_33_present_subruns": [
+      129,
+      129
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 869142,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  },
+  {
+    "run": 1703,
+    "files": 627,
+    "rows": 2327600,
+    "raw_bytes": 220953242,
+    "channels32_33_present_subruns": [
+      627,
+      627
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 938147,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  },
+  {
+    "run": 2126,
+    "files": 86,
+    "rows": 422227,
+    "raw_bytes": 39806519,
+    "channels32_33_present_subruns": [
+      85,
+      85
+    ],
+    "preflight": {
+      "utf8_bytes_upper_bound_tokens": 858857,
+      "max_input_tokens_guard": 950000,
+      "within_conservative_guard": true,
+      "note": "Conservative bound, not exact tokenizer count. Refuse oversized input; never truncate."
+    },
+    "independent_checks": "passed"
+  }
+]

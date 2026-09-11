@@ -1,0 +1,42 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-TDC-CONSTANT-88-90",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TDC-ZERO-91-93",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TIMING-ANOMALY-94-95",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-SHARP-BOUNDARY-AT-88",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-SIGNAL-PRESENCE-PRESERVED",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TRIGGER-LVDS-STABLE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-MISSING",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

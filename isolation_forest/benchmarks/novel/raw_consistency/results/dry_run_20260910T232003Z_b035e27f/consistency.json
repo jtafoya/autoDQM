@@ -1,0 +1,344 @@
+[
+  {
+    "run": 1620,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "a5ca5be01bf6a05adc73429e3f7b4602e1324fa92582e9ad1a7520f68225ac78",
+        "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "a5ca5be01bf6a05adc73429e3f7b4602e1324fa92582e9ad1a7520f68225ac78",
+        "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "a5ca5be01bf6a05adc73429e3f7b4602e1324fa92582e9ad1a7520f68225ac78",
+        "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  },
+  {
+    "run": 1640,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "abbb99b59bc5e97d665e1e6d384f10cf0a139994da97e92be4ff606646e46e58",
+        "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "abbb99b59bc5e97d665e1e6d384f10cf0a139994da97e92be4ff606646e46e58",
+        "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "abbb99b59bc5e97d665e1e6d384f10cf0a139994da97e92be4ff606646e46e58",
+        "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  },
+  {
+    "run": 1642,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "acf2b83b3d8a223b140ddf63fbe964e42a594ef37eb5f7dead5a5d6880db5a6d",
+        "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "acf2b83b3d8a223b140ddf63fbe964e42a594ef37eb5f7dead5a5d6880db5a6d",
+        "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "acf2b83b3d8a223b140ddf63fbe964e42a594ef37eb5f7dead5a5d6880db5a6d",
+        "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  },
+  {
+    "run": 1702,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "ff8a91e1de1c446b6b14852163c38ead03eb592585483257fb89d0eceaf04f00",
+        "request_body_sha256": "cb7c276b4d22a04d35bd81057511711256423f0912955fb5606a9f3c4ef770fb"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "ff8a91e1de1c446b6b14852163c38ead03eb592585483257fb89d0eceaf04f00",
+        "request_body_sha256": "cb7c276b4d22a04d35bd81057511711256423f0912955fb5606a9f3c4ef770fb"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "ff8a91e1de1c446b6b14852163c38ead03eb592585483257fb89d0eceaf04f00",
+        "request_body_sha256": "cb7c276b4d22a04d35bd81057511711256423f0912955fb5606a9f3c4ef770fb"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  },
+  {
+    "run": 1703,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "fbf29caa3b4cd17912fbd514e9b0d476b8950ac9eaae16ce02765c2519ae1552",
+        "request_body_sha256": "1c930ab8292e647152b2a8a1ce97205ef73f077856eaeccb2e4a279d926d146d"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "fbf29caa3b4cd17912fbd514e9b0d476b8950ac9eaae16ce02765c2519ae1552",
+        "request_body_sha256": "1c930ab8292e647152b2a8a1ce97205ef73f077856eaeccb2e4a279d926d146d"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "fbf29caa3b4cd17912fbd514e9b0d476b8950ac9eaae16ce02765c2519ae1552",
+        "request_body_sha256": "1c930ab8292e647152b2a8a1ce97205ef73f077856eaeccb2e4a279d926d146d"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  },
+  {
+    "run": 2126,
+    "trials": [
+      {
+        "trial": 1,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "e26187dbca54034f69b378f6e8fb322d859751a590562998c4547c367d3a33a5",
+        "request_body_sha256": "bc6a871afe4e875d1cc720e0b4f69616c51b1c99c313e6c49dacacede8ff0933"
+      },
+      {
+        "trial": 2,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "e26187dbca54034f69b378f6e8fb322d859751a590562998c4547c367d3a33a5",
+        "request_body_sha256": "bc6a871afe4e875d1cc720e0b4f69616c51b1c99c313e6c49dacacede8ff0933"
+      },
+      {
+        "trial": 3,
+        "status": "dry_run",
+        "diagnosis": null,
+        "input_sha256": "e26187dbca54034f69b378f6e8fb322d859751a590562998c4547c367d3a33a5",
+        "request_body_sha256": "bc6a871afe4e875d1cc720e0b4f69616c51b1c99c313e6c49dacacede8ff0933"
+      }
+    ],
+    "fields": {
+      "category": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "cause": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      },
+      "action": {
+        "texts": [
+          null,
+          null,
+          null
+        ],
+        "normalized_wording_identical": false,
+        "semantic_consistency": "pending_human_review"
+      }
+    },
+    "all_diagnoses_completed": false,
+    "identical_request_bytes": true
+  }
+]

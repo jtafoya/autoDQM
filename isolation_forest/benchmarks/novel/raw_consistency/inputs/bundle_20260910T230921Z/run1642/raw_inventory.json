@@ -1,0 +1,2319 @@
+{
+  "run": 1642,
+  "method": {
+    "version": "raw_consistency_v1",
+    "raw_is_lossy_summary_not_original_rows": true,
+    "coverage": "Every matching CSV and every row. No top-channel, anomaly-only or random sampling.",
+    "numeric_columns": "All columns except event_id, channel and geometry; malformed numeric cells fail.",
+    "moments": "Finite-value pooled mean and population SD, weighted by finite row count.",
+    "histograms": "32 shared per-metric asinh-spaced bins spanning the observed finite min/max across all channels. Exact counts in these bins, from a second full pass.",
+    "subrun_distributions": "Quantiles of subrun medians, NOT pooled-event quantiles. Detailed within-subrun quantiles retained in raw_detail.npz.",
+    "time": "Eight consecutive equal-file-count bins ordered by numeric subrun. Not elapsed time. Bin means weighted by finite row count.",
+    "presence": "Observed channel events / observed events in that subrun; not external trigger efficiency. Absent-channel occupancy is zero, other measurements are unavailable.",
+    "missing": "Nonfinite numeric cells counted, never replaced by zero. Absent subrun/channel measurements stay NaN in detail and null in JSON.",
+    "precision": "Prompt numeric summaries rounded to 6 significant figures; detail arrays retain float64.",
+    "limitations": "Not waveforms. Compression loses exact event order, arbitrary cross-variable correlations, within-bin changes, fine distribution shape and individual outliers beyond stated extrema. No supplied good raw reference: absolute values alone do not prove a fault."
+  },
+  "files": [
+    {
+      "subrun": 1,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun1.csv",
+      "sha256": "45b7ee1be6bde55fa5384bb4deafb737fc8141722c7487224e718ffa4294c699",
+      "bytes": 941073,
+      "rows": 9896,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 2,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun2.csv",
+      "sha256": "da770d2882c83cef8a0d63b9cf1306e70f5d2813d26b4920586bc589ec93e750",
+      "bytes": 925513,
+      "rows": 9737,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 3,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun3.csv",
+      "sha256": "275d9fc9e7c187ddc4ff03c0f5599b68648c419fd44faa0715fbe1c07a0c20d9",
+      "bytes": 938065,
+      "rows": 9874,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 4,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun4.csv",
+      "sha256": "9e615bbfde92b8d593427c8cc1e85c64468c1ef5350b44a00c0e11b12199d1f1",
+      "bytes": 948848,
+      "rows": 9998,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 5,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun5.csv",
+      "sha256": "6ef9bc562ee0228f8c1b28a4c6ef00704cbbc4f901217b18a8de2e8dfb5bc911",
+      "bytes": 922530,
+      "rows": 9704,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 6,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun6.csv",
+      "sha256": "0d5b526ef1ef69f1e8bd042ced55e475c6cb81a22f1e9c0a45139a087a99ba1e",
+      "bytes": 936027,
+      "rows": 9846,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 7,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun7.csv",
+      "sha256": "dd72c70e1f15627745268d3385c722ec1c31f83fd16f3b79d1dbd649ba6b278b",
+      "bytes": 913032,
+      "rows": 9612,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 8,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun8.csv",
+      "sha256": "175f81dcee5d965798bf49b56be7d0d9a9b0ac24ebfc03cb37873e771c1f6457",
+      "bytes": 916886,
+      "rows": 9657,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 9,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun9.csv",
+      "sha256": "f3530a68e96f4f7d9074192fa3ec3117fa43aa082e2185aac9e6d29e815220f4",
+      "bytes": 930957,
+      "rows": 9801,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 10,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun10.csv",
+      "sha256": "a6fd6c2a0e41d0b0cdcb62fc50c42abae017101dd7f8c07d69b62ce299aa8e4c",
+      "bytes": 917386,
+      "rows": 9662,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 11,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun11.csv",
+      "sha256": "896ba86bbd0076cdb84336bbcbe1793cf78338361ea89af2a092769929cf83da",
+      "bytes": 933449,
+      "rows": 9821,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 12,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun12.csv",
+      "sha256": "c21c2c623013be0605ed2babf14f22ddbf5439fe4d45b2f78e3845a054856d86",
+      "bytes": 911241,
+      "rows": 9599,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 13,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun13.csv",
+      "sha256": "570a3c30a19d2c95c94741800ccb83bbbcda70f38e6a59af34c65b157215bd9f",
+      "bytes": 971776,
+      "rows": 10217,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 14,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun14.csv",
+      "sha256": "b2a48dceb01649b17172e27a552660a814a9ae6cb4a8ff340efadced72e3b611",
+      "bytes": 925275,
+      "rows": 9737,
+      "events": 981,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 15,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun15.csv",
+      "sha256": "58ee15b5ea19b4e1dd20029352728ea38d812bde1e8f4ba1abcb738c5d283ab3",
+      "bytes": 930201,
+      "rows": 9794,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 16,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun16.csv",
+      "sha256": "21e443898a13e4616c1d694aa1c6910a076b2a04c906c3eb5238bdc2536f415c",
+      "bytes": 947528,
+      "rows": 9968,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 17,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun17.csv",
+      "sha256": "bb9afd9f421bfcb3ced5b091b6befb7bb138013fc760d22bc19e26a62ad2e686",
+      "bytes": 959343,
+      "rows": 10100,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 18,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun18.csv",
+      "sha256": "57af0d713d3ce2658a94f6bfe63e6885e0b8c357a55438fe88f3b73a020a8d4f",
+      "bytes": 926142,
+      "rows": 9747,
+      "events": 994,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 19,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun19.csv",
+      "sha256": "7f7a6d8810ea9933996221b2ff1e0b645e23feff5d8265512b1a61920c9a27dd",
+      "bytes": 941701,
+      "rows": 9904,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 20,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun20.csv",
+      "sha256": "17d6a4975ea07afd8dd9e313206261c51b4af0b260a7897eb25c452051a22e9e",
+      "bytes": 924787,
+      "rows": 9733,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 21,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun21.csv",
+      "sha256": "368bff6a97350e53a399270050eb76c07af0e792ba9bd7268ea78fb394b6c459",
+      "bytes": 877200,
+      "rows": 9236,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 22,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun22.csv",
+      "sha256": "294dd8ba296aa8968064647ed2800f14298d4345a0657952bf09daf11208edd1",
+      "bytes": 954089,
+      "rows": 10036,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 23,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun23.csv",
+      "sha256": "d9ead0696ea170a68cb02b2d41a205d380cb0daef359b20d194112aef0d3eb13",
+      "bytes": 939403,
+      "rows": 9883,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 24,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun24.csv",
+      "sha256": "e975cfb712fc70eabc16e2e59348ec9a25ca71d3914d120e72ef429f69d11914",
+      "bytes": 944450,
+      "rows": 9938,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 25,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun25.csv",
+      "sha256": "9f5e5fdbb8d2c8f70df1f475d3967f085602647136bae1c12dcde8251fe649e8",
+      "bytes": 933451,
+      "rows": 9836,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 26,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun26.csv",
+      "sha256": "f1880e6cc3835d71f1d59df45da92ef3ef46bec0f0a8baf3f95cbfab7f9da153",
+      "bytes": 953624,
+      "rows": 10018,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 27,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun27.csv",
+      "sha256": "8bf0a3189dd8b0e34dcb364bb231af2a64d973e0284286afa45f5fbc952b2ef4",
+      "bytes": 920398,
+      "rows": 9690,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 28,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun28.csv",
+      "sha256": "a4f922ee0e657d6fb5a72861ccc9c80e57f841dc9792cf43207944d70f1c24c1",
+      "bytes": 938371,
+      "rows": 9881,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 29,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun29.csv",
+      "sha256": "54e08e80017d8fb9632943d0f643dfad1fafb4c4212ab6ee1b458b2bc62c1186",
+      "bytes": 910544,
+      "rows": 9592,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 30,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun30.csv",
+      "sha256": "2aecae0482562ea219b22032d891ee346d2608b2f3ee073206f6f976da270cce",
+      "bytes": 923242,
+      "rows": 9726,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 31,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun31.csv",
+      "sha256": "01353c6325c52aa6b04c89e46669e54a0d86ae4bd80d497af2ad2cca3bb37c7f",
+      "bytes": 942102,
+      "rows": 9910,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 32,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun32.csv",
+      "sha256": "4602f952926be7687e79e07195eb6656c9dbaf1857f0ed89e9e50a21d8464776",
+      "bytes": 950621,
+      "rows": 10016,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 33,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun33.csv",
+      "sha256": "dcd62f1bbd9bb4d9e8174f2b030f50a81ad83b077518b8cda26acd57639c8228",
+      "bytes": 900871,
+      "rows": 9494,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 34,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun34.csv",
+      "sha256": "2e0ff6857064ec1b9ab10de909327e3316a309db377e23f5f7bb644b689cde90",
+      "bytes": 930597,
+      "rows": 9799,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 35,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun35.csv",
+      "sha256": "5041a86f5d2b935689ba00d9839e96227a83c5d1b786f2da65f26128730d280a",
+      "bytes": 956035,
+      "rows": 10059,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 36,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun36.csv",
+      "sha256": "acffb5565be2f9433704111da195ccaf97f24ead1479f9ea96fba56141ca75a1",
+      "bytes": 923411,
+      "rows": 9727,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 37,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun37.csv",
+      "sha256": "fdba44865c5701fdda40059b74f01d4dacd97d927550896562069b1affa972f4",
+      "bytes": 929995,
+      "rows": 9789,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 38,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun38.csv",
+      "sha256": "0b4a6a933733b0127c8ac85e6025fc16ae39150d893bcc98363f8818599e92db",
+      "bytes": 915500,
+      "rows": 9646,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 39,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun39.csv",
+      "sha256": "0c1980bb6160ad327c272f9a61be30e19c2111dd8f84671f87c0649e6dfecc33",
+      "bytes": 942268,
+      "rows": 9918,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 40,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun40.csv",
+      "sha256": "436ccc638e19e4952de2e8d099d97a707675772cc49956073c522dbe1794a385",
+      "bytes": 918763,
+      "rows": 9672,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 41,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun41.csv",
+      "sha256": "77526d02c5a04a2b96b9a0c5d81ac816514018a959b9a2d466531a599bc1a41f",
+      "bytes": 932635,
+      "rows": 9820,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 42,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun42.csv",
+      "sha256": "8b2240cea897607c868d7e61b833463d3e0d1a7041dcebc4a65cafbff050d716",
+      "bytes": 923713,
+      "rows": 9736,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 43,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun43.csv",
+      "sha256": "25544df2b7dd559bb6f2b35021ca540bcab33515f9b047192c645d133be0deed",
+      "bytes": 934373,
+      "rows": 9839,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 44,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun44.csv",
+      "sha256": "176b95a7f02da1f0726a3e9a1a4b8eb696611e84500299c40b9e13211fd1f9eb",
+      "bytes": 915207,
+      "rows": 9634,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 45,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun45.csv",
+      "sha256": "fb16ee46e55358cae74130b873d52ae0de6b1bc130aed0945ceea5eb3ec664b4",
+      "bytes": 942492,
+      "rows": 9923,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 46,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun46.csv",
+      "sha256": "85e247c75088f052594d1b637c526a93bd1c7fc0b3109802ea417d0f4a8615dc",
+      "bytes": 919889,
+      "rows": 9691,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 47,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun47.csv",
+      "sha256": "256b113994b03f5e84ddc4f8c3c299785420d002522e05aa0237584f21d252d7",
+      "bytes": 944265,
+      "rows": 9933,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 48,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun48.csv",
+      "sha256": "35aff50eb6eea4091d19c39df3af75cfdd2f8efd10a7a4516bb23df6305d2ec7",
+      "bytes": 932932,
+      "rows": 9828,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 49,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun49.csv",
+      "sha256": "e7dd2638ae1ed6ea95f314a3d6c8132aa25a1c23f0c2e7cdeb5730c0682cfb9e",
+      "bytes": 914253,
+      "rows": 9629,
+      "events": 982,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 50,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun50.csv",
+      "sha256": "2100a3401e03875be6653b1e2ab56d9d21093ced27799ec2f7360cfec4d4a4cd",
+      "bytes": 899400,
+      "rows": 9466,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 51,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun51.csv",
+      "sha256": "03e938d2df7842c318757c74b55060c33c7782ec10802a16ff5f9e1f931c3b40",
+      "bytes": 904705,
+      "rows": 9527,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 52,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun52.csv",
+      "sha256": "691570232f73d2ae13564bf7a3b7a1f35f2b6faa2118c5bd0e5be7a8eb8629c2",
+      "bytes": 931239,
+      "rows": 9799,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 53,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun53.csv",
+      "sha256": "bd12a382ffe9d572dfecc1ad4f261ae0f4dbd875aa4fc93bf49424f4f760f865",
+      "bytes": 936969,
+      "rows": 9862,
+      "events": 982,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 54,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun54.csv",
+      "sha256": "b8878e1e38eb8229d7be7b3169d6ba20e28f7e4a123197fb8962befcd9539cd6",
+      "bytes": 951592,
+      "rows": 10005,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 55,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun55.csv",
+      "sha256": "4de3eaf5705dbdf0b6ffbe997921c07e639b8cb94297765e818416e6ae1d83c1",
+      "bytes": 892920,
+      "rows": 9405,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 56,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun56.csv",
+      "sha256": "c2e1f5d6420f55f092630061d4ee3be026f576ec8063fc3e4e9ec39876ca74e5",
+      "bytes": 951276,
+      "rows": 10009,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 57,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun57.csv",
+      "sha256": "edb95a29fc59e7db13d6d0871cec03af23568f8f3eaa724ed5618160410a63cf",
+      "bytes": 917837,
+      "rows": 9653,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 58,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun58.csv",
+      "sha256": "0a9e0a7760e6e8566b530307985e98ffd9361da94e3914f5e77e901c2ba95afb",
+      "bytes": 949388,
+      "rows": 9984,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 59,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun59.csv",
+      "sha256": "03d172d331bfd551ec4d800a4b52d194fbac37046650d9738b12ac0959d51bcd",
+      "bytes": 937787,
+      "rows": 9872,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 60,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun60.csv",
+      "sha256": "415897800f7381f6c74f8db1d1af8c14289aa919fb8a40ce148b2322ae43f267",
+      "bytes": 934162,
+      "rows": 9829,
+      "events": 982,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 61,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun61.csv",
+      "sha256": "22da8abb0adf1f1548da0746be63c062479397691cb9ec189242130d4a01d064",
+      "bytes": 918005,
+      "rows": 9657,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 62,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun62.csv",
+      "sha256": "956cea427c9cdd9f320602d6116f72660e3b341a2aae60d5bfe17fd0ccec2990",
+      "bytes": 929051,
+      "rows": 9780,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 63,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun63.csv",
+      "sha256": "2a3636019525049b98335b761c38113909e65b624154e55cf3aaf5c1c31cc582",
+      "bytes": 934775,
+      "rows": 9839,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 64,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun64.csv",
+      "sha256": "591202f248616c1061c8a995c30dbfd8ad4e021b92f24d0304a9976b0af4e3db",
+      "bytes": 949000,
+      "rows": 9987,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 65,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun65.csv",
+      "sha256": "9760ac7ef4a2f9e87b14bd44ac35717af7c1c1f366dcb0ac8739fcbbfc984869",
+      "bytes": 920598,
+      "rows": 9692,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 66,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun66.csv",
+      "sha256": "7d8843b816c02705164800f58e643813754606a5cc1b368f2157fd2196b17c49",
+      "bytes": 933097,
+      "rows": 9821,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 67,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun67.csv",
+      "sha256": "6d7aa0c8556c203a318a64600c000e8c436e4a6dbd5bc47178fddd94c346e8c7",
+      "bytes": 925697,
+      "rows": 9740,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 68,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun68.csv",
+      "sha256": "cb09b676e5d60a32ed74eb740cab2bba4c36e7219ac15da7cba8877bb76d51d0",
+      "bytes": 931836,
+      "rows": 9808,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 69,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun69.csv",
+      "sha256": "9cabdee3fb2d8eee485dc8143a21efbcfcb3f2a990026a84d8cc81bc96f8dc69",
+      "bytes": 903079,
+      "rows": 9516,
+      "events": 994,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 70,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun70.csv",
+      "sha256": "1d370c4c1919c9d7dd82598f823aeccc4ce9f135ab0ec8d49155f0b00f0b13ae",
+      "bytes": 933469,
+      "rows": 9827,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 71,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun71.csv",
+      "sha256": "e608b68df01049de637d6d2b6bee97da85176c5d48df165d0d2b04c6b5558eb9",
+      "bytes": 865334,
+      "rows": 9118,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 72,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun72.csv",
+      "sha256": "2490fbeb2ccbce3ba2899ad88a2c58f8d66077e500e35fe0ccc6f2fd9cad8b03",
+      "bytes": 914970,
+      "rows": 9623,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 73,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun73.csv",
+      "sha256": "e0cb01cefb2af8e4f3ddf774e4a6b8392b70399ef47fb6203c308b544c286d03",
+      "bytes": 882569,
+      "rows": 9298,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 74,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun74.csv",
+      "sha256": "bbeed067c76e3f3572a9813375602288c2803e4a073526b7bb54be1614d0d697",
+      "bytes": 916611,
+      "rows": 9653,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 75,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun75.csv",
+      "sha256": "cb5fd287505374b8ee5171005b0d4429247fc41f0973ce5fde6fe543158f72c4",
+      "bytes": 921452,
+      "rows": 9696,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 76,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun76.csv",
+      "sha256": "c4b35c6ceb9ec92d279ee250aed9d7c9453c54a29b4ccc731511a8dc0c271910",
+      "bytes": 965272,
+      "rows": 10152,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 77,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun77.csv",
+      "sha256": "e84a4480a0b35f86fe5feeb81d6fd18a7feba437d90fa077b2bf4c0c422dc6c2",
+      "bytes": 943675,
+      "rows": 9934,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 78,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun78.csv",
+      "sha256": "bfff1c2cdc876c50f00091b220b908073fb93e736fc5c1d64044e211c66439b1",
+      "bytes": 902350,
+      "rows": 9499,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 79,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun79.csv",
+      "sha256": "fc64743af528402bdaa35fc759934bc6d575afae0e966ba54a66e5745e79d499",
+      "bytes": 956329,
+      "rows": 10063,
+      "events": 994,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 80,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun80.csv",
+      "sha256": "b988af4d25f8cdd1b9be54507ac3fa19fb1ffa0ebc9e04e7be9995cc68f37e8e",
+      "bytes": 926088,
+      "rows": 9738,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 81,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun81.csv",
+      "sha256": "2fc37a96f919637fc6e2ac4f01cd87fd280611453465ba484403de70b0544c4f",
+      "bytes": 880345,
+      "rows": 9274,
+      "events": 983,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 82,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun82.csv",
+      "sha256": "1b5ac10d8b03f264007518563b80fbc05d07f8602228040210e53eb1d6fa62ee",
+      "bytes": 939490,
+      "rows": 9888,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 83,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun83.csv",
+      "sha256": "d0c8c2dfd6cbf97c7106c9ef7ce55d1084391241f0264d08e7125d47c693a091",
+      "bytes": 921284,
+      "rows": 9691,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 84,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun84.csv",
+      "sha256": "8fcd910139e20ca68103448987b4c9c03db939e420b79942852c82ebb462b4cf",
+      "bytes": 934881,
+      "rows": 9836,
+      "events": 980,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 85,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun85.csv",
+      "sha256": "24b3e2fa8394626dd27a796db55f487146737f08c6268e63737c99402fb78163",
+      "bytes": 929800,
+      "rows": 9785,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 86,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun86.csv",
+      "sha256": "a5359cb16685157097cf776e69fb03d387052721fc51ea8d5e2f6e3d0bee8e42",
+      "bytes": 919677,
+      "rows": 9683,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 87,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun87.csv",
+      "sha256": "3eaaa9e4324a4ca12a184651a865ddd1c63b38f7d09305a71acfa8fe66d789a8",
+      "bytes": 923747,
+      "rows": 9725,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 88,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun88.csv",
+      "sha256": "fdd03afcd2b418ab4c34d7ac76898f9d1ef02ce6b1e46e13c4371096d6205617",
+      "bytes": 929168,
+      "rows": 9773,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 89,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun89.csv",
+      "sha256": "edacf6f43af47b3ccd1a7d08f99f08c440928701a91f026900af94ade4170d0d",
+      "bytes": 941083,
+      "rows": 9914,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 90,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun90.csv",
+      "sha256": "af97348ecc7ad2ed1b06ffa05c6553eef508c3a2bdb5c0ad3783a1da57366ece",
+      "bytes": 916691,
+      "rows": 9650,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 91,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun91.csv",
+      "sha256": "d016ff660a65c0a8087d2fa28b735565802d201d16c936f8d955419eda64ffb8",
+      "bytes": 939043,
+      "rows": 9887,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 92,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun92.csv",
+      "sha256": "001ebcfcef5d20d0de81cc666942c18355c2fb74e2961de28657b77a598b49d1",
+      "bytes": 918315,
+      "rows": 9660,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 93,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun93.csv",
+      "sha256": "f8be7ddad0b40d82151bdd97744358730691e265eafa5b1e8e4b7f783351627e",
+      "bytes": 893463,
+      "rows": 9413,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 94,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun94.csv",
+      "sha256": "bc42252049866333294c207cf26999f7902b8ee8e3e9dcc16551ddf49d5107ef",
+      "bytes": 944892,
+      "rows": 9933,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 95,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun95.csv",
+      "sha256": "7fd39ef9825f8eb7995302d6795f085b0e5bd36adaeae1ae6e0b50740fd86cca",
+      "bytes": 925227,
+      "rows": 9737,
+      "events": 981,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 96,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun96.csv",
+      "sha256": "b3c000f233d4cfcbe8c4d2ca13ea3b4fc658a4b2d9cff853632f7a2351ed8481",
+      "bytes": 928744,
+      "rows": 9773,
+      "events": 982,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 97,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun97.csv",
+      "sha256": "1e4a791cacc03cf0941c93ece39d26f571b0efc11966a5670ccc7735ef08fbf0",
+      "bytes": 893782,
+      "rows": 9403,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 98,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun98.csv",
+      "sha256": "bc323cf30df38d7316d65ec19a33abda5523d1772abec39a2b43bb58be579ab9",
+      "bytes": 938192,
+      "rows": 9875,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 99,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun99.csv",
+      "sha256": "0074b823ff2410572f784f9d2c4d0aa35b55f7923a96522fc92a12e5f32c92d0",
+      "bytes": 877804,
+      "rows": 9251,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 100,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun100.csv",
+      "sha256": "f1230b02a21494d4ce244ebfd1f08777315dd0f67b96439ce8802fff325d040f",
+      "bytes": 897325,
+      "rows": 9450,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 101,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun101.csv",
+      "sha256": "7ae018cccd6e981c53e80e7b2ca8077d57668f4d755fffcf045daef167f0a709",
+      "bytes": 878609,
+      "rows": 9254,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 102,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun102.csv",
+      "sha256": "2e566eb4cf8e116960f75906806c280d19b18a528ca66440b017762ba6af6e86",
+      "bytes": 936663,
+      "rows": 9860,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 103,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun103.csv",
+      "sha256": "0bf81335a52a8dc13372ec3054466adba121e2097b86ee3aa0ba10c2366a27eb",
+      "bytes": 921197,
+      "rows": 9687,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 104,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun104.csv",
+      "sha256": "55973713d19aaeed866fefcd3f8cabcf9b2301037132190093766b2ef29bb8af",
+      "bytes": 962351,
+      "rows": 10116,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 105,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun105.csv",
+      "sha256": "ee105a35bc307f0e5248ac6713e0219801240727247f66c2825a06a763fc9c9a",
+      "bytes": 913816,
+      "rows": 9621,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 106,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun106.csv",
+      "sha256": "9c7050e108ad9fda61c457b0dfc6d307d5522a7e5b5817bdd59186342b69af61",
+      "bytes": 975663,
+      "rows": 10257,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 107,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun107.csv",
+      "sha256": "5b256a0db7ef38c6fe595f04b30d5f1eafb7a3d394f0fc2faa0de612661dc108",
+      "bytes": 901126,
+      "rows": 9490,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 108,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun108.csv",
+      "sha256": "cbb1b4757b55f4d64460ad69f10f91a1beb27947252813a8f65b625b11c802b4",
+      "bytes": 883243,
+      "rows": 9304,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 109,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun109.csv",
+      "sha256": "50f4561c0bb8e58f53c2185bf53649251ca40fd7ade87ffbdcee181680e757ec",
+      "bytes": 902531,
+      "rows": 9504,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 110,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun110.csv",
+      "sha256": "4d5f884d4190ed1d478258afbe6e77c9c2c147a177adb8e55b581091287dab30",
+      "bytes": 932606,
+      "rows": 9814,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 111,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun111.csv",
+      "sha256": "e34f8fd77f5c0b862f4f7fb8c8bb528c88f004b729db84846a4e2dc391fa10fe",
+      "bytes": 926770,
+      "rows": 9751,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 112,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun112.csv",
+      "sha256": "f38b7e06ade3e4528675f48dca0a8ea133b1b7f0ac4178a0380a2319b5513839",
+      "bytes": 918245,
+      "rows": 9670,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 113,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun113.csv",
+      "sha256": "f2392bf69ce34e25e979515283be2d7f42f2f3ad7827990aa57ae5435a88ac62",
+      "bytes": 922404,
+      "rows": 9710,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 114,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun114.csv",
+      "sha256": "5e9c9f25ad7596d5212d4204c032c34705b32967fe38f2e8a59dc52c2a73e539",
+      "bytes": 954824,
+      "rows": 10042,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 115,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun115.csv",
+      "sha256": "9f553ee4cc00e96b00a6d5bb685895301b01c243a564c6ac8a0888b1db687c3c",
+      "bytes": 914038,
+      "rows": 9618,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 116,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun116.csv",
+      "sha256": "971a8fb3f7af2e1c50d459bf0cbd8d255dcaf78963600e2f4f35789686355b84",
+      "bytes": 972258,
+      "rows": 10220,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 117,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun117.csv",
+      "sha256": "4b8156633cc843f30286dc084fee9ab690c01866ea78fec00c2515bfab616408",
+      "bytes": 874369,
+      "rows": 9211,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 118,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun118.csv",
+      "sha256": "cc730476557666d0a6107a1fe3eab0c965ec7b2de795a228b59ba97934bb45e6",
+      "bytes": 910849,
+      "rows": 9596,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 119,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun119.csv",
+      "sha256": "024fbaf9c70317d55563a7ad3eb1521f14a7d29bb67baa95422e85636b3e59f0",
+      "bytes": 920917,
+      "rows": 9701,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 120,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun120.csv",
+      "sha256": "92dfbbe971be86e095cba180137cb7c30047fc7e272b2b2bf66d00bff75ae7a9",
+      "bytes": 921438,
+      "rows": 9702,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 121,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun121.csv",
+      "sha256": "40e0095049342da7ce9a75836c7befed6f6069155c0c882430bae8a3c47447f2",
+      "bytes": 911919,
+      "rows": 9593,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 122,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun122.csv",
+      "sha256": "efbe254c8c8ccd4f2b85d13a947be180cf7bbd6eca15937dd3e4c1d7a7696508",
+      "bytes": 908404,
+      "rows": 9571,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 123,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun123.csv",
+      "sha256": "99df1f788972f28881a7c7c71d854d3f7c16491eeba325a4aec66f4e470a00bf",
+      "bytes": 920911,
+      "rows": 9693,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 124,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun124.csv",
+      "sha256": "cbf0bf410ce5d882cadca4ede31d0f3b7e2f9c328f8e138d9394f21bf3b81425",
+      "bytes": 928563,
+      "rows": 9775,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 125,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun125.csv",
+      "sha256": "7afc7289233a654f8b97b0fa175120cf448aee5164508eebf4a6f4376a4c32dc",
+      "bytes": 935356,
+      "rows": 9846,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 126,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun126.csv",
+      "sha256": "3f6cb78b9b03d230aa430d1a6229e051bfc8d58925a7e72326919d064cf7d289",
+      "bytes": 913342,
+      "rows": 9608,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 127,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun127.csv",
+      "sha256": "9684fa52cb208857c8c5f18c4746ac549af8f9dd6983f8a221505b13c6470a9f",
+      "bytes": 928188,
+      "rows": 9771,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 128,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun128.csv",
+      "sha256": "7dff5cae15a407e375f06c8eb8a88191edaebbd8374e7f3d53a802e66b8f0979",
+      "bytes": 920982,
+      "rows": 9695,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 129,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun129.csv",
+      "sha256": "6a69a60fc803ac5af0591d888a4cbdc3cea08acb47faf1f8a2e925ce99581793",
+      "bytes": 910500,
+      "rows": 9594,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 130,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun130.csv",
+      "sha256": "ce349fb36fba1510c0bc32953564d9fa302965e355397d5f1d167e6d867a3792",
+      "bytes": 915564,
+      "rows": 9634,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 131,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun131.csv",
+      "sha256": "0e3912f0ed1dd8522f9a73fbc86a3d758fedc6fdd729c0b48e8a901e17eab183",
+      "bytes": 926735,
+      "rows": 9756,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 132,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun132.csv",
+      "sha256": "b9f5372a965f6eaf5692a03aa10c6416bc5117b1781e4f9ca0d532df7fa25add",
+      "bytes": 915911,
+      "rows": 9644,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 133,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun133.csv",
+      "sha256": "0fc5a98cec1bf63ea4955304ee2f1ba5b6375426d38fa318cf409ec06f14504f",
+      "bytes": 919224,
+      "rows": 9677,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 134,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun134.csv",
+      "sha256": "81b87974ee2ae0e54f492c24707ffc69410b5da3a4803d38265a273ba8463172",
+      "bytes": 926912,
+      "rows": 9755,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 135,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun135.csv",
+      "sha256": "3a5ff4951743451ebfa5359ba094f59e18b0510fa49e04e20923dcc116864acc",
+      "bytes": 980471,
+      "rows": 10302,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 136,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun136.csv",
+      "sha256": "21b6ff209bc970fea9eb4871ef8d07d4c6c5d3536a411251c951a6bd43a9e716",
+      "bytes": 927090,
+      "rows": 9758,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 137,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun137.csv",
+      "sha256": "0ef153b6b445b55898801dd633ded669c2ca190b143e471ddf39565e294c55ea",
+      "bytes": 952681,
+      "rows": 10025,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 138,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun138.csv",
+      "sha256": "b6a0c5d98649c0be0286255b5e4c412c786dc90c48093bead19bd10f33053fbd",
+      "bytes": 884794,
+      "rows": 9313,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 139,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun139.csv",
+      "sha256": "4dc022e9afe98fab9d87f3c43e3d5788a4b6b578daf9d76435a4a86644502ad1",
+      "bytes": 922475,
+      "rows": 9711,
+      "events": 996,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 140,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun140.csv",
+      "sha256": "c74ed5e9e7fed5255012869203b71e43e0d0f3b6c75297a188587b6128ed1404",
+      "bytes": 913390,
+      "rows": 9622,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 141,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun141.csv",
+      "sha256": "d9534e6dc770d01a630f92a533591263848dd549c97d52bf768213bd06b3e0c3",
+      "bytes": 943365,
+      "rows": 9923,
+      "events": 980,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 142,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun142.csv",
+      "sha256": "7c1ab353b88aa238345e1f7024f1ec3ceb00b8df8112e2fbbecf2e7a323e861a",
+      "bytes": 937969,
+      "rows": 9876,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 143,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun143.csv",
+      "sha256": "b0fcc68f209a20302deca36113c789d91ba42a47b176ef4d7f1627e56390390f",
+      "bytes": 901013,
+      "rows": 9486,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 144,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun144.csv",
+      "sha256": "f96defaa142c5dc999941921c1222be23c7ac4592de22181397a23c0d4a739fb",
+      "bytes": 919799,
+      "rows": 9679,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 145,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun145.csv",
+      "sha256": "9b7eb2930424532a434689320d2727daa92f709d45fef3a61c7dfeec09004ef6",
+      "bytes": 935443,
+      "rows": 9837,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 146,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun146.csv",
+      "sha256": "b6584528fc6c9b6faf57254063c8d4940dfe0100f226a32b23fa914275329009",
+      "bytes": 902238,
+      "rows": 9500,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 147,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun147.csv",
+      "sha256": "99fa955f243c0ee63afb1ae88068ad34919f094585d8f5b14f8008ca1ee22162",
+      "bytes": 935206,
+      "rows": 9852,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 148,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun148.csv",
+      "sha256": "fc4c6d1de529c210da9ad49709642dbcc3dae2c1131d899e5f65cbd82c3d0587",
+      "bytes": 921560,
+      "rows": 9701,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 149,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun149.csv",
+      "sha256": "902115919a8d3ec05b2c42f393ae7f60585e52281daf137b401ab9905952b738",
+      "bytes": 921330,
+      "rows": 9696,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 150,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun150.csv",
+      "sha256": "64a77a78b1e6381c55a43ca65480e9e9395e6e83600102892ae38f3ee3f16fb8",
+      "bytes": 913532,
+      "rows": 9621,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 151,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun151.csv",
+      "sha256": "8d8b2e7718b9ae60a8f3f06573eabc2bea90f391d94c8f44340894dd97436352",
+      "bytes": 917263,
+      "rows": 9656,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 152,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun152.csv",
+      "sha256": "b4c99561a5f97de2b975257b6fa74e28e40013b5f3deb7db414a23cf9441b711",
+      "bytes": 897981,
+      "rows": 9454,
+      "events": 994,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 153,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun153.csv",
+      "sha256": "c703ac3eace5a9a786c47f6e556d49089b61990445f0dc7f4c8a30eb14b588ca",
+      "bytes": 923561,
+      "rows": 9724,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 154,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun154.csv",
+      "sha256": "3ee85aa601279880628972c1dfe9c45d5e3ad6add4c93dcbcf89c61646e8805b",
+      "bytes": 905563,
+      "rows": 9538,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 155,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun155.csv",
+      "sha256": "f88326e6679ed75796ff8dd217b96dc90dd1333d3c359302f6120d22bd310fb9",
+      "bytes": 938019,
+      "rows": 9869,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 156,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun156.csv",
+      "sha256": "81054b533ce38811360db3ded4e2c36e654c18107a8a510c8d4bb5ab9c67cab4",
+      "bytes": 914178,
+      "rows": 9619,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 157,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun157.csv",
+      "sha256": "4a9a3ab07dcfc27205bceae6266e70deb9cc516c6c84553243f3fd497f975c83",
+      "bytes": 947567,
+      "rows": 9973,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 158,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun158.csv",
+      "sha256": "43bf7f7fbc89da2a2ee5a88a46dc29a42061abdcf981a3455176502869d6b4d3",
+      "bytes": 926761,
+      "rows": 9753,
+      "events": 995,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 159,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun159.csv",
+      "sha256": "421f2fcf7c18ec4c26eb9473d4b6f6bec42fb30bbf86c731153edc1f1c034bce",
+      "bytes": 930654,
+      "rows": 9798,
+      "events": 994,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 160,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun160.csv",
+      "sha256": "512f6e069cf974a7acc00e775abc37e8f0f2e819ba65f0b581e0ee3f469c26c9",
+      "bytes": 876000,
+      "rows": 9223,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 161,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun161.csv",
+      "sha256": "532a7d45d2c4a5c074da57e1d191c6c10e6565733ddf341579c76662c779cd56",
+      "bytes": 923022,
+      "rows": 9724,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 162,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun162.csv",
+      "sha256": "92f38dd9a7bdaeb2d4341350002646baa13e92b9d21ec3a10c04398b278db0a3",
+      "bytes": 900666,
+      "rows": 9485,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 163,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun163.csv",
+      "sha256": "8dba856aaa104c836ed1d1e17df138b58125ab66f7e3f2b7be696e781808bf45",
+      "bytes": 933418,
+      "rows": 9826,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 164,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun164.csv",
+      "sha256": "e86bd04704a7542d0b476f24c74e503873e15f0468417117b08611438e50a9e5",
+      "bytes": 913174,
+      "rows": 9614,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 165,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun165.csv",
+      "sha256": "58db2577e29d2b4962d92500bc8871b1a4fdd7c35af3dec13cf9f75542ee9724",
+      "bytes": 933615,
+      "rows": 9829,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 166,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun166.csv",
+      "sha256": "1e467ea223318f2a3a0225fafcdd00be566210a60b19095e7db55c5f9c16b4e9",
+      "bytes": 907275,
+      "rows": 9556,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 167,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun167.csv",
+      "sha256": "4ad9f0f9d59f5c8dab484b463c3bef61cf6ce296175c8e74f4d2d24e7318cafe",
+      "bytes": 931188,
+      "rows": 9797,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 168,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun168.csv",
+      "sha256": "ebae1ff170ce328105daa64da5c2a856ef10c674acc83da2606accf538c13c9e",
+      "bytes": 919364,
+      "rows": 9672,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 169,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun169.csv",
+      "sha256": "fe456b7813993bb2ce0a2343780a208909a0cb3faa95aaa1f2e4e9d677c5bd7f",
+      "bytes": 901735,
+      "rows": 9493,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 170,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun170.csv",
+      "sha256": "e1db2c2fb1383a015113bb9ef0a8a39c9c2160e6197858672684ecb8d2c6e981",
+      "bytes": 951634,
+      "rows": 10013,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 171,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun171.csv",
+      "sha256": "28b38af26b202f40d148af95efb728e04244a6d84f92513b07e2f279c396e707",
+      "bytes": 899158,
+      "rows": 9473,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 172,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun172.csv",
+      "sha256": "75abdae901971bc2829de35b086ecb1f8c6589a71453150c0ca48904b5c10e15",
+      "bytes": 912544,
+      "rows": 9608,
+      "events": 980,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 173,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun173.csv",
+      "sha256": "6f7c7f18962157c413309cbe773cd2449eeaf2811ee243622058a93f157c8d99",
+      "bytes": 928635,
+      "rows": 9774,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 174,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun174.csv",
+      "sha256": "955d7b63dc5343bc327cce3927aaf09246a3b06522f59c8203219d15161eeb9e",
+      "bytes": 933274,
+      "rows": 9821,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 175,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun175.csv",
+      "sha256": "c48f771e9079c7e553feade886f59330aeeaf2bccc20f35b5b6bc29373ea80d6",
+      "bytes": 959242,
+      "rows": 10090,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 176,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun176.csv",
+      "sha256": "52f78678cf376fa4c61438bb29f3094c63b578fc50e09937e10fb4a97022e8e2",
+      "bytes": 917176,
+      "rows": 9656,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 177,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun177.csv",
+      "sha256": "a11797092220ae6f722988f35ff362741119888dafd7f5deacb179d05f803ac7",
+      "bytes": 914357,
+      "rows": 9631,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 178,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun178.csv",
+      "sha256": "e980737899966d0f08e8ca34280b16775cfad7986e9b8bb1e80b10d841abc97f",
+      "bytes": 921676,
+      "rows": 9706,
+      "events": 977,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 179,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun179.csv",
+      "sha256": "fc6b76e4332758ba1444a897044b336baede66be67ba55d1368f069d2750fdb4",
+      "bytes": 953788,
+      "rows": 10040,
+      "events": 986,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 180,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun180.csv",
+      "sha256": "5bf750189790512ec67027c3caa136ade55d72d4e84e00d38c8c63cd9af0dedf",
+      "bytes": 956013,
+      "rows": 10054,
+      "events": 985,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 181,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun181.csv",
+      "sha256": "d542c7cb97a9205cd6460fefbc8eb6f60f4435c4aae3422e58f1b4e0ab83e521",
+      "bytes": 971946,
+      "rows": 10237,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 182,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun182.csv",
+      "sha256": "9df5023917f5ed5654faad49bc4408339b70b98ce54cde4b04198efa336b492f",
+      "bytes": 900843,
+      "rows": 9488,
+      "events": 980,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 183,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun183.csv",
+      "sha256": "991e9aca7670e40eea347bc3fb92c12fb3f124b6bfce6ba8e113a584deb24655",
+      "bytes": 926294,
+      "rows": 9757,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 184,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun184.csv",
+      "sha256": "fc6a2b02483c616088274447f82baa755ed25a8648fe5e22b8d5dfea8fcf081c",
+      "bytes": 936976,
+      "rows": 9865,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 185,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun185.csv",
+      "sha256": "42996cb4c55186c7d841fce49607c4089223a402e35a22e8d3ee181ba87d74a0",
+      "bytes": 911976,
+      "rows": 9598,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 186,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun186.csv",
+      "sha256": "eacf533a1499781c047e27d8f5211b7515307758c1c5efab6710e25cd4c32d37",
+      "bytes": 915022,
+      "rows": 9635,
+      "events": 989,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 187,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun187.csv",
+      "sha256": "0d7c5712fd2ab1e7c732d0832d69769ee057f8d9c023c77b323f0a26dc147a7c",
+      "bytes": 936449,
+      "rows": 9857,
+      "events": 982,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 188,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun188.csv",
+      "sha256": "3710170da0206baf63a38b567cd165a1c80c2de52d9e2aa03ec671d063336342",
+      "bytes": 934584,
+      "rows": 9841,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 189,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun189.csv",
+      "sha256": "4e9648fa62bd3324570295936ab51934f7f4fdba3638c87cc57e1258147d05ff",
+      "bytes": 912764,
+      "rows": 9607,
+      "events": 984,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 190,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun190.csv",
+      "sha256": "5dc1f4da68647c16e2faa5c27dacfa6813640e901fbbe91ce527c24fc28f2dee",
+      "bytes": 924899,
+      "rows": 9737,
+      "events": 991,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 191,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun191.csv",
+      "sha256": "2353d6f38760eb57ae3946eb5d70b67458125d524650180dc6fac7ad8d69e102",
+      "bytes": 914660,
+      "rows": 9638,
+      "events": 992,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 192,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun192.csv",
+      "sha256": "ed819e10bb9dacbff558e31f834c43962603b64d1d12481004b5a4f65200589c",
+      "bytes": 927880,
+      "rows": 9783,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 193,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun193.csv",
+      "sha256": "20f281414f8768fbdcbf0d57db185fe9c72012d0e0d8b47b8743dbe4b2945a72",
+      "bytes": 892629,
+      "rows": 9401,
+      "events": 993,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 194,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun194.csv",
+      "sha256": "652d45fdf1fc12e849e43730fee89e4bfd9ac708af0aff623da11dc5e630836d",
+      "bytes": 917528,
+      "rows": 9663,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 195,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun195.csv",
+      "sha256": "0da8bdcf8885f0c733698c63e24049f404839ebd63f2d056094f24b068bcfeae",
+      "bytes": 934831,
+      "rows": 9828,
+      "events": 987,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 196,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun196.csv",
+      "sha256": "67c08d225ce2e864855cd90a96cc5ca91f1c45fcc7164969a42450b86a9fd5a4",
+      "bytes": 914551,
+      "rows": 9619,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 197,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun197.csv",
+      "sha256": "16d1273170d84aaa2842f949950209770adc29b7bba1a7ec0dbebe8be19197e3",
+      "bytes": 920977,
+      "rows": 9690,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 198,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun198.csv",
+      "sha256": "8d078729f6a04d7479c0823a2e2d46b14b6826b83fc0124803bea780731cbd60",
+      "bytes": 908886,
+      "rows": 9573,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 199,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun199.csv",
+      "sha256": "4fa07f3698e4a9575a030fea65a4e20697a6f9b72173a41ba5e87fe9fff6d1c1",
+      "bytes": 941383,
+      "rows": 9902,
+      "events": 990,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 200,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun200.csv",
+      "sha256": "11ff89fc142ccb59938a04410fd1890b4bd9fc541c78fb5b8c4b398fce750e30",
+      "bytes": 911329,
+      "rows": 9602,
+      "events": 988,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 201,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun201.csv",
+      "sha256": "e7cf6d00e9241cb2784f222000e2bb0b5355affe0fb863e1edfa67dc9bb4d25a",
+      "bytes": 1013284,
+      "rows": 10712,
+      "events": 977,
+      "duplicate_event_channel_rows": 0
+    },
+    {
+      "subrun": 202,
+      "path": "/eos/experiment/milliqan/run3_MilliMon/slab/1600/Digitizer_run1642_subrun202.csv",
+      "sha256": "c66df38afbb802f92fbca60c0aa6d90f51d64879503aa8057a528f6d5b2bf603",
+      "bytes": 157524,
+      "rows": 1675,
+      "events": 150,
+      "duplicate_event_channel_rows": 0
+    }
+  ],
+  "file_count": 202,
+  "total_bytes": 186154439,
+  "total_rows": 1959578,
+  "columns": [
+    "event_id",
+    "channel",
+    "layer",
+    "supermodule",
+    "row",
+    "column",
+    "sideband_mean",
+    "sideband_rms",
+    "nPulses",
+    "pulseHeight_max",
+    "pulseHeight_min",
+    "pulseArea_max",
+    "pulseArea_min",
+    "pulseDuriation_max",
+    "pulseDuriation_min",
+    "TDC",
+    "TDCRollovers"
+  ],
+  "metrics": [
+    "sideband_mean",
+    "sideband_rms",
+    "nPulses",
+    "pulseHeight_max",
+    "pulseHeight_min",
+    "pulseArea_max",
+    "pulseArea_min",
+    "pulseDuriation_max",
+    "pulseDuriation_min",
+    "TDC",
+    "TDCRollovers"
+  ],
+  "subrun_ranges": [
+    [
+      1,
+      202
+    ]
+  ],
+  "time_bin_subrun_ranges": [
+    [
+      1,
+      26
+    ],
+    [
+      27,
+      52
+    ],
+    [
+      53,
+      77
+    ],
+    [
+      78,
+      102
+    ],
+    [
+      103,
+      127
+    ],
+    [
+      128,
+      152
+    ],
+    [
+      153,
+      177
+    ],
+    [
+      178,
+      202
+    ]
+  ],
+  "time_bin_file_counts": [
+    26,
+    26,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25
+  ],
+  "histogram_edges_by_metric": {
+    "sideband_mean": [
+      -1250.4,
+      -777.188,
+      -483.062,
+      -300.248,
+      -186.619,
+      -115.992,
+      -72.0927,
+      -44.8059,
+      -27.8437,
+      -17.2974,
+      -10.737,
+      -6.65066,
+      -4.09682,
+      -2.48701,
+      -1.45027,
+      -0.747721,
+      -0.217465,
+      0.262681,
+      0.803355,
+      1.52915,
+      2.60729,
+      4.28624,
+      6.95285,
+      11.2216,
+      18.0761,
+      29.0959,
+      46.8202,
+      75.3332,
+      121.205,
+      195.006,
+      313.742,
+      504.773,
+      812.118
+    ],
+    "sideband_rms": [
+      0.240097,
+      0.460991,
+      0.701941,
+      0.973429,
+      1.28727,
+      1.65711,
+      2.09904,
+      2.6323,
+      3.28007,
+      4.07055,
+      5.03812,
+      6.22487,
+      7.68244,
+      9.47425,
+      11.6782,
+      14.3903,
+      17.7284,
+      21.8378,
+      26.8973,
+      33.1269,
+      40.7978,
+      50.2436,
+      61.8752,
+      76.1988,
+      93.8375,
+      115.559,
+      142.307,
+      175.247,
+      215.811,
+      265.764,
+      327.279,
+      403.033,
+      496.321
+    ],
+    "nPulses": [
+      1.0,
+      1.13864,
+      1.28751,
+      1.44794,
+      1.62137,
+      1.80936,
+      2.01359,
+      2.2359,
+      2.47828,
+      2.74292,
+      3.03219,
+      3.34868,
+      3.69524,
+      4.07497,
+      4.4913,
+      4.94794,
+      5.44902,
+      5.99902,
+      6.60288,
+      7.26603,
+      7.99442,
+      8.79458,
+      9.67371,
+      10.6397,
+      11.7012,
+      12.8678,
+      14.1499,
+      15.5591,
+      17.1079,
+      18.8104,
+      20.6817,
+      22.7388,
+      25.0
+    ],
+    "pulseHeight_max": [
+      -1256.01,
+      -1093.75,
+      -952.451,
+      -829.407,
+      -722.258,
+      -628.951,
+      -547.699,
+      -476.943,
+      -415.328,
+      -361.673,
+      -314.949,
+      -274.261,
+      -238.83,
+      -207.976,
+      -181.108,
+      -157.711,
+      -137.336,
+      -119.593,
+      -104.143,
+      -90.6884,
+      -78.9718,
+      -68.7688,
+      -59.8837,
+      -52.1464,
+      -45.4084,
+      -39.5407,
+      -34.4308,
+      -29.9808,
+      -26.1053,
+      -22.7302,
+      -19.7907,
+      -17.2305,
+      -15.0005
+    ],
+    "pulseHeight_min": [
+      -1255.95,
+      -1093.7,
+      -952.406,
+      -829.368,
+      -722.225,
+      -628.923,
+      -547.674,
+      -476.922,
+      -415.31,
+      -361.657,
+      -314.935,
+      -274.25,
+      -238.82,
+      -207.967,
+      -181.1,
+      -157.704,
+      -137.33,
+      -119.589,
+      -104.139,
+      -90.6848,
+      -78.9688,
+      -68.7662,
+      -59.8815,
+      -52.1444,
+      -45.4067,
+      -39.5393,
+      -34.4295,
+      -29.9797,
+      -26.1044,
+      -22.7294,
+      -19.79,
+      -17.2299,
+      -15.0
+    ],
+    "pulseArea_max": [
+      0.0,
+      0.476168,
+      1.05479,
+      1.86036,
+      3.06621,
+      4.93179,
+      7.8585,
+      12.4761,
+      19.778,
+      31.3354,
+      49.635,
+      78.6142,
+      124.508,
+      197.192,
+      312.303,
+      494.61,
+      783.339,
+      1240.61,
+      1964.82,
+      3111.78,
+      4928.27,
+      7805.14,
+      12361.4,
+      19577.3,
+      31005.6,
+      49105.0,
+      77770.0,
+      123168.0,
+      195067.0,
+      308938.0,
+      489280.0,
+      774896.0,
+      1227240.0
+    ],
+    "pulseArea_min": [
+      0.0,
+      0.476168,
+      1.05479,
+      1.86036,
+      3.06621,
+      4.93179,
+      7.8585,
+      12.4761,
+      19.778,
+      31.3354,
+      49.635,
+      78.6142,
+      124.508,
+      197.192,
+      312.303,
+      494.61,
+      783.339,
+      1240.61,
+      1964.82,
+      3111.78,
+      4928.27,
+      7805.14,
+      12361.4,
+      19577.3,
+      31005.6,
+      49105.0,
+      77770.0,
+      123168.0,
+      195067.0,
+      308938.0,
+      489280.0,
+      774896.0,
+      1227240.0
+    ],
+    "pulseDuriation_max": [
+      12.49,
+      14.7467,
+      17.409,
+      20.5499,
+      24.2561,
+      28.6292,
+      33.7896,
+      39.8793,
+      47.0656,
+      55.5462,
+      65.5543,
+      77.3651,
+      91.3034,
+      107.753,
+      127.165,
+      150.074,
+      177.111,
+      209.017,
+      246.672,
+      291.11,
+      343.554,
+      405.445,
+      478.486,
+      564.685,
+      666.413,
+      786.467,
+      928.148,
+      1095.35,
+      1292.68,
+      1525.56,
+      1800.38,
+      2124.72,
+      2507.49
+    ],
+    "pulseDuriation_min": [
+      12.49,
+      14.7467,
+      17.409,
+      20.5499,
+      24.2561,
+      28.6292,
+      33.7896,
+      39.8793,
+      47.0656,
+      55.5462,
+      65.5543,
+      77.3651,
+      91.3034,
+      107.753,
+      127.165,
+      150.074,
+      177.111,
+      209.017,
+      246.672,
+      291.11,
+      343.554,
+      405.445,
+      478.486,
+      564.685,
+      666.413,
+      786.467,
+      928.148,
+      1095.35,
+      1292.68,
+      1525.56,
+      1800.38,
+      2124.72,
+      2507.49
+    ],
+    "TDC": [
+      0.0,
+      1.2578,
+      4.04224,
+      11.733,
+      33.6646,
+      96.4568,
+      276.323,
+      791.578,
+      2267.61,
+      6495.97,
+      18608.8,
+      53308.1,
+      152710.0,
+      437465.0,
+      1253190.0,
+      3589990.0,
+      10284100.0,
+      29460700.0,
+      84395200.0,
+      241764000.0,
+      692576000.0,
+      1984000000.0,
+      5683520000.0,
+      16281400000.0,
+      46640900000.0,
+      133611000000.0,
+      382751000000.0,
+      1096460000000.0,
+      3140990000000.0,
+      8997900000000.0,
+      25776000000000.0,
+      73839900000000.0,
+      211527000000000.0
+    ],
+    "TDCRollovers": [
+      0.0,
+      1.90367,
+      8.18708,
+      33.3063,
+      135.053,
+      547.513,
+      2219.62,
+      8998.38,
+      36479.5,
+      147888.0,
+      599541.0,
+      2430550.0,
+      9853460.0,
+      39946000.0,
+      161942000.0,
+      656513000.0,
+      2661510000.0,
+      10789800000.0,
+      43742000000.0,
+      177330000000.0,
+      718900000000.0,
+      2914430000000.0,
+      11815100000000.0,
+      47898600000000.0,
+      194181000000000.0,
+      787214000000000.0,
+      3191370000000000.0,
+      1.29379e+16,
+      5.24502e+16,
+      2.12634e+17,
+      8.6202e+17,
+      3.49464e+18,
+      1.41673e+19
+    ]
+  },
+  "quantile_probabilities": [
+    0,
+    0.05,
+    0.25,
+    0.5,
+    0.75,
+    0.95,
+    1
+  ],
+  "summary_directory": "/afs/cern.ch/user/p/pengy/autoDQM/isolation_forest/benchmarks/novel/raw_consistency/inputs/bundle_20260910T230921Z/run1642"
+}

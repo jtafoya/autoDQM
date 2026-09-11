@@ -1,0 +1,14 @@
+kind,item,channel,feature,llm_mention_count,observed_mention_count,all_text_mention_count,target_trials,rule
+channel,32,32,,5,5,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+channel,33,33,,5,5,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,LVDS,,,5,4,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,LVDS pin16,,,5,5,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,missing-channel behavior,,,5,5,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,trigger mask,,,5,4,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,configuration,,,5,1,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,trigger rate,,,5,5,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,board matching,,,5,0,5,"1,2,3,4,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+feature,occupancy,,occupancy,3,0,3,"2,3,5",cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+channel,25,25,,1,0,1,2,cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+channel,31,31,,1,0,1,2,cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only
+context,readout failure/dropout (hypothesis or check),,,1,0,1,5,cell: exact direct syntax in target OBSERVED text; otherwise axis label/text only

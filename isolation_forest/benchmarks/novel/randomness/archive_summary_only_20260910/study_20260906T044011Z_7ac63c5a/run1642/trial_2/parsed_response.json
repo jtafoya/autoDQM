@@ -1,0 +1,13 @@
+{
+  "category": "LVDS signal-path loss affecting channels 32/33",
+  "cause": "The immediate fault is consistent with absent LVDS activity on signal pin 16, mapped to detector channels 32/33. The underlying cause is unknown; plausible explanations are an intentionally masked/disconnected input or a degraded connector, jumper, cable, or driver path.",
+  "action": "First verify whether channels 32/33 are intentionally masked or disabled and compare their raw digitizer occupancy with LVDS pin-16 counts by subrun. If the loss is unintended, stop the run and inspect/reseat the pin-16 LVDS connections, jumper wires, and associated signal cables at both ends; then start a new run and confirm restored pin counts and channel presence. If signals remain absent, test or swap the cable and endpoint electronics. Separately investigate channels 25, 31, and 42 if their pulse-count anomalies persist after the pin-16 issue is resolved.",
+  "confidence": 0.84,
+  "supporting_historical_runs": [
+    2068,
+    2071,
+    2126,
+    1747
+  ],
+  "reasoning_summary": "OBSERVED: pin16 is persistently zero/abnormally low and maps exactly to channels 32/33, which repeatedly appear as missing and have waveform-feature anomalies. All 202 subruns are anomalous, while the total trigger rate remains stable; channels 32/33 are also listed among masked physical pins. INFERRED: this favors a localized LVDS signal loss or intentional masking over a global trigger-rate, CPU, or digitizer-lockup problem. The stable trigger rate contradicts the high-rate behavior in historical LVDS-noise cases, so those runs are only partial cable/connection analogies; no exact historical match exists. UNKNOWN: whether the mask is intentional, raw digitizer occupancy, board matching, queue state, synchronization, within-run configuration changes, and the physical condition of pin16. The large pin16 transition near subrun 201 and the end-of-run count drops should be checked against subrun duration or run termination before being interpreted as recovery or a DAQ transition."
+}

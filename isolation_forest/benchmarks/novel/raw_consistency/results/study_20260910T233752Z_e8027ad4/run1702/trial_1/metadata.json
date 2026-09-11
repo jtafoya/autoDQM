@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "input_sha256": "ff8a91e1de1c446b6b14852163c38ead03eb592585483257fb89d0eceaf04f00",
+  "automatic_retries": 0,
+  "network_attempts": 1,
+  "sdk_version": "2.48.0",
+  "request_body_sha256": "cb7c276b4d22a04d35bd81057511711256423f0912955fb5606a9f3c4ef770fb",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 200,
+  "request_id": "req_6279981bae49430988341bcd8131020b",
+  "response_id": "resp_06ee4a17962ad2f2016aa34361d69487d2b3717c3ff5ca7b0d",
+  "response_model": "gpt-5.6-sol",
+  "usage": {
+    "input_tokens": 342817,
+    "input_tokens_details": {
+      "cache_write_tokens": 342814,
+      "cached_tokens": 0
+    },
+    "output_tokens": 3913,
+    "output_tokens_details": {
+      "reasoning_tokens": 1001
+    },
+    "total_tokens": 346730
+  },
+  "response_status": "completed",
+  "elapsed_seconds": 57.65695204801159
+}

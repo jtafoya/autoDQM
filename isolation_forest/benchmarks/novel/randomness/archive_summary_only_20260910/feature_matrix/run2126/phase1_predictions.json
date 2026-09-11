@@ -1,0 +1,64 @@
+[
+  {
+    "category": "suspected_digitizer_readout_dropout",
+    "cause": "unknown; a partial digitizer/DAQ readout interruption or channel-recording failure is the leading hypothesis",
+    "action": "First compare raw event/channel presence by digitizer and subrun, especially across subrun 40, and inspect DAQ logs for board errors, synchronization loss, queue/CPU pressure, auto-restarts, or configuration changes. Verify whether missing channels cluster on one board and whether their digitizer rates disagree with trigger-board rates. If a digitizer lockup or readout desynchronization is confirmed, stop the run safely and restart the affected digitizer/DAQ process or PC according to operating procedure. If raw channels are present, instead investigate AutoDQM processing and zero-suppression/configuration changes; do not replace PMT or LVDS hardware without corroborating HV or pin-level evidence.",
+    "confidence": 0.62,
+    "supporting_historical_runs": [
+      1620,
+      1604,
+      1500,
+      1605
+    ],
+    "reasoning_summary": "OBSERVED: 65 of 86 subruns contain anomalies, with 936 anomalous entries, repeated extreme nPulses_median deviations, and many missing-channel flags across multiple channels. Trigger rate is stable near 2.37, and all 48 LVDS signal pins have nonzero, broadly comparable counts without persistent pin abnormalities. Trigger and LVDS counts both show a large change near subrun 40, but corresponding rates/durations and digitizer telemetry are unavailable. INFERRED: normal trigger/LVDS behavior argues against a localized PMT-base or LVDS-pin failure and favors a downstream digitizer/readout or data-completeness problem. Runs 1620, 1604, 1500, and 1605 provide partial analogies involving nPulses anomalies and DAQ/digitizer or CPU issues, but no historical case is an exact match. UNKNOWN: channel-to-board clustering, raw channel presence, digitizer rates, DAQ state, CPU/queue status, synchronization, and within-run configuration changes are required to distinguish lockup, restart, configuration change, shortened subrun, or processing artifact."
+  },
+  {
+    "category": "suspected_intermittent_digitizer_or_DAQ_readout_dropout",
+    "cause": "unknown",
+    "action": "First verify whether missing channels cluster by digitizer/board and begin at a common subrun by inspecting raw event headers and channel-presence timelines; also check digitizer synchronization, board matching, queue/CPU state, and logs around subrun 40. If a board lockup or readout desynchronization is confirmed, stop the run safely and restart or resynchronize only the affected digitizer/DAQ process or PC. If channels do not cluster by readout hardware, instead investigate configuration changes and channel-level HV/pulse behavior before intervening.",
+    "confidence": 0.64,
+    "supporting_historical_runs": [
+      1620,
+      1604,
+      1605
+    ],
+    "reasoning_summary": "OBSERVED: anomalies affect 65/86 subruns with 936 entries, including many missing-channel flags and extreme nPulses_median outliers; trigger rate is stable near 2.37 and all 48 summarized LVDS signal pins are present without persistent abnormal counts. The count reductions near subrun 40 occur in both trigger and LVDS totals while rates remain stable, so they may reflect a shorter subrun rather than a trigger failure. INFERRED: normal trigger/LVDS behavior with downstream channel disappearance favors intermittent digitizer/DAQ readout loss over LVDS noise, high-trigger-rate behavior, or a localized broken PMT base. Run 1620 is the closest partial analogy because it involved nPulses anomalies and a digitizer lockup; runs 1604 and 1605 provide weaker DAQ/CPU analogies. No historical case is an exact match. UNKNOWN: board grouping and timing of missing channels, digitizer rates, synchronization, queue/CPU state, HV status, and within-run configuration changes. These checks are required to distinguish a board lockup from software/configuration loss or multiple channel-level faults."
+  },
+  {
+    "category": "suspected_digitizer_readout_dropout",
+    "cause": "unknown",
+    "action": "First correlate missing channels with subrun and digitizer/board assignment, and compare per-board event counts, synchronization/error logs, and raw waveform presence. If the missing channels cluster on an unresponsive or desynchronized digitizer, pause acquisition and restart/resynchronize only the affected digitizer or DAQ process; otherwise investigate channel mapping and data-processing integrity before hardware intervention.",
+    "confidence": 0.58,
+    "supporting_historical_runs": [
+      1620,
+      1604
+    ],
+    "reasoning_summary": "OBSERVED: anomalies are widespread (936 entries across 65/86 subruns), include many missing-channel flags and extreme nPulses_median outliers, while trigger rates are stable and all 48 LVDS signal pins have nonzero, broadly similar counts without strong pin transitions. The count drops near subrun 40 occur without a comparable rate change and may reflect subrun exposure, not detector failure. INFERRED: normal LVDS activity with missing processed channels favors digitizer/readout or processing loss over an LVDS-pin, trigger-board, or localized PMT/HV fault. Run 1620 is a partial analogy for digitizer lockup, and run 1604 for DAQ disruption, but no historical case is an exact match. CONTRADICTING/MISSING: no digitizer-board rates, synchronization, queue, DAQ-state, raw-data presence, or board-to-channel grouping are available, so a lockup or restart is unconfirmed. A localized PMT-base failure is less consistent with the broad channel impact and absence of abnormal LVDS pins. Discriminating checks are board clustering, raw-versus-processed channel presence, event counters, and synchronization/error logs."
+  },
+  {
+    "category": "suspected digitizer/DAQ readout data loss",
+    "cause": "unknown; possible intermittent digitizer lockup, readout synchronization failure, or malformed/incomplete processed data",
+    "action": "First inspect channel presence versus subrun and board mapping, raw event/file integrity, digitizer rates, synchronization/state logs, queue occupancy, CPU load, and restart records—especially near subrun 40. If channels are absent in raw data and a digitizer/readout lockup is confirmed, stop safely and restart the affected digitizer/DAQ host following the approved procedure. If raw data contain the channels, investigate and rerun the processing/parser instead of intervening on detector hardware.",
+    "confidence": 0.68,
+    "supporting_historical_runs": [
+      1620,
+      1500,
+      1604,
+      1605
+    ],
+    "reasoning_summary": "OBSERVED: 65 of 86 subruns are anomalous, with 936 anomalous entries, including many missing-channel flags and extreme nPulses_median deviations. Trigger rates are stable and all 48 summarized LVDS signal pins are present and nominal through subrun 40; no digitizer-rate or DAQ-state telemetry is available. INFERRED: this favors a downstream digitizer/readout or data-processing failure over an LVDS, trigger-rate, or isolated PMT-base fault. Run 1620 is the closest partial analogy (digitizer lockup); runs 1500/1604/1605 provide weaker DAQ/CPU analogies. No exact historical match exists. CONTRADICTING/LIMITING: trigger/LVDS summaries cover only subruns 1–40, and normal LVDS does not exclude digitizer failure. UNKNOWN: which channels/boards disappear together, whether raw data are incomplete, and whether a restart, synchronization loss, CPU saturation, or configuration change occurred."
+  },
+  {
+    "category": "intermittent_DAQ_or_digitizer_readout_dropout",
+    "cause": "unknown",
+    "action": "First compare channel-presence timelines with digitizer-board boundaries and the anomaly onset by subrun. Check MilliDAQ/DAQ logs for restarts, readout errors, synchronization loss, queue saturation, or high CPU usage, and compare digitizer event rates against trigger-board rates. If omissions align with one digitizer, inspect its synchronization and lock state and conditionally restart that digitizer/DAQ PC using the approved procedure; if omissions are system-wide and coincide with a DAQ restart or CPU saturation, conditionally restart MilliDAQ or address the host load instead. Do not pursue PMT/HV repairs unless HV logs or channel-local pulse/LVDS behavior independently supports them.",
+    "confidence": 0.58,
+    "supporting_historical_runs": [
+      1500,
+      1604,
+      1605,
+      1620
+    ],
+    "reasoning_summary": "OBSERVED: anomalies affect 65/86 subruns with 936 entries, including many missing-channel flags and extreme nPulses_median outliers across multiple channels. Trigger rate is stable near 2.37, and all 48 LVDS signal pins have persistent nonzero, broadly similar counts with no strong pin transition. The count drop near subrun 40 occurs without a comparable rate anomaly and may reflect exposure length rather than detector behavior. INFERRED: healthy trigger/LVDS summaries argue against a trigger-board or localized LVDS failure and make an intermittent downstream DAQ/digitizer readout problem more plausible. Runs 1500, 1604, 1605, and 1620 provide partial analogies involving pulse-count anomalies with DAQ restart, high CPU, or digitizer lockup, but there is no exact historical match. A PMT-base failure is less supported because the pattern is widespread and no abnormal LVDS pin is reported. UNKNOWN: digitizer rates, board grouping of missing channels, synchronization/lock status, CPU and queue telemetry, restart logs, within-run configuration changes, and HV status are required to distinguish DAQ restart, host overload, digitizer lockup, or data-processing artifacts."
+  }
+]

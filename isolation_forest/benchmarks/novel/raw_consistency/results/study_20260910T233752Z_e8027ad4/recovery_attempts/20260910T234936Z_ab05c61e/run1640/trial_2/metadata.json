@@ -1,0 +1,14 @@
+{
+  "status": "failed",
+  "input_sha256": "abbb99b59bc5e97d665e1e6d384f10cf0a139994da97e92be4ff606646e46e58",
+  "automatic_retries": 0,
+  "network_attempts": 1,
+  "sdk_version": "2.48.0",
+  "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "http_status": 520,
+  "request_id": null,
+  "error_type": "InternalServerError",
+  "error": "Request or response validation failed; inspect saved HTTP body locally.",
+  "elapsed_seconds": 16.95593339399784
+}

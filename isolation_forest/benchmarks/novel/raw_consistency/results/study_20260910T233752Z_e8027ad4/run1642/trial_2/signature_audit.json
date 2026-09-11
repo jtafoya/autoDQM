@@ -1,0 +1,52 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-32",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-LOCAL-PAIR-ABSENT-33",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-LVDS-PIN16-ZERO-MAPPING",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-PIN16-LATE-TRANSITION",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TRIGGER-NOT-GLOBALLY-FAILED",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-END-OF-RUN-EXPOSURE-CONFOUND",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-DISCRIMINATING-TELEMETRY-UNAVAILABLE",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-TIMING-FIELDS-INDEPENDENT-ANOMALY",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "SIG-HISTORICAL-ANALOGY-NOT-EXACT",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}

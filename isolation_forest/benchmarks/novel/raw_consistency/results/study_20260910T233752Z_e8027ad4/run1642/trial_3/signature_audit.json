@@ -1,0 +1,47 @@
+{
+  "all_references_valid": true,
+  "issues": [],
+  "signatures": [
+    {
+      "signature_id": "sig-localized-pin16-zero",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-ch32-ch33-missing-200",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-sparse-late-reappearance",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-static-mask-does-not-explain-pin16",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-no-high-rate-state",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-end-run-global-count-confound",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-discriminating-telemetry-unavailable",
+      "references_valid": true,
+      "errors": []
+    },
+    {
+      "signature_id": "sig-historical-analogy-only",
+      "references_valid": true,
+      "errors": []
+    }
+  ],
+  "scope": "Checks reference identity and values only. Does not verify that prose interpretation or causal conclusion is scientifically correct."
+}
