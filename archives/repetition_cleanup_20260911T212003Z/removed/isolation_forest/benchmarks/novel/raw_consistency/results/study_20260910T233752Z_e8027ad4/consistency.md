@@ -68,3 +68,69 @@ Identical request bytes: True
 - Trial 1: Conditionally treat physical LVDS pin 16 and its shared path to digitizer channels 32/33 as the primary fault location: while the run is stopped, verify the repository mapping, inspect and reseat the pin, jumper, and associated connectors at both ends, and check continuity or swap the path with a known-good LVDS input. Start a new run after each change and confirm nonzero pin-16 counts and normal occupancy on both channels. Before physical intervention, compare subrun 200-201 configuration and DAQ-state logs to exclude an intentional enable/configuration change. Restart or service a digitizer only if board-matching, synchronization, or readout diagnostics specifically show a digitizer-state failure.
 - Trial 2: First verify that LVDS pin 16 and its mapped digitizer channels 32/33 were intended to be enabled, using the physical-pin mapping rather than equating mask indices with digitizer channels. With the run stopped, inspect and reseat the pin-16 LVDS connector and associated jumper/cable at both ends, then start a short validation run and confirm stable pin counts, channel occupancy, and board matching. If movement changes the behavior or the path remains intermittently dead, conditionally replace or swap the cable/connection and retest. If the hardware path is sound, inspect source enablement and within-run configuration. Separately validate the timing-field decoding for channels 88-95 before treating their TDC/rollover values as detector behavior.
 - Trial 3: With the run stopped, verify the repository mapping and inspect, continuity-test, and carefully reseat the physical LVDS pin-16 path at both ends, including its jumper and associated signal connections. Start a new run after each change and confirm that channels 32 and 33 have sustained occupancy and that pin 16 has normal counts. Before replacing hardware, compare live source signals at the digitizer and trigger-board ends and inspect within-run configuration, board-matching, synchronization, and queue telemetry. Replace or repair a cable/pin/source component only if these checks localize the loss; if an undocumented configuration change explains it, restore and record the intended configuration instead.
+
+## Run 1702
+
+Identical request bytes: True
+
+### category: pending_human_review
+
+- Trial 1: digitizer_timing_metadata_corruption
+- Trial 2: digitizer_timing_readout_corruption
+- Trial 3: digitizer_TDC_rollover_data_corruption
+
+### cause: pending_human_review
+
+- Trial 1: The observable failure is corruption or misinterpretation of TDC and rollover fields localized to digitizer channels 88-95. The underlying root cause is unknown from the supplied telemetry; plausible mechanisms include a firmware/data-format mismatch, malformed timing words, or a board-local synchronization/readout fault. This is not an exact match to a supplied historical case and is not supported as an LVDS, PMT-base, global-trigger, or complete digitizer-lockup failure.
+- Trial 2: The observable symptom is corrupted or stuck TDC/TDCRollovers data localized to digitizer channels 88-95. The most likely mechanism is failure or mis-decoding of a shared timing counter/readout path for that channel group, rather than loss of detector pulses. The underlying root cause—firmware state, register/configuration error, serialization/decoding defect, synchronization fault, or hardware counter failure—is unknown from the supplied telemetry.
+- Trial 3: Observed mechanism: the TDC and TDCRollovers outputs for digitizer channels 88-95 are stuck, zero, or populated with implausibly large counter-like values, while those channels remain present. This is most consistent with corruption in the affected digitizer timing/counter state or its decoding. The underlying root cause is unknown; supplied evidence cannot distinguish a firmware/register-state fault from a packed-data or software-decoder/schema error.
+
+### action: pending_human_review
+
+- Trial 1: First validate raw timing-word decoding for channels 88-95 against the installed digitizer firmware and configuration, compare the same events with neighboring channels 80-87, and inspect board synchronization/matching and error counters. Confirm the physical board/channel grouping rather than using trigger-mask indices as channel numbers. If the stored words are valid but interpreted with the wrong schema, correct the decoder or firmware/configuration compatibility and reprocess the data. If live diagnostics instead show a board-local synchronization or readout fault, stop the run and conditionally reset/restart the affected digitizer/DAQ; reflash or replace hardware only after firmware and cabling checks isolate that cause. Verify recovery in a new run by requiring ordinary, nonconstant TDC distributions, plausible rollover values, full board matching, and unchanged normal trigger/LVDS behavior.
+- Trial 2: First preserve and inspect event-level timing words for channels 88-95 and compare their raw encoding, board identity, firmware version, timing registers, clock/reset state, event counters, and timestamps with channels 80-87. Check board matching, synchronization, queue occupancy, and digitizer-versus-trigger-board rates. Do not translate trigger-mask indices directly into digitizer channel numbers; verify the physical mapping. If corruption is confirmed at the digitizer output, conditionally reset or restart the affected digitizer/DAQ path and reload validated firmware and configuration; reflash/recompile only if a firmware/software mismatch is demonstrated. If raw words are valid but processed values are not, correct the TDC/rollover decoder instead. Validate recovery in a new run by requiring plausible, varying TDC values and rollover behavior while occupancy and trigger rate remain stable.
+- Trial 3: First quarantine TDC and TDCRollovers from timing analyses for channels 88-95. Compare packed raw timing words against decoded values, verify the channel-to-board mapping and firmware/decoder version, and inspect board matching, synchronization, and DAQ state. If raw words are valid, correct the decoder/schema and reprocess the data. If raw words themselves are stuck or corrupted, conditionally reset or restart the affected digitizer/DAQ and verify normal TDC and rollover distributions in a new run; reflash firmware only if a version or configuration mismatch is confirmed. Do not replace PMT/HV or LVDS hardware without additional evidence.
+
+## Run 1703
+
+Identical request bytes: False
+
+### category: pending_human_review
+
+- Trial 1: digitizer_timing_metadata_corruption
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS
+
+### cause: pending_human_review
+
+- Trial 1: The observed failure mechanism is corrupted, stuck, or sentinel-like TDC/TDCRollovers metadata in the contiguous channel block 88-95. The underlying root cause is unknown from the supplied telemetry; leading hypotheses are a digitizer timing-register/firmware/readout fault or a decoding/data-layout error affecting that block. Stable trigger telemetry, normal LVDS pin coverage, and persistent channel presence argue against a system-wide trigger failure, LVDS disconnection, PMT/HV loss, or complete digitizer lockup.
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS
+
+### action: pending_human_review
+
+- Trial 1: First preserve the files and validate the TDC and TDCRollovers field layout, units, signedness, and rollover reconstruction for channels 88-95 against a known-good file or independent decoder. Identify which digitizer hardware/firmware serves this contiguous block, then inspect its firmware version, timing-register configuration, clock/synchronization state, and raw register words. Check board matching and DAQ-state telemetry during a controlled test run. If decoding is correct and the hardware timing fields remain stuck or impossible, conditionally restart/reinitialize the affected digitizer and DAQ process; reflash/recompile only after confirming a firmware mismatch. Quarantine timing values from channels 88-95 until validated, while retaining pulse/occupancy data separately if operationally acceptable.
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS
+
+## Run 2126
+
+Identical request bytes: False
+
+### category: pending_human_review
+
+- Trial 1: NO COMPLETED DIAGNOSIS
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS
+
+### cause: pending_human_review
+
+- Trial 1: NO COMPLETED DIAGNOSIS
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS
+
+### action: pending_human_review
+
+- Trial 1: NO COMPLETED DIAGNOSIS
+- Trial 2: NO COMPLETED DIAGNOSIS
+- Trial 3: NO COMPLETED DIAGNOSIS

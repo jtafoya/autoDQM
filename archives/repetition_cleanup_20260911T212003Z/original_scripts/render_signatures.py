@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from common import read, write, selected_runs
+from common import read, write
 
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11})
 
@@ -123,7 +123,7 @@ def render_trial(directory, inputs, run, trial):
 
 def render_study(study):
     config = read(study / 'study_config.json')
-    for run in selected_runs(config):
+    for run in config['runs']:
         for trial in range(1, config['trials']+1):
             directory = study / f'run{run}' / f'trial_{trial}'
             if (directory / 'diagnosis.json').exists() and (directory / 'signature_audit.json').exists():

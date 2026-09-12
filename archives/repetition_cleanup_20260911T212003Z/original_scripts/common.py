@@ -8,7 +8,7 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
-RUNS = [1620, 1640, 1642]
+RUNS = [1620, 1640, 1642, 1702, 1703, 2126]
 RAW_ROOT = Path('/eos/experiment/milliqan/run3_MilliMon/slab')
 
 
@@ -34,18 +34,6 @@ def write(path, value):
 
 def read(path):
     return json.loads(Path(path).read_text())
-
-
-def selected_runs(config):
-    """Current study scope; immutable historical configs may list earlier cases."""
-    return [run for run in config['runs'] if run in RUNS]
-
-
-def selected_bundle_entries(config):
-    entries = [entry for entry in config['runs'] if entry['run'] in RUNS]
-    if sorted(entry['run'] for entry in entries) != RUNS:
-        raise ValueError('Expected runs 1620, 1640 and 1642 exactly once')
-    return entries
 
 
 def offline():

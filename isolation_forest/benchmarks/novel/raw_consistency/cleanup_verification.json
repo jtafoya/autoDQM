@@ -1,0 +1,155 @@
+{
+  "retained_runs": [
+    1620,
+    1640,
+    1642
+  ],
+  "completed_diagnoses": 9,
+  "unchanged_retained_files": 316,
+  "offline_unit_tests_passed": 11,
+  "no_real_api_calls": true,
+  "original_trial_checks": [
+    {
+      "run": 1620,
+      "trial": 1,
+      "status": "completed",
+      "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+      "citations_valid": true
+    },
+    {
+      "run": 1620,
+      "trial": 2,
+      "status": "completed",
+      "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+      "citations_valid": true
+    },
+    {
+      "run": 1620,
+      "trial": 3,
+      "status": "completed",
+      "request_body_sha256": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+      "citations_valid": true
+    },
+    {
+      "run": 1640,
+      "trial": 1,
+      "status": "completed",
+      "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+      "citations_valid": true
+    },
+    {
+      "run": 1640,
+      "trial": 2,
+      "status": "completed",
+      "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+      "citations_valid": true
+    },
+    {
+      "run": 1640,
+      "trial": 3,
+      "status": "completed",
+      "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+      "citations_valid": true
+    },
+    {
+      "run": 1642,
+      "trial": 1,
+      "status": "completed",
+      "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+      "citations_valid": true
+    },
+    {
+      "run": 1642,
+      "trial": 2,
+      "status": "completed",
+      "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+      "citations_valid": true
+    },
+    {
+      "run": 1642,
+      "trial": 3,
+      "status": "completed",
+      "request_body_sha256": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+      "citations_valid": true
+    }
+  ],
+  "serializer_checks": [
+    {
+      "run": 1620,
+      "trial": 1,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1620,
+      "trial": 2,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1620,
+      "trial": 3,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1640,
+      "trial": 1,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1640,
+      "trial": 2,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1640,
+      "trial": 3,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1642,
+      "trial": 1,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1642,
+      "trial": 2,
+      "identical_to_original_wire": true
+    },
+    {
+      "run": 1642,
+      "trial": 3,
+      "identical_to_original_wire": true
+    }
+  ],
+  "validation_dry_run_archive": "/afs/cern.ch/user/p/pengy/autoDQM/archives/repetition_cleanup_20260911T212003Z/validation/dry_run_20260911T212141Z_457b38cb",
+  "archived_validation_sha256": {
+    "study_config.json": "dc83c99b9510ea7edf490366205fd71f989da1032c3bd644ead005a3370ada66",
+    "semantic_review.json": "9df498e3f728a103606a6452133f35866541f10f23e88479bbf228e7f2081e36",
+    "consistency.json": "c31413ecf8a3bd1411d5e5ed88bb7dd75779a218f4d739fed0b7fd0ab8280b12",
+    "consistency.md": "7dd7594f463772718c8592cb1c82cc12c01a2840c13c1245c34481c363e9e574",
+    "run1620/request_payload.json": "cda9e9b6fbdbcf0822e0c6bebbe60bc20afc5bc00b17716dc941423592b4a9d6",
+    "run1620/prompt.txt": "30ecd5c403f98fdbc41bf072c6f8b221d77552d562e865c22f1e6f16bc343e0a",
+    "run1620/trial_1/request_body.json": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+    "run1620/trial_1/metadata.json": "5585e3cdf6e06b36f8d291d242c9dbd2bde80e849366d36c0f715a98f7cbad66",
+    "run1620/trial_2/request_body.json": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+    "run1620/trial_2/metadata.json": "3436771f70b62c429e87da781e3cb9bb204a67f83f491afd45897e79a37ad313",
+    "run1620/trial_3/request_body.json": "83ba906362ab71fa153eb47af0f02f37187e94dbcde6c89e504ff570f4d25e2e",
+    "run1620/trial_3/metadata.json": "ebea1fa0f6802df24fa01b30f043d20eab465c575c5fae102e734ce305490395",
+    "run1640/request_payload.json": "89079f4e2bfa1d4b5b01c34fdfbc04aa18a5d61e5455d1fea7d9285709754b2b",
+    "run1640/prompt.txt": "a4cf230d8314959c2804ec5827f1d116f2074d60932858e7f5c06799bedbf71e",
+    "run1640/trial_1/request_body.json": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+    "run1640/trial_1/metadata.json": "0ac58eb7be01963af26fe3c0c9ce2d98b76b074edf2f2bf9d0d6c72da6e79618",
+    "run1640/trial_2/request_body.json": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+    "run1640/trial_2/metadata.json": "4a5ca0067b75664c109f5d139601035b1e5fc2f46dd262546ceaab7ff99c1dfb",
+    "run1640/trial_3/request_body.json": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+    "run1640/trial_3/metadata.json": "4b52fce438bf8959b56aca31fcd2c41741946c22f75c01852a9ec4ffb680d5a0",
+    "run1642/request_payload.json": "f68e986042b43dba65f38261ca6946220e2d4e30e9239004d067639c6762d959",
+    "run1642/prompt.txt": "51ca46f2de9906eb2b0ef61b1d233be96fdd9a45c4a49f28ffaf5d43220af740",
+    "run1642/trial_1/request_body.json": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+    "run1642/trial_1/metadata.json": "35ad7a7719efc97ee715411d5b3e989a4c6d3e1fffa0c91b6d67c9eaa5c50e16",
+    "run1642/trial_2/request_body.json": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+    "run1642/trial_2/metadata.json": "365f8fabf303504c7f3e698afc13c099b3c705d1c16af0c4b00f4fc20418aa5c",
+    "run1642/trial_3/request_body.json": "a644b2d30d458401aeed6a757b46f603e15ffec485c6c77050692f4c77cbb048",
+    "run1642/trial_3/metadata.json": "a38b25d5676f5e9638d5393c31e98f27946f55af628b90b7f910785a60ffa109"
+  },
+  "archive": "/afs/cern.ch/user/p/pengy/autoDQM/archives/repetition_cleanup_20260911T212003Z"
+}

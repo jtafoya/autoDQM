@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 import pandas as pd
-from common import canonical, write, read, at_path, RUNS, selected_runs, selected_bundle_entries
+from common import canonical, write, read, at_path
 from prepare_inputs import metric_stats, pooled, ranges, raw_summary, anomaly_summary
 from run_study import Diagnosis, invoke, validate_citations, token_check, compare
 
@@ -23,16 +23,6 @@ def fake_prediction():
 
 
 class Tests(unittest.TestCase):
-    def test_retained_scope(self):
-        self.assertEqual(RUNS, [1620, 1640, 1642])
-        self.assertEqual(selected_runs({'runs': RUNS + [9999]}), RUNS)
-        entries = [{'run': r} for r in RUNS + [9999]]
-        self.assertEqual([e['run'] for e in selected_bundle_entries({'runs': entries})], RUNS)
-        with self.assertRaises(ValueError):
-            selected_bundle_entries({'runs': entries[1:]})
-        with self.assertRaises(ValueError):
-            selected_bundle_entries({'runs': entries + [{'run': 1620}]})
-
     def test_stats_missing_zero_and_pooling(self):
         a = metric_stats(np.array([[0., np.nan], [2., np.inf]]))
         b = metric_stats(np.array([[10., 3.]]))

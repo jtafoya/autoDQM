@@ -13,7 +13,7 @@ import time
 import uuid
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
-from common import HERE, RUNS, canonical, digest, sha, read, write, at_path, verify_files, source_hashes, selected_runs, selected_bundle_entries
+from common import HERE, RUNS, canonical, digest, sha, read, write, at_path, verify_files, source_hashes
 
 
 class Strict(BaseModel):
@@ -206,7 +206,7 @@ def compare(study):
     review = read(review_path) if review_path.exists() else {'instructions':
         'Human semantic review only. Give trials with the same meaning the same group label for each field. Ignore wording/order; distinguish different primary mechanisms and incompatible actions. No ground truth or accuracy scoring. Populate reviewer and rationale. Do not overwrite diagnosis text.', 'runs': {}}
     comparison = []
-    for run in selected_runs(config):
+    for run in config['runs']:
         trials = []
         for t in range(1, config['trials'] + 1):
             folder = study / f'run{run}' / f'trial_{t}'
@@ -264,12 +264,12 @@ def main():
     bundle = args.inputs.resolve()
     config = read(bundle / 'bundle.json')
     if config['status'] != 'prepared': raise ValueError('Bundle not complete')
-    entries = selected_bundle_entries(config)
+    if sorted(r['run'] for r in config['runs']) != RUNS: raise ValueError('Expected all six runs exactly once')
     model = os.environ.get('AUTOFLAME_SOL_MODEL', 'gpt-5.6-sol')
     if args.execute and not os.environ.get('OPENAI_API_KEY'): raise ValueError('Set OPENAI_API_KEY in your terminal; do not put it in files or command arguments')
     payloads, checks = {}, {}
     # Check EVERY case before the first paid request. No diagnosis or judge calls in preflight.
-    for entry in entries:
+    for entry in config['runs']:
         run = entry['run']
         directory = bundle / f'run{run}'
         if sha(directory / 'manifest.json') != entry['manifest_sha256']: raise ValueError('Input manifest changed')

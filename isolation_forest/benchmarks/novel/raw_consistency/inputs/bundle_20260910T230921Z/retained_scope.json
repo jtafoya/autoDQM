@@ -1,0 +1,11 @@
+{
+  "retained_runs": [
+    1620,
+    1640,
+    1642
+  ],
+  "trials_per_run": 3,
+  "completed_diagnoses": 9,
+  "archive": "/afs/cern.ch/user/p/pengy/autoDQM/archives/repetition_cleanup_20260911T212003Z",
+  "note": "Historical study_config.json and bundle.json remain unchanged as provenance. Current scripts select only these retained runs. Archived historical-run citations inside frozen prompts are intentionally unchanged."
+}

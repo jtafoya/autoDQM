@@ -1,0 +1,10 @@
+{
+  "status": "dry_run",
+  "input_sha256": "abbb99b59bc5e97d665e1e6d384f10cf0a139994da97e92be4ff606646e46e58",
+  "automatic_retries": 0,
+  "network_attempts": 0,
+  "sdk_version": "2.48.0",
+  "request_body_sha256": "18952444463ed5b07abc5a4db31893ecf4f0c0d53be91f0d4c5d3304bf550758",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "elapsed_seconds": 0.04824567004106939
+}
